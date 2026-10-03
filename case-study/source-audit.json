@@ -1,0 +1,174 @@
+{
+  "date": "2026-10-02",
+  "scope": "Documentation-only analysis; historical gameplay tests not rerun; no real YouTube certification performed",
+  "chats": [
+    {
+      "path": "CodexChats/Chat1.txt",
+      "bytes": 59589157,
+      "sha256": "f884d2cce574ad83c95bb8cec3ce289eb8c5c68e0c8f0a927d13db65f59c4b4d",
+      "request_blocks": 82
+    },
+    {
+      "path": "CodexChats/Chat2.txt",
+      "bytes": 16821,
+      "sha256": "9ef4074b020396b2527be485fd10e38ba84dd7b05b219ee6616ac49988d1be5b",
+      "request_blocks": 2
+    },
+    {
+      "path": "CodexChats/Chat3.txt",
+      "bytes": 353191,
+      "sha256": "aa9cba33dae96215f16910787e2e2ae98381143e4dffe6253b6e9b18658b09db",
+      "request_blocks": 3
+    }
+  ],
+  "sdk_copies": [
+    {
+      "source": "YouTubePlayablesSkill/Technical Information __ YouTube Playables.txt",
+      "copy": "platform/source/technical-information.txt",
+      "sha256": "fb389502f7af82f32266f831889b23382e16f3f1bf53f887bea7bd8511804c87"
+    },
+    {
+      "source": "YouTubePlayablesSkill/youtube-playables-sdk-skill.md",
+      "copy": "platform/source/unity-integration-original.md",
+      "sha256": "3158575d5928b28ab2bee43470ea8a2dc2699be629816b6607fef5c37dab349f"
+    }
+  ],
+  "source_markdown": [
+    {
+      "path": "BUILD-COMPRESSION.md",
+      "bytes": 7855,
+      "sha256": "18797fd20d481357c544142987161ceeb88934f0bf4679f7700fd7d98037f1ec"
+    },
+    {
+      "path": "ECONOMY-BALANCE.md",
+      "bytes": 8839,
+      "sha256": "a13d7b98d7d2b8b1d8c1fa6e546e2966df77dd1fe28a08e2b484ea90fde856bc"
+    },
+    {
+      "path": "README.md",
+      "bytes": 23519,
+      "sha256": "40f04a3d294df2e36a06e9c664adaddcbe1c84aeeb89276ec6fe5c30d79ff2aa"
+    },
+    {
+      "path": "reference/cleaning-audit/README.md",
+      "bytes": 2403,
+      "sha256": "2f9576432fcc5b9bc50e60866da9710b3f9849f1551e7db39fbbd06d635dc2f6"
+    },
+    {
+      "path": "reference/design-notes.md",
+      "bytes": 2205,
+      "sha256": "4f51b4bcee4a6f61aba4cb82c90c4484526f42b8913a6a7adb8cd4f890426e3e"
+    },
+    {
+      "path": "reference/dressup-expansion/README.md",
+      "bytes": 1950,
+      "sha256": "fb58050adc73b69b9e9de5b4cf4e56cfa985e91f291354f4b49cb60848aeb6e5"
+    },
+    {
+      "path": "reference/premium/README.md",
+      "bytes": 1631,
+      "sha256": "16ffdc0b7785e1fef894e03115013a321b9bcb603fb7c6b8d8e76a1b7c2f7188"
+    },
+    {
+      "path": "reference/premium-redesign/BALANCE.md",
+      "bytes": 2388,
+      "sha256": "b1e0787dd462899fe2254316d2751080ad4ec15e0e8b0b8ca2d60ebf673cc0b4"
+    },
+    {
+      "path": "reference/premium-redesign/CLEANING-FIX.md",
+      "bytes": 1250,
+      "sha256": "6d487feee6cc15ec9623e17c257f86db4b7c562f04083d121e6f96e357c75705"
+    },
+    {
+      "path": "reference/premium-redesign/README.md",
+      "bytes": 3890,
+      "sha256": "975e9fef2cc1af5bef7def9623a779dc0755d2771cc8018089bb228f40716a68"
+    },
+    {
+      "path": "reference/premium-redesign/VALIDATION.md",
+      "bytes": 1377,
+      "sha256": "d0f37d7d10ebc1bc61c051d053ea0d0f694be68f6e03b9b657f984b727f072be"
+    },
+    {
+      "path": "reference/romance/BRIDE-REPAIRS.md",
+      "bytes": 5146,
+      "sha256": "875e70fc15b5fd2063def28cddd37772a1ca4d2d2dd79eaef74b563eee358369"
+    },
+    {
+      "path": "TEST-ADS.md",
+      "bytes": 759,
+      "sha256": "21460490b2c63e02b503421331600390eaa4ebc2f3b41fd189a6edb03b9e02df"
+    },
+    {
+      "path": "VALIDATION-EXPANSION.md",
+      "bytes": 4949,
+      "sha256": "47ecdc76e43f99e6c6c9c61c5e189d96c35cfcf2fac73e12eef36787182e5f9d"
+    },
+    {
+      "path": "VALIDATION-HINTS.md",
+      "bytes": 1476,
+      "sha256": "f2defef370ae74b67d0ca96bee375336d33d70fdc9ecc37be1c2326c44ac6806"
+    },
+    {
+      "path": "VALIDATION-MONETIZATION.md",
+      "bytes": 4513,
+      "sha256": "65f3f5cf3663fa77432537186daab1714c41a50f5f9d7b1f5a5f32fc32447381"
+    },
+    {
+      "path": "VALIDATION-PUZZLES.md",
+      "bytes": 2193,
+      "sha256": "2cb8c4e774050e5c4c7d86c6f0a0824240608b74790681ef19e372eea6094e4f"
+    },
+    {
+      "path": "VALIDATION-REWARDS.md",
+      "bytes": 2087,
+      "sha256": "cbb92ca47164fa361ccad82ea600a8e603df058dd02fc34d8dd81825b451da1a"
+    },
+    {
+      "path": "VALIDATION-ROMANCE.md",
+      "bytes": 2633,
+      "sha256": "3ef943c82213e4203f0e285a80ba3bca32b2810d84aa718880b531ec9dcb40bc"
+    },
+    {
+      "path": "VALIDATION-UI.md",
+      "bytes": 3290,
+      "sha256": "5b437db260b0a1e987b0ebabb9ed5a73c1cc292b77273dadfe3c84446bc8631c"
+    },
+    {
+      "path": "VALIDATION.md",
+      "bytes": 4802,
+      "sha256": "a31d845a51641b691152fbed08e235d58a0fb264afa7f5d32294825ff0fcd030"
+    },
+    {
+      "path": "YOUTUBE-PLAYABLES.md",
+      "bytes": 11657,
+      "sha256": "4bf39a2e859d101e8b05357c67b788a5078e9f60353a1f0e270e269a0e682331"
+    },
+    {
+      "path": "YouTubePlayablesSkill/youtube-playables-sdk-skill.md",
+      "bytes": 50296,
+      "sha256": "3158575d5928b28ab2bee43470ea8a2dc2699be629816b6607fef5c37dab349f"
+    }
+  ],
+  "locked_versions": {
+    "phaser": "3.90.0",
+    "vite": "7.3.6",
+    "@playwright/test": "1.63.0",
+    "@fontsource/nunito": "5.3.0",
+    "@fontsource/lilita-one": "5.3.0"
+  },
+  "level_data": {
+    "levels": 58,
+    "stages": 239,
+    "vip": 12,
+    "orderEntries": 58,
+    "uniqueOrderEntries": 58
+  },
+  "observed_existing_build": {
+    "zip_bytes": 15948849,
+    "zip_sha256": "93d60ae914cd2311532d72262a5e9ab9090925b988d9f4a978cc64c6e87d41dd",
+    "dist_bytes": 17021445,
+    "dist_file_count": 393
+  },
+  "current_optimizer_default_budget_bytes": 20000000
+}

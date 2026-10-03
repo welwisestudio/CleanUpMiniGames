@@ -1,0 +1,1117 @@
+﻿YouTube Playables SDK is a web SDK for connecting web games with the YouTube environment. The SDK features a robust API to support games in a variety of ways to create an excellent gaming experience on YouTube.
+Add the Playables SDK to your game
+A game should have an index.html file in the root directory. Import the YouTube Playables SDK by adding this line before any of your game code:
+<script src="https://www.youtube.com/game_api/v1"></script>
+
+
+Important: The SDK MUST be loaded before any of your game code. This creates a reproducible, sandboxed environment and to make certain functions available to the game immediately. This is validated during publishing and you can follow the test suite guide to validate before submitting your game.
+The SDK runs as a no-op when your game is served locally. To verify SDK integration correctness, use the test suite guide.
+Integrate with Playables SDK
+There are several required and optional integrations with the Playables SDK.
+Required integrations
+Review the publishing requirements overall, with a focus on integration requirements. Review the Playables SDK reference for implementation details.
+Examples include:
+* ytgame.game.firstFrameReady()
+* ytgame.game.gameReady()
+* ytgame.IN_PLAYABLES_ENV
+* ytgame.system.isAudioEnabled()
+* ytgame.system.onAudioEnabledChange((isAudioEnabled) => {})
+* ytgame.system.onPause(() => {})
+* ytgame.system.onResume(() => {})
+* ytgame.game.loadData()
+* ytgame.game.saveData(data)
+Recommended integrations
+In addition to the required integrations, several other functions are available to create a highly engaging experience. Examples include:
+* ytgame.system.getLanguage() - Use this to retrieve the user's current locale setting. Don't use other functions or store the language in the cloud save, as this may change at any time.
+* ytgame.engagement.sendScore({ value: newScore }) - Send a best score to YouTube to display.
+* ytgame.engagement.openYTContent({ id: videoID }) - Open a YouTube video.
+* ytgame.health.logError() and ytgame.health.logWarning() - Log issues to YouTube.
+Review the Playables SDK reference for implementation details and additional functions.
+TypeScript type definitions
+For games using TypeScript, download type definitions.
+
+
+Samples games
+Samples are available that demonstrate how to integrate with YouTube Playables SDK, including plain JavaScript, Flutter web, Godot, and Unity.
+________________
+
+
+1 Load Playables SDK
+* Game MUST load the YouTube Playables SDK before any of the game code.
+2 Game ready notification
+* Game MUST call firstFrameReady either when the game is rendering a loading screen or splash screen that explicitly communicates to the user that the loading process is underway.
+* Game MUST call gameReady and MUST only call gameReady when the game is ready for user interaction (example: main menu or game is ready to play).
+* Game MUST NOT call gameReady while there are still non-interactable elements being displayed to the user (example: splash screens or loading screens).
+YouTube does not remove the "loading spinner" until this API is called.
+3 User scores
+* Game MAY use sendScore to send the user's score.
+* If the game uses sendScore to send scores, the game MUST adhere to the sendScore specification and MUST ensure that the best score sent matches the best score in the game save.
+4 Cloud saves
+* Game MUST call saveData to save progress when users have made material game progress (for example, a level change) where the game mechanics lead the user to believe that their progress is saved.
+* Game MUST NOT use any other mechanism to save user progress. This feature enables players to resume the game at a later point.
+* Game MUST await loadData before calling saveData. If saveData is called before loadData completes successfully, the request will be rejected. This prevents the game from overwriting any previously saved data.
+* Game MUST be able to use cloud save data from previous versions of the game without errors or crashes.
+* Game SHOULD use the cloud save data to maintain user progress across all game versions where the user would expect their data to be used.
+* Games SHOULD automatically save user progress at important game milestones to prevent data loss. A final flush save is performed when a user exits the game but is best effort and can only save up to 64 KiB in content length.
+5 Mute toggle
+* Game MUST respect the system audio setting and mute button.
+* Game MUST respect the YouTube audio setting and mute button by using isAudioEnabled and onAudioEnabledChange.
+* Game MUST respect the volume control on the device.
+* Game sound MUST NOT play unexpectedly.
+* When YouTube mute is set, audio MUST NOT be output and game audio controls MUST NOT affect audio output.
+* When YouTube mute is not set, game audio controls MAY affect audio output.
+* Game SHOULD NOT show an overall mute button within the game itself; allow users to rely on the YouTube-level features for this.
+* Game MAY have separate granular audio controls in the game, such as for music and sound effects, but they MUST follow all other audio control requirements.
+ Different audio settings for background, sfx,
+dialogs 
+
+6 Pause and resume
+The Playables SDK provides callbacks that provide cross-platform pause and resume capabilities.
+* Game MUST pause all execution after onPause is called and MUST resume execution only when onResume is called. Execution includes all Playable capabilities, such as game loop, music, interactions, network calls, and rendering.
+* Game MUST NOT use the web Page Visibility API or similar web APIs and MUST only use Playables SDK onPause and onResume.
+* Game SHOULD save user progress when onPause occurs.
+Internationalization (i18n) and localization (L10n) requirements
+* This section covers internationalization (i18n) and localization (L10n) requirements.
+1 Language APIs
+* Game MAY use getLanguage to retrieve the user's current locale setting and adjust the game accordingly.
+* Game MUST NOT use web localization APIs, such as navigator.languages or navigator.language.
+2 Language support
+* Game MUST support the English language.
+
+
+
+
+Design requirements
+This section covers interactions between Playables and the YouTube user experience.
+1 Aspect ratio and orientation
+* Game MUST follow responsive design: be playable in all aspect ratios and adjust automatically when the viewport changes. Non-exhaustive examples: 9:32, 9:21, 9:16, 3:4, 1:1, 4:3, 16:9, 21:9, 32:9.
+* Game SHOULD fill the available viewport. If the game does not fill the available viewport, the game MUST be centered and include a pillarbox (left and right empty padding) or letterbox (top and bottom empty padding).
+* Game MUST NOT lock device orientation or device posture.
+* Game MUST maintain the game state or progress when the window is resized. We recommend not restarting or refreshing the game unless the user can quickly resume from the prior state.
+1:1 aspect ratio with a minimum resolution of 512x512px.
+5:7 aspect ratio with a resolution of at least 270x378px (minimum) or 540x756px (recommended)
+16:9 aspect ratio with a minimum resolution of 1280x720px.
+Visual examples of these requirements:
+  
+
+See full picture here
+2 Interaction methods
+* Game MUST support touch input for all interactions.
+* Game MUST support mouse input for all interactions.
+* Game MUST NOT unintentionally delay or ignore any user input.
+* Game MUST NOT have any errors or unexpected behavior for any UI components.
+* Game SHOULD support keyboard input for directional or text input.
+* Game SHOULD allow users to close modals or dialogs using the Esc key.
+* Game MUST NOT call preventDefault() on Esc events.
+* Game MAY use haptic feedback where appropriate. If the game includes haptic feedback, game MUST provide a way to toggle haptic feedback on and off.
+3 Game user interface (UI)
+This section covers game user interface (UI) requirements.
+3.1 Rendering
+* Game MUST render all text and graphics clearly (not blurry, pixelated, or stretched) across all screen resolutions, aspect ratios, and densities.
+4 Metadata
+Developer MUST provide all required metadata fields.
+Developer MUST NOT include any branding or logos in the thumbnails, description, or title.
+A non-exhaustive list of the types of metadata required are:
+* Image thumbnails in several different aspect ratios
+* Game description
+* Game title
+* Game genre
+* Publisher / Developer information
+5 Completion of content handling
+* Game MUST communicate that there is no more content to engage with, such as after the final level or at the end of game progression.
+6 Disallowed elements
+This section covers elements that are disallowed in Playables.
+6.1 In-game sharing
+* Game MUST NOT display in-game sharing prompts.
+6.2 External links
+* Game MUST NOT display clickable links that take users directly to external content, such as other sites or games. Links are allowed in the game and channel description following the same YouTube policy for video content.
+6.3 Additional user agreements
+* Game MUST NOT display an additional user agreement. Users agree to relevant YouTube policies, terms, and privacy details.
+6.4 Elements that create confusion
+* Game MUST NOT place icons that are identical to Playables actions in close proximity to the actual Playables actions, such as the close, mute, or menu buttons.
+* Game MUST NOT have an in-game exit or quit button.
+ Screen view showing another set of buttons similar to the Playables action
+buttons 
+
+
+
+1 Language APIs
+* Game MAY use getLanguage to retrieve the user's current locale setting and adjust the game accordingly.
+* Game MUST NOT use web localization APIs, such as navigator.languages or navigator.language.
+2 Language support
+* Game MUST support the English language.
+
+
+Monetization requirements
+This section covers monetization within Playables.
+1 In-game monetization
+* Game MUST NOT implement monetization using off-platform services. Monetization using off-platform services is not supported for YouTube Playables at this time.
+2 In-game advertising
+* 🧪 PUBLIC PREVIEW: SUBJECT TO CHANGE WITHOUT NOTICE. Game MAY display in-game advertising using YouTube-provided ads functions.
+* 🧪 PUBLIC PREVIEW: SUBJECT TO CHANGE WITHOUT NOTICE. If the game uses YouTube-provided ads functions, it MUST continue to correctly handle muting and unmuting using isAudioEnabled and onAudioEnabledChange and pause and resume using onPause and onResume.
+* Game MUST NOT display in-game advertising of any kind using off-platform services. Advertising using off-platform services is not supported for YouTube Playables at this time.
+Important: If you enable in-game advertising, you MUST also configure monetization settings in the YouTube Playables Developer Portal to turn them on.
+3 In-app purchases
+* Game MUST NOT offer in-app purchases of any kind using off-platform services. In-app purchases using off-platform services are not supported for YouTube Playables at this time.
+
+
+Privacy requirements
+This section covers privacy and data requirements.
+1 Policies
+* Game and developer MUST adhere to the Google Privacy Policy.
+2 External access
+These requirements pertain to the usage of third-party services.
+3 External calls
+* Game MUST NOT make external calls to any URLs or services, except where explicitly required to comply with other Technical Requirements (i.e., to call APIs owned by Google or YouTube).
+* Game MUST NOT attempt to circumvent external call prevention.
+4 User data
+These requirements pertain to the access and handling of user data.
+4.1 Clipboard
+* Game MUST NOT access the user's clipboard, unless it is in response to a player's explicit paste action.
+
+
+Stability and performance requirements
+This section covers the stability and performance of Playables.
+1 Initial bundle size
+To properly test this requirement, the game may need to be ingested with the developer portal and then tested in the test suite. Alternatively hosting with compression on or zipping all of the initial loaded content can provide a good approximation.
+* Game initial bundle size MUST be less than 30 MiB.
+* Game initial bundle size SHOULD be less than 15 MiB.
+Key Term: Initial bundle size - The amount of data that the Playable needs to download in order to start the game. This is measured from the start of page load to the moment the game calls gameReady. Aim to keep the initial bundle size as small as possible to avoid long loading and to decrease the risk of users abandoning the game.
+Note: Due to the use of HTTP compression, the transfer size of game assets is sometimes less than the stored size of the assets. To learn more, visit the FAQ.
+2 Total bundle size
+* By default, the game total bundle size MUST be less than 250 MiB. Exceptions to this can be found in the FAQ.
+* Game SHOULD only load the minimal amount of data needed to enable interactivity and lazy load the other data as needed.
+Key Term: Total bundle size - The sum of all game files hosted by YouTube.
+3 Individual file size
+* Every individual file within the game MUST be less than 30 MiB.
+* Every individual file within the game SHOULD be less than 512 KiB.
+Key Term: Individual file size - The size of a single game file hosted by YouTube, such as HTML, JavaScript, WASM, or media files.
+4 Saved game size
+* Saved game size MUST be less than 3 MiB.
+* Saved game size SHOULD be less than 500 KiB.
+5 Load time
+* Game SHOULD finish loading and allow user interaction in under 5 seconds.
+6 Crashes
+* Game MUST NOT have consistently reproducible crashes.
+   * Game MUST NOT exceed a peak JavaScript heap size of 512 MB. See the memory usage restrictions faq for why this causes crashes on iPhones.
+* Game MUST NOT crash the YouTube app, YouTube website, or other user software.
+7 Technologies used
+* Game MUST be based on standards-compliant Web APIs (e.g., JavaScript, Canvas, WebGL) as defined by standards bodies (e.g., W3C, WHATWG).
+* Playables MUST be compatible with all browsers that YouTube supports (including Edge, Chrome, Firefox, etc.)
+* Playables MUST be compatible with the YouTube app on Android and iOS.
+8 File references
+* Game MUST only use relative paths when referring to other files in the game bundle.
+* Game MUST NOT use absolute paths, as they will fail to load.
+9 File names
+* Files in the game bundle MUST only contain alphanumeric and a few special characters: _, -, ..
+You can use the Playables bundle analyzer to conduct an initial validation of the game bundle. This validation will assess the size of each individual file, the overall bundle size, and any potential filename inconsistencies.
+Playables bundle analyzer
+Instructions
+The Playables bundle analyzer can be run on a Playable game bundle to perform several validations on the game bundle before uploading the assets on Google Drive.
+Prerequisites
+* Install Python 3.
+Create the script
+1. Identify a directory on your machine to create the script (example: ~/scripts).
+2. Using the sample code provided, create a file on your machine called playables_bundle_analyzer.py.
+Execute the script to analyze game bundle
+1. Open a terminal window on your machine and navigate to the directory containing the playables_bundle_analyzer.py script.
+2. Run the script by executing this command, replacing [GAME_DIRECTORY_PATH] with the actual path of your game bundle directory:
+python3 playables_bundle_analyzer.py [GAME_DIRECTORY_PATH]
+3. A bundle analysis report will be generated in the script directory. It will be named playable_bundle_analysis_report.txt.
+4. Refer to the Stability and performance requirements for more information about bundle size and file names requirement.
+Code
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Contains functions to analyze the Playable game bundles."""
+
+
+import argparse
+import os
+import re
+from typing import Dict, List, Union
+
+
+SIZE_LIMITS = {
+    "file": 31457280,  # 30 MiB
+    "bundle": 262144000,  # 250 MiB
+}
+
+
+class BundleAnalyzer:
+  """Class for analyzing Playable game bundles."""
+
+
+  def __init__(self, directory_path):
+    """Initializes the BundleAnalyzer object with the specified directory path.
+
+
+    Args:
+        directory_path: The path to the directory to analyze.
+    """
+    self.directory_path = directory_path
+    self.total_size = 0
+    self.filenames_with_issues = []
+    self.files_too_large = []
+
+
+  def analyze(self):
+    """Analyzes the Playable game bundle and stores the results.
+
+
+    This function iterates through the directory and its subdirectories,
+    calculating the total size, and identifying files with
+    issues like unsupported characters, duplicates, and exceeding size limits.
+    """
+
+
+    for root, _, files in os.walk(self.directory_path):
+      for filename in files:
+        file_path = os.path.join(root, filename)
+        file_size = os.path.getsize(file_path)
+        self.total_size += file_size
+
+
+        if file_size > SIZE_LIMITS["file"]:
+          self.files_too_large.append(file_path)
+
+
+        if not is_valid_filename(filename):
+          self.filenames_with_issues.append(file_path)
+
+
+  def get_results(self) -> Dict[str, Union[List[str], List[str], int]]:
+    """Returns a dictionary containing the analysis results.
+
+
+    The dictionary includes information about the total number of files,
+    files with issues, files exceeding size limits,
+    and the total size of the bundle.
+    """
+
+
+    return {
+        "filenames_with_issues": self.filenames_with_issues,
+        "files_too_large": self.files_too_large,
+        "total_size": self.total_size,
+    }
+
+
+def is_valid_filename(filename: str) -> bool:
+  """Checks if the filename contains valid characters.
+
+
+  Create a regular expression that matches allowed bundle file characters
+
+
+  Args:
+      filename: The filename to be validated.
+
+
+  Returns:
+      True if the filename is valid, False otherwise.
+  """
+
+
+  pattern = r"^[a-zA-Z0-9\-\._]+$"
+
+
+  return bool(re.fullmatch(pattern, filename))
+
+
+def main():
+  """Main function that runs the BundleAnalyzer.
+
+
+  Parses command line arguments, creates a BundleAnalyzer instance,
+  runs the analysis, and output the results.
+  """
+
+
+  parser = argparse.ArgumentParser(description="Analyze file size")
+  parser.add_argument("path", help="Path to file or directory")
+  args = parser.parse_args()
+
+
+  analyzer = BundleAnalyzer(args.path)
+  analyzer.analyze()
+
+
+  analysis_result = analyzer.get_results()
+
+
+  with open("playable_bundle_analysis_report.txt", "w") as f:
+    if analysis_result["filenames_with_issues"]:
+      print(
+          "Files with unsupported characters:"
+          f" {analysis_result['filenames_with_issues']}",
+          file=f,
+      )
+
+
+    if analysis_result["files_too_large"]:
+      print(
+          f"Files too large: {analysis_result['files_too_large']}",
+          file=f,
+      )
+
+
+    if analysis_result["total_size"] > SIZE_LIMITS["bundle"]:
+      print(
+          f"Total bundle is too large:: {analysis_result['total_size']} bytes",
+          file=f,
+      )
+
+
+if __name__ == "__main__":
+  main()
+
+
+
+
+
+
+________________
+Trust and Safety requirements
+This section covers Trust and Safety requirements.
+1 Game content and audience
+These requirements pertain to the safety and appropriateness of the content.
+1.1 Community guidelines
+* Playables content MUST follow the YouTube Community Guidelines, and must not contain inappropriate content listed in the guidelines.
+1.2 Made for Kids
+* Playables content MUST NOT specifically target kids, or be "made for kids" or "just for kids". Refer to Determine if your content is "made for kids".
+* Playables content MUST be suitable for the general audience (Age 13+).
+1.3 Misleading Metadata or Thumbnails
+* Playables does not allow using the title, thumbnail, or description to trick the users into believing the Playables content is something it is not.
+2 Rights and clearances
+These requirements pertain to content ownership and rights.
+2.1 YouTube Developer Terms of Service
+* Playables MUST comply with the YouTube Developer Terms of Service which govern the use of YouTube's APIs.
+2.2 Intellectual property
+* Playables uploaded by content owners MUST have fully cleared third-party intellectual property rights.
+* The content MUST be cleared for the intellectual property rights and MUST NOT violate any trademark, copyright, or music rights.
+2.3 Third-party trademarks
+* Playables MUST NOT infringe on any third-party trademark or trade dress rights.
+2.4 Music rights
+* Playables MUST have all necessary music rights in place for distribution.
+2.5 Personality rights
+* Playables MUST have all necessary personality rights secured for distribution (name, likeness, etc.).
+3 External sharing
+* During Playables game certification, you will receive a development and staging release link to help test the game. This dev link and staging link MUST NOT be shared externally or outside of game certification testing purposes.
+Accessibility (a11y) requirements
+This section covers accessibility (a11y) requirements.
+1 Third-party guidelines
+This section covers applicable third-party guidelines for accessible experiences.
+1.1 Web Content Accessibility Guidelines (WCAG) AA
+* Developer SHOULD make a best effort to make Playables accessible for better user experience and discovery by following the Web Content Accessibility Guidelines (WCAG) AA.
+Playables design best practices
+The following design best practices help ensure an optimal experience for users playing your game on YouTube across different devices and platforms.
+Aside from the operating system components, the Playables experience primarily consists of three components:
+* Playables actions
+* Game canvas
+* Menus and dialogs
+ Screen view showing the location of the three
+components 
+
+These game design best practices provide recommendations for how to build your game for the game canvas.
+Game resizing
+Ensure that games adapt appropriately to different screen sizes and orientations by considering these practices.
+Resize the game and adapt the UI to the size and aspect ratio of the canvas.
+ Shows the game not on full
+screen 
+
+Use pillarboxing or letterboxing if the game can't be fully responsive to the game canvas size and aspect ratio.
+Avoid triggering scrollbars. Scrollbars negatively affect both gameplay and general navigation. Fill the canvas without resulting in the game becoming scrollable within the canvas. Scrollbars are OK for intentional scrolling, for example when scrolling through a long vertical list within the game UI. Ideally, games are fully responsible to the viewport.
+Game scaling
+Render clearly (not blurry, pixelated, or stretched) across different screen resolutions.
+Ensure that the game UI (texts, icons) scales appropriately when rendered on both lower resolution screens (such as 360x800 mobile devices) and higher resolution screens (such as 3840x2560 desktop monitors).
+ Side-by-side comparison of a clear and blurry trophy
+icon 
+
+Avoid low-resolution rasterized assets that appear blurry when scaled to large screens.
+Typography
+Ensure legibility across devices and screen sizes.
+The texts appearing within the game such as buttons, menus, and speech bubbles need to be legible across different devices and screen sizes. This can be achieved by scaling and adapting the text automatically or by offering users a setting to adjust font size.
+If the text is smaller than 18pt, or if the text is bold and smaller than 14pt, set the color contrast ratio to at least 4.5:1.
+For all other text, set the color contrast ratio to at least 3:1.
+For general reference, see WCAG2.1.
+  
+
+	  
+
+	Use large font sizes with enough weight and contrast for legibility. In this example, the contrast ratio is 4.48:1.
+	Avoid small font sizes and low contrast colors. In this example, the contrast ratio is 3.07:1.
+	Interaction
+This section covers best practices around user interactions and related elements.
+Touch targets
+Make touch targets large enough for easier interaction.
+Ensure that touch targets are at least 48x48 dp with at least 8 dp of space between targets (see Material Design Guidelines) for easier interaction.
+In this example, the visually rendered button is 24 dp, while the invisible touch target includes 12 dp around the icon to achieve the 48x48 dp touch target.
+ Shows the dimensions of the rendered
+button 
+
+Add padding around icons and buttons to increase touch target size.
+Buttons
+Use unique styles for each button state:
+* Enabled
+* Disabled
+* Hover (for non-touch input devices)
+* Focused
+* Pressed
+Aim to differentiate buttons by hierarchy as well. For example, primary versus secondary action buttons in a Start menu (see Google Material 2 Design Guidelines for buttons).
+Unique styles that distinguish each button state
+Keyboard input
+To increase the accessibility of the game across devices and users, support keyboard input for all gameplay controls and screen navigation in addition to touch and mouse input.
+For games that support keyboard input, allow users to close any in-game menus and dialogs using the Esc key. This is in addition to having a visual close button (for example, an X icon at the top corner). Common examples of modals or dialogs are Settings menu, Pause menu, error messages, and Help info pop-ups.
+Avoid mapping any actions to the long-press of the Esc key, as this is used for exiting fullscreen mode on desktop web browsers.
+For games that have keypress listeners registered: don't use preventDefault() with Esc key events. When in fullscreen in Safari, this causes the key press event to be consumed by the game without exiting fullscreen.
+Haptics
+When appropriate, it is recommended to use haptic feedback (vibrations) to make your games feel more fun and immersive.
+Key game moments
+This section covers key moments in a game that create a great experience for the player.
+Tutorial
+Include a brief tutorial or onboarding level to help new players.
+Onboarding ensures that users learn the basic gameplay and game essentials to proceed with and enjoy the game.
+Since Playables are intended to be quick and approachable for users to start playing, aim to keep the onboarding as minimal as possible. While not all games require a tutorial, most games benefit from some form of onboarding. Consider the key mechanics, rules, and skills that the player needs to know to successfully play and enjoy the game.
+Tutorials can be in the following format:
+* Set of screens at the beginning of the game (or more ideally, presented contextually throughout the game when appropriate)
+* Actual tutorial level that the user plays through
+Pause
+Clearly communicate the game state to the user.
+Clearly communicate to the user when the game is paused and how the user can resume the game. Avoid causing the user to think that the game has frozen or crashed.
+ Displays pause and resume
+buttons 
+
+Clearly label the game state as "paused" and provide a clear action (button) to resume the game.
+Game end
+Communicate to the user that they have completed the last level or they have finished the game.
+If the game has a definitive end (for example, a finite number of levels), clearly communicate that fact to the user. This avoids causing the user to think that the game is broken or frozen. Ideally, the game celebrates and congratulates the player for completing the game.
+Audio
+The game can contain separate volume controls for effects, speech, and background music. Controls can consist of sliders to adjust volume or a mute toggle for each or both.
+ Different audio settings for background, sfx,
+dialogs 
+
+Accessibility
+Accessibility in design allows users of diverse abilities to play and enjoy your game.
+Unlike web and software design, industry standard accessibility guidelines for game design don't exist. For a good resource with additional guidelines on inclusive game design, see Game accessibility guidelines. We recommend that you consider how these guidelines can be applied to your game's design.
+
+
+YouTube Playables SDK reference
+Important: The SDK MUST be loaded before any of your game code. This creates a reproducible, sandboxed environment and to make certain functions available to the game immediately.
+ytgame
+The top-level namespace for the YouTube Playables SDK.
+
+
+This is a globally scoped variable in the current window. You MUST NOT override this variable.
+Namespaces
+	ads
+	🧪 PUBLIC PREVIEW API: SUBJECT TO CHANGE WITHOUT NOTICE.
+	engagement
+	The functions and properties related to player engagement.
+	game
+	The functions and properties related to generic game behaviors.
+	health
+	The functions and properties related to the game health.
+	system
+	The functions and properties related to the YouTube system.
+	
+
+Enumerations
+	SdkErrorType
+	The types of errors that the YouTube Playables SDK throws.
+	
+
+Classes
+	SdkError
+	The error object that the YouTube Playables SDK throws.
+	
+
+Variables
+	IN_PLAYABLES_ENV
+	Whether or not the game is running within the Playables environment.
+	SDK_VERSION
+	The YouTube Playables SDK version.
+	
+
+Enumerations
+________________
+
+
+Const SdkErrorType
+SdkErrorType
+The types of errors that the YouTube Playables SDK throws.
+Enumeration Members
+	API_UNAVAILABLE
+	The API was temporarily unavailable.
+
+
+Ask players to retry at a later time if they are in a critical flow.
+	INVALID_PARAMS
+	The API was called with invalid parameters.
+	SIZE_LIMIT_EXCEEDED
+	The API was called with parameters exceeding the size limit.
+	UNKNOWN
+	The error type is unknown.
+	Variables
+________________
+
+
+Const IN_PLAYABLES_ENV
+IN_PLAYABLES_ENV: boolean
+Whether or not the game is running within the Playables environment. You can use this to determine whether to enable or disable features that are only available inside of Playables. Combine this check with checking for ytgame to ensure that the SDK is actually loaded.
+Example
+const inPlayablesEnv = typeof ytgame !== "undefined" && ytgame.IN_PLAYABLES_ENV;
+// An example of where you may want to fork behavior for saving data.
+if (ytgame?.IN_PLAYABLES_ENV) {
+  ytgame.game.saveData(dataStr);
+} else {
+  window.localStorage.setItem("SAVE_DATA", dataStr);
+}
+________________
+
+
+Const SDK_VERSION
+SDK_VERSION: string
+The YouTube Playables SDK version.
+Example
+// Prints the SDK version to console. Do not do this in production.
+console.log(ytgame.SDK_VERSION);
+________________
+
+
+ytgame.SdkError
+subdirectory_arrow_rightExtends Error
+The error object that the YouTube Playables SDK throws.
+
+
+The SdkError object is a child of Error and contains an additional field.
+Constructors
+	constructor
+	
+
+	
+
+Properties
+	errorType
+	The type of the error.
+	message
+	
+
+	name
+	
+
+	stack?
+	
+
+	Properties
+________________
+
+
+errorType
+errorType: SdkErrorType
+The type of the error.
+________________
+
+
+ytgame.ads
+🧪 PUBLIC PREVIEW API: SUBJECT TO CHANGE WITHOUT NOTICE.
+
+
+The functions and properties related to ads.
+Functions
+	requestInterstitialAd
+	Requests an interstitial ad to be shown.
+	requestRewardedAd
+	Requests a rewarded ad to be shown for a particular reward type.
+	Functions
+________________
+
+
+requestInterstitialAd
+requestInterstitialAd(): Promise<void>
+Experimental Requests an interstitial ad to be shown.
+
+
+🧪 PUBLIC PREVIEW API: SUBJECT TO CHANGE WITHOUT NOTICE.
+
+
+Makes no guarantees about whether the ad was shown. Do not use this API to reward players for watching an ad.
+Example
+try {
+  await ytgame.ads.requestInterstitialAd();
+  // Ad request successful, do something else.
+} catch (error) {
+  // Handle errors, retry logic, etc.
+  // Note that error may be undefined.
+}
+Returns
+	Promise<void>
+	a promise that resolves on a successful request or rejects/throws on an unsuccessful request.
+	________________
+
+
+requestRewardedAd
+requestRewardedAd(rewardId: string): Promise<boolean>
+Experimental Requests a rewarded ad to be shown for a particular reward type.
+
+
+🧪 PUBLIC PREVIEW API: SUBJECT TO CHANGE WITHOUT NOTICE.
+
+
+Makes no guarantees about whether the ad was shown.
+Example
+try {
+  const isRewardEarned = await ytgame.ads.requestRewardedAd("21403813-2e22-4316-a8b2-7d4f52a6f6fb");
+  // Handle reward being earned or not.
+} catch (error) {
+  // Handle errors, retry logic, etc.
+  // Note that error may be undefined.
+}
+Parameters
+	rewardId: string
+	Required. An identifier which uniquely identifies the claimable reward type. You must use a unique ID for each type of reward, and re-use that same ID each time that specific reward type is offered. For example, you could make the ID readable or a UUID. You can include this as a hard-coded ID in your game code for the specific reward. Our only requirements are that you provide an ID and that it not contain any user data. For example:
+* 100-coins-reward-12 - "100 coins"
+* 7defcfa2-4312-4893-a13a-a84e0c47a4df - "3 lives"
+* 121b001a-0c25-4289-88f6-58e3620d938f - "Skip level"
+	
+
+Returns
+	Promise<boolean>
+	A promise that resolves on a successful request with value true if the user met the conditions to receive a reward, or false if they did not. The promise rejects/throws on an unsuccessful request.
+	
+
+If the requestRewardedAd method is not present in your version of the YTGameWrapper.cs script, you must implement it yourself to access this functionality. The provided Unity Wrapper is an experimental sample and does not contain the full list of available SDK APIs.
+
+
+To implement this, you will need to:
+1. Update the .jslib plugin: Add a JavaScript bridge function that calls ytgame.ads.requestRewardedAd(rewardId).
+2. Update YTGameWrapper.cs: Add a C# method that uses [DllImport("__Internal")] to call your new .jslib function.
+Key Details for Implementation:
+
+
+* API Reference: The requestRewardedAd method requires a rewardId (string) and returns a Promise<boolean>. Status: Rewarded ads are currently a Public Preview API and are subject to change. They are also noted as being in active development.
+* Handling Results: Your implementation must gracefully handle cases where an ad is not available. If the request fails or is rejected, the promise will reject or return false. You must not award in-game items unless the ad is successfully shown and the reward is earned.
+For the complete list of available APIs to include in your wrapper, refer to the official SDK documentation.
+
+
+________________
+
+
+ytgame.engagement
+The functions and properties related to player engagement.
+Interfaces
+	Score
+	The score object the game sends to YouTube.
+	
+
+Functions
+	sendScore
+	Sends a score to YouTube.
+	Functions
+________________
+
+
+sendScore
+sendScore(score: Score): Promise<void>
+Sends a score to YouTube.
+
+
+The score should represent one dimension of progress within the game. If there are multiple dimensions, the developer must choose one dimension to be consistent. Scores will be sorted and the highest score will be displayed in YouTube UI so any in-game high score UI should align with what is being sent through this API.
+Example
+async function onScoreAwarded(score: number) {
+  try {
+    await ytgame.engagement.sendScore({ value: score });
+    // Score sent successfully, do something else.
+  } catch (error) {
+    // Handle errors, retry logic, etc.
+    // Note that error may be undefined.
+  }
+}
+Parameters
+	score: Score
+	the score to send to YouTube.
+	
+
+Returns
+	Promise<void>
+	a Promise that resolves when succeeded and rejects/throws with an ytgame.SdkError when failed.
+	________________
+
+
+ytgame.engagement.Score
+The score object the game sends to YouTube.
+Properties
+	value
+	The score value expressed as an integer.
+	Properties
+________________
+
+
+value
+value: number
+The score value expressed as an integer. The score must be less than or equal to the maximum safe integer. Otherwise, the score will be rejected.
+________________
+
+
+ytgame.game
+The functions and properties related to generic game behaviors.
+Functions
+	firstFrameReady
+	Notifies YouTube that the game has begun showing frames.
+	gameReady
+	Notifies YouTube that the game is ready for players to interact with.
+	loadData
+	Loads game data from YouTube in the form of a serialized string.
+	saveData
+	Saves game data to the YouTube in the form of a serialized string.
+	Functions
+________________
+
+
+firstFrameReady
+firstFrameReady(): void
+Notifies YouTube that the game has begun showing frames.
+
+
+The game MUST call this API. Otherwise, the game is not shown to users. firstFrameReady() MUST be called before gameReady().
+Example
+function onGameInitialized() {
+  ytgame.game.firstFrameReady();
+}
+________________
+
+
+gameReady
+gameReady(): void
+Notifies YouTube that the game is ready for players to interact with.
+
+
+The game MUST call this API when it is interactable. The game MUST NOT call this API when a loading screen is still shown. Otherwise, the game fails the YouTube certification process.
+Example
+function onGameInteractable() {
+  ytgame.game.gameReady();
+}
+________________
+
+
+loadData
+loadData(): Promise<string>
+Loads game data from YouTube in the form of a serialized string.
+
+
+The game must handle any parsing between the string and an internal format.
+Example
+async function gameSetup() {
+  try {
+    const data = await ytgame.game.loadData();
+    // Load succeeded, do something with data.
+  } catch (error) {
+    // Handle errors, retry logic, etc.
+    // Note that error may be undefined.
+  }
+}
+Returns
+	Promise<string>
+	a Promise that completes when loading succeeded and rejects with an ytgame.SdkError when failed.
+	________________
+
+
+saveData
+saveData(data: string): Promise<void>
+Saves game data to the YouTube in the form of a serialized string.
+
+
+The string must be a valid, well-formed UTF-16 string and a maximum of 3 MiB. The game must handle any parsing between the string and an internal format. If necessary, use String.isWellFormed() to check if the string is well-formed.
+Example
+async function saveGame() {
+  try {
+    ytgame.game.saveData(JSON.stringify(gameSave));
+    // Save succeeded.
+  } catch (error) {
+    // Handle errors, retry logic, etc.
+    // Note that error may be undefined.
+  }
+}
+Parameters
+	data: string
+	
+
+	
+
+Returns
+	Promise<void>
+	a Promise that resolves when saving succeeded and rejects with an ytgame.SdkError when failed.
+	________________
+
+
+ytgame.health
+The functions and properties related to the game health.
+Functions
+	logError
+	Logs an error to YouTube.
+	logWarning
+	Logs a warning to YouTube.
+	Functions
+________________
+
+
+logError
+logError(): void
+Logs an error to YouTube.
+
+
+Note: This API is best-effort and rate-limited which can result in data loss.
+Example
+function onError() {
+  ytgame.health.logError();
+}
+________________
+
+
+logWarning
+logWarning(): void
+Logs a warning to YouTube.
+
+
+Note: This API is best-effort and rate-limited which can result in data loss.
+Example
+function onWarning() {
+  ytgame.health.logWarning();
+}
+________________
+
+
+ytgame.system
+The functions and properties related to the YouTube system.
+Functions
+	getLanguage
+	Returns the language that is set in the user's YouTube settings in the form of a BCP-47 language tag.
+	isAudioEnabled
+	Returns whether the game audio is enabled in the YouTube settings.
+	onAudioEnabledChange
+	Sets a callback to be triggered when the audio settings change event is fired from YouTube.
+	onPause
+	Sets a callback to be triggered when a pause game event is fired from YouTube.
+	onResume
+	Sets a callback to be triggered when a resume game event is fired from YouTube.
+	Functions
+________________
+
+
+getLanguage
+getLanguage(): Promise<string>
+Returns the language that is set in the user's YouTube settings in the form of a BCP-47 language tag.
+
+
+Do not use other functions to determine the user's language or locale, or store their language preference in the cloud save. Instead, use this function to ensure that the user experience is consistent across YouTube.
+Example
+const localeTag = await ytgame.system.getLanguage();
+// `localeTag` is now set to something like "en-US" or "es-419".
+Returns
+	Promise<string>
+	a Promise that completes when getting the language succeeded and rejects with an ytgame.SdkError when failed.
+	________________
+
+
+isAudioEnabled
+isAudioEnabled(): boolean
+Returns whether the game audio is enabled in the YouTube settings.
+
+
+The game SHOULD use this to initialize the game audio state.
+Example
+function initGameSound() {
+  if (ytgame.system.isAudioEnabled()) {
+    // Enable game audio.
+  } else {
+    // Disable game audio.
+  }
+}
+Returns
+	boolean
+	a boolean indicating whether the audio is enabled.
+	________________
+
+
+onAudioEnabledChange
+onAudioEnabledChange(callback: ((isAudioEnabled: boolean) => void)): (() => void)
+Sets a callback to be triggered when the audio settings change event is fired from YouTube.
+
+
+The game MUST use this API to update the game audio state.
+Example
+ytgame.system.onAudioEnabledChange((isAudioEnabled) => {
+  if (isAudioEnabled) {
+    // Enable game audio.
+  } else {
+    // Disable game audio.
+  }
+});
+Parameters
+	callback: ((isAudioEnabled: boolean) => void)
+	the callback function to be triggered.
+	
+
+Returns
+	(() => void)
+	a function to unset the callback that is usually unused.
+	________________
+
+
+onPause
+onPause(callback: (() => void)): (() => void)
+Sets a callback to be triggered when a pause game event is fired from YouTube. The game has a short window to save any state before it is evicted.
+
+
+onPause is called for all types of pauses, including when the user exits the game. There is no guarantee that the game will resume.
+Example
+ytgame.system.onPause(() => {
+  pauseGame();
+});
+
+
+function pauseGame() {
+  // Logic to pause game state.
+}
+Parameters
+	callback: (() => void)
+	the callback function to be triggered.
+	
+
+Returns
+	(() => void)
+	a function to unset the callback that is usually unused.
+	________________
+
+
+onResume
+onResume(callback: (() => void)): (() => void)
+Sets a callback to be triggered when a resume game event is fired from YouTube.
+
+
+After being paused, the game is not guaranteed to resume.
+Example
+ytgame.system.onResume(() => {
+  resumeGame();
+});
+
+
+function resumeGame() {
+  // Logic to resume game state.
+}
+Parameters
+	callback: (() => void)
+	the callback function to be triggered.
+	
+
+Returns
+	(() => void)
+	a function to unset the callback that is usually unused.
+	
+
+
+
+Playables SDK Test Suite
+Test http response headers
+When your game is served on YouTube, it includes a Content Security Policy response header as an added layer of security.
+This limits the kinds of sources Playables can depend on and the kinds of network requests that can be made from Playables. To minimize issues with certification and improve the integration process, override the HTTP response headers for your index.html file when testing locally to catch CSP violations as early as possible.
+You can follow this article to set up local overrides in Chrome. Once you have your overrides setup for your locally served game, use the following string to override the Content-Security-Policy header:
+default-src 'none'; script-src 'report-sample' 'self' 'unsafe-eval' 'unsafe-inline' blob: https://www.youtube.com/game_api/v0 https://www.youtube.com/game_api/v0/ https://www.youtube.com/game_api/v1 https://www.youtube.com/game_api/v1/; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self' data: https://fonts.googleapis.com https://fonts.gstatic.com; connect-src 'self' blob: data:; sandbox allow-pointer-lock allow-same-origin allow-scripts; base-uri 'self'; manifest-src 'self'; worker-src 'self' blob:
+
+
+________________
+
+
+Frequently asked questions
+These are answers to common questions about developing Playables.
+What game engines can I use?
+YouTube Playables supports standard web platform APIs. Therefore, Playables supports games made with game engines that export builds for the web that use a standard rendering API (for example, WebGL and Canvas). Engines and frameworks that have been used for Playables in the past include BabylonJS, Cocos, Construct, Defold, melonJS, Phaser, PixiJS, PlayCanvas, React, three.js, Godot, and Unity.
+How do I test on foldable phone simulators?
+For rapid testing, see Chrome Dev Tools supports simulating a foldable phone. Additionally, there are several emulator options in Android Studio that can be used for more thorough testing.
+How can I test on mobile WebViews?
+You can use third-party apps like WebView Tester (Android) or WebView - Tester (iOS) to open your game or the SDK test suite in a WebView for additional validation. Since this is third-party software that is not supported or validated by Google, you can also use open-source options, such as WebView Tester (Android) or swift-ios-wkwebview-demo (iOS) to compile your own WebView testing apps.
+How does the game run inside of YouTube?
+Standard web and mobile technology is used to run Playables within the YouTube mobile and web apps. As a result, Playables supports standard web platform APIs.
+What memory usage restrictions exist for Playables on YouTube?
+Games can only use up to 512 MB of JavaScript heap size. Playabes are run within Safari on iOS and this is the threshold at which the game will frequently crash and reload the browser. You can measure the heap size the game is using at any time using Chrome DevTools to record heap snapshots
+How does a game go "live"?
+We're careful about rolling out Playables to users, so we perform various stages of Playables validation to verify that YouTube and the individual Playable work well together. This may include limited access, staged rollouts, or adjustments using our automated systems.
+Once your Playable is certified and published, you should expect to support full game usage irrespective of any of these rollout mechanisms. You should also expect fluctuations in user engagement at any time.
+How do I report a Playable for infringing on copyright/IP?
+If your copyrighted content is on YouTube without your permission, follow these email, mail, or fax instructions. Submitting using YouTube Studio is not available at this time.
+How do Playables appear to users?
+Playables appear on multiple YouTube surfaces, including the Home page, Search results, the Playables destination, and your channel page.
+Your channel page will have a Playables tab that lists all of your Playables. When a user opens one of your Playables, they will also find a link to subscribe to your channel.
+
+
+My game is not rendering on Android or SDK test suite, what should I do?
+When games are not rendering exclusively on Android or SDK test suite, it is often caused by how games are loaded in the WebView. For performance reasons, the game is initially loaded in a WebView that is not displayed to the user, resulting in the WebView viewport size being zero. To resolve this issue, the following solution is recommended:
+(1) Verify that your game code executes regardless of the viewport size.
+(2) Verify that your game code handles viewport resizing and that the game code doesn't wait or fail when the viewport size is zero.
+Our recommendation is to listen for the window event resize and set your game's height only when window.innerHeight is non-zero.
+Technical Requirements
+This section includes questions related to the YouTube Playables technical requirements.
+Can I receive an exemption for the individual file size limit?
+No. The individual file size is a hard limit.
+How is initial bundle size measured?
+Initial bundle size is measured as the total amount of bytes downloaded by the Playable until the gameReady event is called.
+Playables use HTTP compression when possible, meaning that the initial bundle size may be smaller than the total raw size of the assets. When testing the initial bundle size in the SDK Test Suite, if your local host is not compressing assets, it may result in a larger size than what will happen once your Playable is published. To see the actual initial bundle size served for a Playable, use the SDK Test Suite pointed at the index.html file from an uploaded build or modify your local server settings to enable gzip compression.
+I am at or over the individual file or total bundle size limit, what should I do?
+To optimize your game and improve performance, see the following articles:
+* Image compression
+* Performance audits
+* Fast load times
+* Enable text compression *
+Optimizing Encoding and Transfer Size of Text-Based Assets
+* Minify JavaScript
+What if I can't fit within the total bundle size limit?
+Users may have to download assets from your game every time they play your game. To prevent long loading times and large amounts of data usage, it is recommended that the game's total bundle size be as small as possible.
+We encourage games to utilize lazy loading or other types of incremental asset loading during each play session as users progress, or break up assets per level to allow assets to be downloaded in small amounts spread out over the course of a long session. In situations like these, having a larger total bundle size may not degrade the user experience, and may in fact create a better user experience by enabling more content in your game with a lower per user footprint. If you feel your game works in this way and justifies having a larger total bundle size, reach out using our support contact page to discuss your use case.
+Can my internal analytics be excluded from the external call requirements?
+No. Playables must not make any external calls at this time. Let your partner manager know about the kind of analytics that you are interested in so that future features in this space can be prioritized.
+The game fetches data and levels from a remote database, is this acceptable?
+At this time no, however we are piloting remote data access with select titles. Today, all game data must be included as part of the game bundle. If you would like to update or refresh your game assets or content, reach out using the contact information on the support contact page to submit a refreshed game bundle or reach out to inquire further if you would like to be considered for our pilot program.
+I see an error about violating "Content Security Policy" for executing inline scripts
+This happens when you use JavaScript to create and add a <script> tag to your page. For security, YouTube uses a Content Security Policy (CSP) that requires scripts to have a special security code called a "nonce". YouTube automatically adds this code to the scripts in your HTML file, but you must manually add it to any scripts you create with code.
+When generating script tags programmatically using JavaScript, you need to find the nonce from your page and apply it to your new script element.
+Example:
+const script = document.createElement('script');
+script.src = '...';
+// Find the nonce from the main page and apply it
+script.nonce = document.querySelector('script[nonce]')?.nonce;
+document.head.appendChild(script);
+
+
+You can test offline configurations using guidelines specified inside the test suite instructions.
+SDK Integration
+This section includes any questions that relate to any of the Playables SDK APIs.
+I failed certification due to audio integration issues, what do I need to fix?
+The most common audio issue that is seen involves games that are expecting user interaction before starting playback. However, YouTube Playables may be given focus automatically, so the game must handle this case.
+For an audio setup example, check out the samples.
+Unity
+Note: Many of the items in this section around precompression apply to Godot as well as both engines use .wasm, which can become large if your game does not break up its content.
+This section includes any questions regarding integrating existing Unity games with the YouTube Playables SDK. For examples on how to use the SDK and Unity Wrapper, see the YouTube Playables Unity Wrapper documentation.
+Can I use Unity precompression?
+We don't suggest pre-compressing your assets. Initial bundle size requirement uses the post compression size and files uploaded will have compression applied after ingestion. If there is still a need to precompress files see the rest of this section or reach out to the support team at our support contact page to discuss the best option for your game.
+Some games will need to use precompression for Unity's .wasm or .data files. Only use precompression in the following conditions as this may lead to much slower load times:
+   * If you need to use Unity precompression to meet individual file size or total bundle size requirements, see "I am at or over the individual file or total bundle size limit, what should I do?".
+   * If you need to use Unity precompression for your game to pass certification, the following requirements must be met:
+   1. You MUST use zip precompression.
+   2. You MUST decompress the files manually within your loader script. We recommend using the Compression Streams API.
+Note: A template for Unity WebGL builds is provided with the Unity Sample game, see GoogleYTGameWrapper-with-sample.unitypackage Unity Package and WebGLTemplates/YTGameWrapperTemplate/ folders. Instructions on how to use this with zipped .wasm and .data files can be found in the Unity Wrapper documentation.
+Note: Verify that your game does not take a considerably long time to load as using these workarounds may cause your game to load slowly.
+These additional requirements stem from limitations of the serving architecture. At this time, support for additional HTTP headers or Brotli compression is not available.
+How can I manage frame updates when the game is running in the background?
+You can use setTimeout to manage frame updates when the game is backgrounded. This helps control behaviors such as pausing audio. You can verify background frame management by enabling the "Run in Background" option in the player settings.
+Memory restrictions for Unity games
+Some games in Unity will use a substantial amount of memory which can lead to exceeding the memory usage restrictions for playables. It is recommended to follow the development documentation for Memory in Unity WebGL.
