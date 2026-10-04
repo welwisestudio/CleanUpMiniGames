@@ -1,0 +1,1396 @@
+{
+  "updated": "2026-10-04",
+  "level": "soccer-ball",
+  "credits": {
+    "before": 1203,
+    "after": 1106,
+    "generations": 22,
+    "backgroundRemovals": 19,
+    "note": "Nano Banana 2 at 2k = 2 credits per image (preflight)"
+  },
+  "assets": [
+    {
+      "id": "ball-clean",
+      "status": "completed",
+      "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a brand-new classic soccer ball with bright sunny yellow leather hexagon panels and royal blue pentagon panels, clean glossy surface, perfectly round, three-quarter front view from a slightly elevated camera, centered in the frame. The entire ball fits in the frame with 14% clear padding on every side. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp specular highlights, saturated clean colors, no outlines, no cel shading. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow on the background. No text, no logos, no labels, no brand marks, no extra objects.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "5ff2b8e2-c11f-4ac0-9504-61eba0b243f9",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/ball-clean.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "be4849b3a68c23e0b09fd73a4482eb7dd190ed6ecb77033f8e73a1a7f39b36f9",
+      "cutoutPath": "reference/cutouts/soccer-ball/ball-clean.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "5ff2b8e2-c11f-4ac0-9504-61eba0b243f9",
+        "operationJobId": "57f6769b-c864-4ee7-8015-5f6600ca501e",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2048,
+          2048
+        ],
+        "outputSha256": "dcb9364862444fa81636273af770f3b5be73325f8072294396f9dea316b8cc2b",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            227,
+            225,
+            230,
+            228
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/ball-clean.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/ball-clean.webp",
+        "public/assets/soccer-ball/mask-outside.png",
+        "public/assets/soccer-ball/result-picture-soccer-ball.webp"
+      ],
+      "registration": {
+        "srcCenter": [
+          1022.5,
+          1023.0
+        ],
+        "srcRadius": 795.2,
+        "scale": 0.55329
+      },
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "bg-pitch-portrait",
+      "status": "completed",
+      "prompt": "Mobile game gameplay background, portrait 9:16. A football (soccer) pitch seen from player height looking toward a goal: the upper 22% of the image shows a dark navy blue goal net mesh with a white crossbar and post line; the rest of the image is a bright green grass pitch with alternating mowed horizontal stripes, a white halfway line and part of the white center circle in the lower third. Soft depth of field, slightly blurred and calm so a game object placed in the center reads clearly, gentle vignette, empty open center area. Style: semi-realistic glossy premium casual mobile game render, soft daylight. No players, no ball, no people, no text, no logos, no advertising boards, no UI elements.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "9:16"
+      },
+      "jobId": "458458ef-d681-4218-875d-59524a25659f",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/bg-pitch-portrait.png",
+      "masterSize": [
+        1536,
+        2752
+      ],
+      "masterSha256": "e972b580869f95b78f72105cdacafbe21c606fdea9fe6c0879d4f7178a764c3b",
+      "backgroundRemoval": {
+        "required": false,
+        "status": "not_needed",
+        "reason": "scene background / full-bleed texture"
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/bg-pitch-portrait.webp",
+        "public/assets/soccer-ball/result-picture-soccer-ball.webp"
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "bg-pitch-landscape",
+      "status": "completed",
+      "prompt": "Mobile game gameplay background, wide landscape 16:9. A football (soccer) pitch seen from player height looking toward a wide goal: the upper 24% of the image shows a dark navy blue goal net mesh with a white crossbar line spanning the width; the rest of the image is a bright green grass pitch with alternating mowed horizontal stripes, a white halfway line and part of the white center circle near the bottom. Soft depth of field, slightly blurred and calm so a game object placed in the center reads clearly, gentle vignette, empty open center area. Style: semi-realistic glossy premium casual mobile game render, soft daylight. No players, no ball, no people, no text, no logos, no advertising boards, no UI elements.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "16:9"
+      },
+      "jobId": "e3680ca5-f0ca-482c-ad09-e8df8afda626",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/bg-pitch-landscape.png",
+      "masterSize": [
+        2752,
+        1536
+      ],
+      "masterSha256": "97e49268f5a3882adf41a5da36f89eeeb9dfd109a8a05c379253aaaabc5e7420",
+      "backgroundRemoval": {
+        "required": false,
+        "status": "not_needed",
+        "reason": "scene background / full-bleed texture"
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/bg-pitch-landscape.webp"
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "tool-chisel",
+      "status": "completed",
+      "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one wood carving chisel standing perfectly vertical, polished steel blade pointing straight up with the flat sharp cutting edge at the very top, short steel ferrule, rounded orange-brown varnished wooden handle at the bottom. Straight front view, slim, centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "9:16"
+      },
+      "jobId": "a46d1c6c-2598-4dde-890b-6b71548faef8",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/tool-chisel.png",
+      "masterSize": [
+        1536,
+        2752
+      ],
+      "masterSha256": "c5ae42b28ddc0b13b98bd4535ac16b0518036a5ec0977d5be3590efec472a6f9",
+      "cutoutPath": "reference/cutouts/soccer-ball/tool-chisel.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "a46d1c6c-2598-4dde-890b-6b71548faef8",
+        "operationJobId": "2a2986c9-68d7-461c-b73a-31b77f713fa1",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          1536,
+          2752
+        ],
+        "outputSha256": "9e00e36a6b9eebc28a86331f81e33cd865d2f37687c504b12859cfad262ca156",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            629,
+            292,
+            631,
+            294
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/tool-chisel.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/tool-chisel.webp"
+      ],
+      "workingPointNormalized": [
+        0.4926,
+        0.0456
+      ],
+      "runtimeSize": [
+        159,
+        768
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "tool-dry-brush",
+      "status": "completed",
+      "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one rectangular wooden cleaning brush seen exactly from the side in horizontal orientation: light honey varnished wooden block body on top with rounded ends, dense dark brown natural bristles pointing straight down along the full length. Centered. The entire brush fits in the frame with 14% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "3:2"
+      },
+      "jobId": "9b8b3f3b-b1ee-4eb2-8152-6134492abc28",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/tool-dry-brush.png",
+      "masterSize": [
+        2528,
+        1696
+      ],
+      "masterSha256": "ec60cbfed2193d6f29f5f560e37fd86c3750396bf68697b1d8a705246bfc1b60",
+      "cutoutPath": "reference/cutouts/soccer-ball/tool-dry-brush.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "9b8b3f3b-b1ee-4eb2-8152-6134492abc28",
+        "operationJobId": "86460919-5088-4f7c-9694-862d324abd6f",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2528,
+          1696
+        ],
+        "outputSha256": "eecaac8ef49f870f44317c156b7e8c4dbcf32f181e2418b52ee302ec397726e1",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            355,
+            544,
+            354,
+            552
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/tool-dry-brush.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/tool-dry-brush.webp"
+      ],
+      "workingPointNormalized": [
+        0.4993,
+        0.804
+      ],
+      "runtimeSize": [
+        768,
+        300
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "tool-foam-sprayer",
+      "status": "completed",
+      "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one handheld foam sprayer standing perfectly vertical: a short red spray nozzle pointing straight up at the very top, glossy red plastic pump head and grip, a transparent cylindrical plastic tank below it half filled with light blue soapy liquid, a small black hose connector at the bottom. Straight front view, centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "9:16"
+      },
+      "jobId": "450a026b-545b-49d1-bd3c-b1455fb6d9fb",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/tool-foam-sprayer.png",
+      "masterSize": [
+        1536,
+        2752
+      ],
+      "masterSha256": "c3fa783acf8106530fb10c1cb846cec73b4bbcf317ecb98044a208f002046872",
+      "cutoutPath": "reference/cutouts/soccer-ball/tool-foam-sprayer.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "450a026b-545b-49d1-bd3c-b1455fb6d9fb",
+        "operationJobId": "d5b57024-f7cc-4085-9e62-6a2564a14abe",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          1536,
+          2752
+        ],
+        "outputSha256": "54fe028f92c15d4f453e1a60b196cc677c9ea9f42a7d6a5817b916df68485dcb",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            461,
+            231,
+            463,
+            203
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/tool-foam-sprayer.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/tool-foam-sprayer.webp"
+      ],
+      "workingPointNormalized": [
+        0.4968,
+        0.0456
+      ],
+      "runtimeSize": [
+        254,
+        768
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "tool-scrub-brush",
+      "status": "completed",
+      "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one round wooden pot scrub brush (dish brush) seen exactly from the side: a rounded varnished beech-wood knob handle on top, a short cylindrical wooden head, a thin white ring, and a wide skirt of dense stiff gray bristles pointing straight down. Centered. The entire brush fits in the frame with 14% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "8a846bb8-153a-4e5e-bf3b-63907e0da262",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/tool-scrub-brush.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "eb28f76c46c4a0a4dc0134df0b15664c7311f1700c5f585d5fbb0e1741f7e844",
+      "cutoutPath": "reference/cutouts/soccer-ball/tool-scrub-brush.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "8a846bb8-153a-4e5e-bf3b-63907e0da262",
+        "operationJobId": "daaacee7-38fa-483a-9c47-9dd84d22a4c8",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2048,
+          2048
+        ],
+        "outputSha256": "f06f0ae04ef4b9181e95a93412c8afdf040e5f9c0bcda16cbc2d9d5fb4f443a8",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            498,
+            343,
+            500,
+            346
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/tool-scrub-brush.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/tool-scrub-brush.webp"
+      ],
+      "workingPointNormalized": [
+        0.4992,
+        0.8612
+      ],
+      "runtimeSize": [
+        609,
+        768
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "tool-washer-lance",
+      "status": "completed",
+      "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one pressure washer lance standing perfectly vertical: a thin brushed-steel wand with a small brass spray nozzle tip at the very top, a black rubber grip section in the lower part and a dark gray connector with an orange ring at the bottom end. Straight front view, slim, centered. The entire tool fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no hose, no extra objects.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "9:16"
+      },
+      "jobId": "42692379-3210-4013-80c8-7ed6bda96c35",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/tool-washer-lance.png",
+      "masterSize": [
+        1536,
+        2752
+      ],
+      "masterSha256": "4d2c123b6f4c6398dd5e56338d630931809bfa62884e2307cf42e2c155e707b2",
+      "cutoutPath": "reference/cutouts/soccer-ball/tool-washer-lance.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "42692379-3210-4013-80c8-7ed6bda96c35",
+        "operationJobId": "beeeeb29-1e34-491d-8887-d4cff0626d75",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          1536,
+          2752
+        ],
+        "outputSha256": "038ac9fa4294e9a31cc8898f7ad7e5a9b25fac5c29cd55b7b9d3c4575b01f506",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            690,
+            198,
+            691,
+            185
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/tool-washer-lance.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/tool-washer-lance.webp"
+      ],
+      "workingPointNormalized": [
+        0.4947,
+        0.0456
+      ],
+      "runtimeSize": [
+        115,
+        768
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "tool-cloth",
+      "status": "completed",
+      "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one neatly folded soft lime-green microfiber cleaning cloth, slightly crumpled with soft rounded folds and a visible fine microfiber texture, three-quarter top view, centered. The entire cloth fits in the frame with 14% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "4:3"
+      },
+      "jobId": "3a782fc3-734c-457e-a235-dc15ade01021",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/tool-cloth.png",
+      "masterSize": [
+        2400,
+        1792
+      ],
+      "masterSha256": "87915fcd49a4ed856692686ccd09ed30e7efcd9bdbf0a10fa4388038d0e4c046",
+      "cutoutPath": "reference/cutouts/soccer-ball/tool-cloth.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "3a782fc3-734c-457e-a235-dc15ade01021",
+        "operationJobId": "78643b2a-3134-4e0c-bc88-3df1d464b2d8",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2400,
+          1792
+        ],
+        "outputSha256": "51fe260af224e45009a1e19d82b0d644248757f89d8a25c76c33ee3211360612",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            333,
+            294,
+            336,
+            295
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/tool-cloth.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/tool-cloth.webp"
+      ],
+      "workingPointNormalized": [
+        0.4993,
+        0.4991
+      ],
+      "runtimeSize": [
+        768,
+        555
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "tex-foam",
+      "status": "completed",
+      "prompt": "Seamless tileable top-down game texture of thick white soap foam: dense small and medium round bubbles with thin cool gray-blue outlines, soft cool gray shadows between bubbles, wet glossy highlights, filling the entire frame evenly from edge to edge. Flat even lighting, no vignette, no objects, no text. Semi-realistic glossy casual mobile game render.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "af84e1f0-26c2-4483-b192-3f406fdcc4d6",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/tex-foam.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "1bc1fc0de55d4c35ec8c7049d57a23e9347c74e38fbcd50a90539d69cdfef7af",
+      "backgroundRemoval": {
+        "required": false,
+        "status": "not_needed",
+        "reason": "scene background / full-bleed texture"
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/tex-foam-full.webp",
+        "public/assets/soccer-ball/stamp-foam.webp"
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "tex-foam-swirl",
+      "status": "completed",
+      "prompt": "Seamless tileable top-down game texture of white soap foam that has been scrubbed with a brush: the foam forms many swirling circular spiral patterns and curved strokes, with a slight beige and pale yellow dirt tint inside the swirls, dense small bubbles, soft cool gray shadows, wet highlights, filling the entire frame evenly from edge to edge. Flat even lighting, no vignette, no objects, no text. Semi-realistic glossy casual mobile game render.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "9fca648b-535a-4d3b-b07f-a63340d62f0b",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/tex-foam-swirl.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "50fc7d61156b7e459b5369736c6ff9d08a9a473f261670b53a81aaeed9465d4e",
+      "backgroundRemoval": {
+        "required": false,
+        "status": "not_needed",
+        "reason": "scene background / full-bleed texture"
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/tex-foam-swirl-full.webp",
+        "public/assets/soccer-ball/stamp-swirl.webp"
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "ball-wet",
+      "status": "completed",
+      "prompt": "Edit the reference image. Keep the exact same soccer ball: identical size, position, round silhouette, panel layout, camera angle and framing, and the same plain flat light gray background. Change only the surface: the ball is freshly washed and wet, covered with many clear water droplets of varied sizes and short water streaks, with a stronger wet glossy sheen. Colors stay bright yellow and royal blue. No text, no logos, no cast shadow on the background.",
+      "referenceFiles": [
+        "job:5ff2b8e2-c11f-4ac0-9504-61eba0b243f9 (ball-clean master, image_references)"
+      ],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "19b9776d-5ea7-48a9-9340-44eda9a9bd1e",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/ball-wet.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "196d7ae274b0fd07c832248e9049060c8662478cc6c3682386ea651619893df3",
+      "cutoutPath": "reference/cutouts/soccer-ball/ball-wet.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "19b9776d-5ea7-48a9-9340-44eda9a9bd1e",
+        "operationJobId": "cb83b8d1-764b-41e6-b0dd-202387f3ab1e",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2048,
+          2048
+        ],
+        "outputSha256": "4aca6558a33c635dcd94df50eaa77d0cc329344eca9a1d2192a722dbeffb42d7",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            223,
+            221,
+            222,
+            218
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/ball-wet.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/ball-wet.webp"
+      ],
+      "registration": {
+        "srcCenter": [
+          1024.0,
+          1026.0
+        ],
+        "srcRadius": 801.5,
+        "scale": 0.54897
+      },
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "ball-stained",
+      "status": "completed",
+      "prompt": "Edit the reference image. Keep the exact same soccer ball: identical size, position, round silhouette, panel layout, camera angle and framing, and the same plain flat light gray background. Change only the surface: the ball is old and grimy, covered with olive-brown grime, dark muddy blotches, smudges and stains over the panels, colors dulled and slightly desaturated but the yellow and blue panels are still recognizable underneath, matte dirty leather. No text, no logos, no cast shadow on the background.",
+      "referenceFiles": [
+        "job:5ff2b8e2-c11f-4ac0-9504-61eba0b243f9 (ball-clean master, image_references)"
+      ],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "fea6191c-c5f7-41e1-909e-1b2c5def4a44",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/ball-stained.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "22a70b1b954cd5fc9b49040fa43e2f5faffe176a47032ac5b841e42c165f62a8",
+      "cutoutPath": "reference/cutouts/soccer-ball/ball-stained.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "fea6191c-c5f7-41e1-909e-1b2c5def4a44",
+        "operationJobId": "93271530-c680-4ed9-9820-f7ea2ecad1f3",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2048,
+          2048
+        ],
+        "outputSha256": "3095979cd5d5fad4e52c3dfa9e5f824090880ff99237d49c3b58b079a3528bb1",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            228,
+            226,
+            230,
+            227
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/ball-stained.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/ball-stained.webp"
+      ],
+      "registration": {
+        "srcCenter": [
+          1023.0,
+          1023.5
+        ],
+        "srcRadius": 795.2,
+        "scale": 0.55329
+      },
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "ball-dusty",
+      "status": "completed",
+      "prompt": "Edit the reference image. Keep the exact same soccer ball: identical size, position, round silhouette, panel layout, camera angle and framing, and the same plain flat light gray background. Change only the surface: the ball is very dirty and dusty, covered with olive-brown grime and dark stains, and on top of that a matte layer of dry gray-beige dust and fine powdery dirt specks, colors very dull and faded, panels only faintly visible. No text, no logos, no cast shadow on the background.",
+      "referenceFiles": [
+        "job:5ff2b8e2-c11f-4ac0-9504-61eba0b243f9 (ball-clean master, image_references)"
+      ],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "b2ce0212-ed56-4c6e-908b-c0b45f26cb58",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/ball-dusty.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "656322240823f70d97480a6f15f968e0f8ca55f51f70ee47fd531bbff0f4cec9",
+      "cutoutPath": "reference/cutouts/soccer-ball/ball-dusty.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "b2ce0212-ed56-4c6e-908b-c0b45f26cb58",
+        "operationJobId": "0aaf9823-d025-4634-be7a-31b1b48f9bf8",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2048,
+          2048
+        ],
+        "outputSha256": "4f836daf3b308182a64081071eb3af13952b56387b5d05cc6fcabdfb88eb04dd",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            226,
+            226,
+            229,
+            226
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/ball-dusty.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/ball-dusty.webp",
+        "public/assets/soccer-ball/thumb-soccer-ball.webp"
+      ],
+      "registration": {
+        "srcCenter": [
+          1023.0,
+          1024.0
+        ],
+        "srcRadius": 796.0,
+        "scale": 0.55276
+      },
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "ball-mudcrust",
+      "status": "completed",
+      "prompt": "Edit the reference image. Keep the same position, size, camera angle and framing, and the same plain flat light gray background. The soccer ball is now completely encased in a thick layer of dried, cracked brown mud crust with chunky volume, earthy browns, deep cracks, small pebbles and dirt clumps; no ball panels are visible at all. The silhouette stays round, only slightly lumpy at the edge, and the same size as the original ball. Semi-realistic glossy casual mobile game render, soft studio light from the upper left. No text, no logos, no cast shadow on the background.",
+      "referenceFiles": [
+        "job:5ff2b8e2-c11f-4ac0-9504-61eba0b243f9 (ball-clean master, image_references)"
+      ],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "b2365482-d870-4a1c-a84c-70a12ad87d0c",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/ball-mudcrust.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "88e7e32d800b10190382fd5add122977994b4c8c02fc0404a36d6be2c828af42",
+      "cutoutPath": "reference/cutouts/soccer-ball/ball-mudcrust.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "b2365482-d870-4a1c-a84c-70a12ad87d0c",
+        "operationJobId": "d236e6de-71b1-4230-8b80-d22fe2d35ecc",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2048,
+          2048
+        ],
+        "outputSha256": "4d10c5c57801981fb9fa1e3a8d4e8c0eb464da10c535b92e7ac35daaca6e6dff",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            218,
+            225,
+            222,
+            223
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/ball-mudcrust.png"
+          ],
+          "notes": "Crust cracks follow the panel seams (faint panel pattern visible); accepted as a readable mud-encased ball. Registered with the clean-ball scale so the crust volume extends ~1% beyond the ball."
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/ball-mudcrust.webp"
+      ],
+      "registration": {
+        "srcCenter": [
+          1022.0,
+          1025.0
+        ],
+        "srcRadius": 800.5,
+        "scale": 0.55329
+      },
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "ui-surfaces-sheet",
+      "status": "completed",
+      "prompt": "Casual mobile game UI kit sheet. Plain uniform flat medium gray background. Five separate isolated UI surfaces arranged in a loose grid with very wide empty spacing between them, none touching, each fully visible: (1) a large rounded-square tool tile, inner surface a soft beige-peach vertical gradient, thick clean white rim, soft drop shadow, empty center; (2) a small rounded-square tile, warm tan inner surface, white rim, soft drop shadow, empty; (3) a horizontal white capsule counter plate with a subtle light gray bottom edge and soft drop shadow, empty; (4) a white rounded-square button plate with a light gray 3D bottom edge and soft drop shadow, empty; (5) a long horizontal glossy lime-green capsule progress fill bar with a light highlight stripe along the top. Glossy chunky rounded toy-like casual game UI style, flat saturated fills with a lighter top and darker bottom edge, no outlines. Absolutely no text, no letters, no numbers, no icons.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "95b3d503-9489-46d0-805d-eecf916ee8d9",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/ui-surfaces-sheet.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "8cd1a35d87ebda12f2473310bc4c13824cdf2099e17081167861eb60c95d4e40",
+      "cutoutPath": "reference/cutouts/soccer-ball/ui-surfaces-sheet.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "95b3d503-9489-46d0-805d-eecf916ee8d9",
+        "operationJobId": "2fadf7b3-1f6b-4764-b72d-56c0cd0b8ee6",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2048,
+          2048
+        ],
+        "outputSha256": "27b86d18372bd03bb5d45ce5b1d0cea13c0129159bb0b098f4bcb794df975b64",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            194,
+            149,
+            198,
+            167
+          ],
+          "lightDarkGamePreviewPaths": [],
+          "notes": "The selected-tile green frame is drawn in code (thin ring with a hollow centre is unreliable for segmentation)."
+        }
+      },
+      "runtimePaths": [
+        "public/assets/ui/ui-tile-large.webp",
+        "public/assets/ui/ui-tile-small.webp",
+        "public/assets/ui/ui-btn-square.webp",
+        "public/assets/ui/ui-pill.webp",
+        "public/assets/ui/ui-progress-fill.webp"
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "ui-buttons-sheet",
+      "status": "completed",
+      "prompt": "Casual mobile game UI button kit sheet. Plain uniform flat medium gray background. Three separate isolated empty horizontal rounded-rectangle buttons stacked vertically with very wide empty spacing between them, none touching, each fully visible: (1) a glossy bright green button with a darker green 3D bottom edge and a soft white highlight along the top; (2) a glossy sunny yellow button with a darker golden 3D bottom edge and highlight; (3) a glossy white button with a light gray 3D bottom edge and highlight. Chunky rounded toy-like casual game UI style, corner radius about 25% of the height, soft drop shadow, no outlines. Absolutely no text, no letters, no numbers, no icons on the buttons.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "80b72ba7-3072-472d-8b30-9bcc99a0a197",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/ui-buttons-sheet.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "2fedba7ac6e91b6417df653b5a76e264a6d1fe80e986672ed75d81463a1b4e83",
+      "cutoutPath": "reference/cutouts/soccer-ball/ui-buttons-sheet.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "80b72ba7-3072-472d-8b30-9bcc99a0a197",
+        "operationJobId": "b5e9bbea-d8ec-4bc0-84f9-120ea865e9ff",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2048,
+          2048
+        ],
+        "outputSha256": "4a55b301d74e47183be9799dae2faee865b6e0d0b1aaab4b4445a052d8f53db0",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            276,
+            227,
+            277,
+            230
+          ],
+          "lightDarkGamePreviewPaths": [],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/ui/ui-btn-green.webp",
+        "public/assets/ui/ui-btn-yellow.webp",
+        "public/assets/ui/ui-btn-white.webp"
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "ui-icons-sheet",
+      "status": "completed",
+      "prompt": "Casual mobile game icon sheet. Plain uniform flat medium gray background. Six separate isolated icons arranged in a 3 by 2 grid with very wide empty spacing between them, none touching, each fully visible: (1) a shiny gold coin with an embossed star and a darker gold rim; (2) a glossy pink-magenta faceted diamond gem with white facet highlights; (3) a pause symbol made of two thick rounded dark navy vertical bars; (4) a chunky white house home symbol with a soft dark navy outline; (5) a round green check badge with a white check mark and a thin white rim; (6) a round red badge with a white play triangle and a thin white rim. Glossy chunky rounded toy-like casual game icon style, consistent lighting from the upper left. Absolutely no text, no letters, no numbers.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "f40d11de-2da3-4eac-a778-632055cfe193",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/ui-icons-sheet.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "b4fb68f33caaa587608c7068af2059825aae5714e81516d1812fcbb412a2a6b3",
+      "cutoutPath": "reference/cutouts/soccer-ball/ui-icons-sheet.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "f40d11de-2da3-4eac-a778-632055cfe193",
+        "operationJobId": "46c863f1-f59c-4003-9096-ab70c540220e",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2048,
+          2048
+        ],
+        "outputSha256": "e43fb1a750cd73e24210438d48b6812add84e3fbfe7d0b105bef93e83c1b0daf",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            169,
+            313,
+            172,
+            330
+          ],
+          "lightDarkGamePreviewPaths": [],
+          "notes": "The pause icon came out as two separate bars; merged into one sprite during slicing."
+        }
+      },
+      "runtimePaths": [
+        "public/assets/ui/icon-coin.webp",
+        "public/assets/ui/icon-diamond.webp",
+        "public/assets/ui/icon-pause.webp",
+        "public/assets/ui/icon-home.webp",
+        "public/assets/ui/icon-check.webp",
+        "public/assets/ui/icon-ad.webp"
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "ui-result-card",
+      "status": "completed",
+      "prompt": "Empty casual mobile game reward card, front view, centered. A tall rounded-rectangle card with a clean white body, a thick warm tan rim around it and a soft drop shadow; across the top edge sits a wide peach-colored ribbon banner with a darker peach shaded lower edge and folded ribbon tails that extend beyond both sides of the card. The ribbon and the card body are completely blank. Glossy chunky rounded toy-like casual game UI style, soft studio light, no outlines. Plain uniform flat medium gray background. The whole card including the ribbon tails fits in the frame with 10% clear padding. Absolutely no text, no letters, no numbers, no icons, no pictures.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "3:4"
+      },
+      "jobId": "50510bb8-c939-4f41-8a3f-6718e1ad2d22",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/ui-result-card.png",
+      "masterSize": [
+        1792,
+        2400
+      ],
+      "masterSha256": "66d3287172e1014ef35c1dcd986329536526b486d5b6e6109d749c5b711cb0d1",
+      "cutoutPath": "reference/cutouts/soccer-ball/ui-result-card.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "50510bb8-c939-4f41-8a3f-6718e1ad2d22",
+        "operationJobId": "be652969-1de9-4676-93c8-0c2ae64230ea",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          1792,
+          2400
+        ],
+        "outputSha256": "fdf3e903f06ab1c294dac2b53fac3871c4e8236b0c3385c40cd52e0aa9548513",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            122,
+            232,
+            124,
+            260
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/ui-result-card.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/ui/ui-result-card.webp"
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "ui-shelf",
+      "status": "completed",
+      "prompt": "A single wide empty floating wall shelf for a casual mobile game menu: a long thick plank with a soft cream-white top surface and a slightly darker warm beige front edge, rounded corners, front three-quarter view from slightly above, a soft gentle shadow directly beneath it. Glossy chunky rounded toy-like casual game style, soft studio light. Centered, the whole shelf fits in the frame with 8% clear padding. Plain uniform flat medium gray background. No objects on the shelf, no brackets, no text.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "16:9"
+      },
+      "jobId": "bdacc175-bb5f-48e7-8b62-651abdf11cda",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/ui-shelf.png",
+      "masterSize": [
+        2752,
+        1536
+      ],
+      "masterSha256": "c53b5c76891ffea9a7e6874b49e4fe0632f31fd9ef9eac1b834ee74244e92076",
+      "cutoutPath": "reference/cutouts/soccer-ball/ui-shelf.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "bdacc175-bb5f-48e7-8b62-651abdf11cda",
+        "operationJobId": "5441894b-d959-4076-8784-5a07eebd843d",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2752,
+          1536
+        ],
+        "outputSha256": "349045849422e25fff396b23d5d173a98d0591270f813e6a97b3d8aa8512fe2a",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            277,
+            472,
+            247,
+            429
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/ui-shelf.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/ui/ui-shelf.webp"
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "fx-sheet",
+      "status": "completed",
+      "prompt": "Casual mobile game visual effects sprite sheet. Plain uniform flat medium gray background. Separate isolated small elements arranged in a loose grid with very wide empty spacing between them, none touching, each fully visible: four irregular chunks of dried cracked brown mud crust of different shapes and sizes; three clear glossy water droplets of different sizes; two bright white-yellow four-point sparkle stars. Semi-realistic glossy casual mobile game render, soft studio light from the upper left, no outlines. No text, no numbers.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "dbd27fc4-bcbf-4148-b0c4-05f6e839e775",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/fx-sheet.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "1e5dd10ef868cd3c2c8996bd402ff47bc205e298c6a230b4b9da53e1c830e285",
+      "cutoutPath": "reference/cutouts/soccer-ball/fx-sheet.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "dbd27fc4-bcbf-4148-b0c4-05f6e839e775",
+        "operationJobId": "e1e9b28d-17ee-48ab-9654-493268f373f7",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2048,
+          2048
+        ],
+        "outputSha256": "1fb6e2e2b109d734919f3914915c0cb73c16a00cbe08eade233d6fda5d93370a",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            129,
+            173,
+            135,
+            173
+          ],
+          "lightDarkGamePreviewPaths": [],
+          "notes": "Background Remover dropped the two white sparkle stars (white glow on gray); mud chunks and droplets kept. Sparkle regenerated separately (fx-sparkle) on a dark navy background."
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/fx-chunk-1.webp",
+        "public/assets/soccer-ball/fx-chunk-2.webp",
+        "public/assets/soccer-ball/fx-chunk-3.webp",
+        "public/assets/soccer-ball/fx-chunk-4.webp",
+        "public/assets/soccer-ball/fx-chunk-5.webp",
+        "public/assets/soccer-ball/fx-drop-1.webp",
+        "public/assets/soccer-ball/fx-drop-2.webp"
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    },
+    {
+      "id": "fx-sparkle",
+      "status": "completed",
+      "prompt": "Casual mobile game visual effect sprite: one single bright white and pale yellow four-point sparkle star with a crisp solid core and short sharp rays, centered, filling about 60% of the frame, fully visible with clear padding. Glossy casual mobile game style. Background: plain uniform flat dark navy blue background, no gradient, no other objects, no text.",
+      "referenceFiles": [],
+      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+      "requestedModel": "nano_banana_2",
+      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+      "parameters": {
+        "resolution": "2k",
+        "aspect_ratio": "1:1"
+      },
+      "jobId": "8a515e30-95ba-4a64-a871-8635537f2dca",
+      "generatedAt": "2026-10-04",
+      "masterPath": "reference/masters/soccer-ball/fx-sparkle.png",
+      "masterSize": [
+        2048,
+        2048
+      ],
+      "masterSha256": "72e35d04f94c31fc72aa38fdea6cfa1157cbe08e1985d0acbfaa257f6612234c",
+      "cutoutPath": "reference/cutouts/soccer-ball/fx-sparkle.png",
+      "backgroundRemoval": {
+        "required": true,
+        "provider": "Higgsfield MCP",
+        "toolName": "remove_background",
+        "model": "image_background_remover",
+        "status": "completed",
+        "inputJobId": "8a515e30-95ba-4a64-a871-8635537f2dca",
+        "operationJobId": "24bd673c-cb04-4fd4-8c35-a8a4632c6570",
+        "processedAt": "2026-10-04",
+        "outputSize": [
+          2048,
+          2048
+        ],
+        "outputSha256": "e26e9b89e40ce0f2b34cbc5ed4610e5c44137eca1aa36efd14e67264c5c5fb08",
+        "alphaReview": {
+          "status": "PASS",
+          "hasTransparentPixels": true,
+          "hasOpaquePixels": true,
+          "marginsPx_LTRB": [
+            335,
+            337,
+            336,
+            318
+          ],
+          "lightDarkGamePreviewPaths": [
+            "reference/review/soccer-ball/fx-sparkle.png"
+          ],
+          "notes": ""
+        }
+      },
+      "runtimePaths": [
+        "public/assets/soccer-ball/fx-sparkle.webp"
+      ],
+      "exportCommand": "python scripts/prepare_assets.py",
+      "review": {
+        "accepted": null,
+        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
+      }
+    }
+  ],
+  "codeDrawn": [
+    {
+      "id": "brush-soft",
+      "purpose": "erase brush mask (technical)"
+    },
+    {
+      "id": "fx-dot",
+      "purpose": "soft dust / foam particle"
+    },
+    {
+      "id": "fx-rect",
+      "purpose": "confetti strip"
+    },
+    {
+      "id": "selected-tile-frame",
+      "purpose": "green frame of the current tool tile"
+    },
+    {
+      "id": "jet-stream",
+      "purpose": "foam / water jet line"
+    },
+    {
+      "id": "contact-shadow",
+      "purpose": "soft ellipse under the ball"
+    },
+    {
+      "id": "coming-soon-slots",
+      "purpose": "empty menu slots (no content yet)"
+    },
+    {
+      "id": "loading-bar",
+      "purpose": "boot loading bar before assets exist"
+    }
+  ]
+}
