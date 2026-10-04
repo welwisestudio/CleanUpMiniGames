@@ -6,7 +6,13 @@
     "after": 1106,
     "generations": 22,
     "backgroundRemovals": 19,
-    "note": "Nano Banana 2 at 2k = 2 credits per image (preflight)"
+    "note": "Nano Banana 2 at 2k = 2 credits per image (preflight)",
+    "step3Revision": {
+      "balanceBefore": 987,
+      "generations": 2,
+      "creditsSpent": 4,
+      "note": "Two portrait background candidates (preflight 2 credits each)."
+    }
   },
   "assets": [
     {
@@ -83,8 +89,10 @@
     {
       "id": "bg-pitch-portrait",
       "status": "completed",
-      "prompt": "Mobile game gameplay background, portrait 9:16. A football (soccer) pitch seen from player height looking toward a goal: the upper 22% of the image shows a dark navy blue goal net mesh with a white crossbar and post line; the rest of the image is a bright green grass pitch with alternating mowed horizontal stripes, a white halfway line and part of the white center circle in the lower third. Soft depth of field, slightly blurred and calm so a game object placed in the center reads clearly, gentle vignette, empty open center area. Style: semi-realistic glossy premium casual mobile game render, soft daylight. No players, no ball, no people, no text, no logos, no advertising boards, no UI elements.",
-      "referenceFiles": [],
+      "prompt": "Premium mobile game gameplay background, portrait 9:16, for a casual cleaning game whose hero object is the attached glossy yellow-and-blue soccer ball. Match the attached ball's rendering style exactly: semi-realistic polished 3D render, soft studio-quality lighting, rich but controlled colors. Do NOT draw the ball itself. Scene: an empty football stadium pitch seen from low player height, looking toward a goal. Upper 25% of the frame: a white goal frame with a softly blurred navy net with correct 3D depth (side netting and back netting visible), behind it softly out-of-focus dark stadium stands with warm floodlight bokeh glows, deep navy evening sky. Lower 75%: a lush, well-kept natural grass pitch with subtle alternating mown stripes running into perspective, fine realistic grass texture, a single crisp white penalty-area line in correct perspective near the goal; the foreground grass becomes gently blurred (shallow depth of field). Lighting: warm evening floodlights from behind the goal, a soft spotlight pool on the grass in the center of the frame where the game object will sit, gentle dark vignette at the edges and a darker top band so white UI elements on top read clearly. Colors: deep emerald and fresh green grass, not neon, cohesive with the ball's yellow and blue. Clean, calm, empty open center area. High-end polished casual mobile game art. No players, no ball, no people, no text, no logos, no advertising boards, no UI elements, no watermark.",
+      "referenceFiles": [
+        "job:5ff2b8e2-c11f-4ac0-9504-61eba0b243f9 (ball-clean master, image_references)"
+      ],
       "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
       "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
       "requestedModel": "nano_banana_2",
@@ -93,57 +101,24 @@
         "resolution": "2k",
         "aspect_ratio": "9:16"
       },
-      "jobId": "458458ef-d681-4218-875d-59524a25659f",
+      "jobId": "758073a2-92d8-41f6-aad1-2fc4daedfb41",
       "generatedAt": "2026-10-04",
       "masterPath": "reference/masters/soccer-ball/bg-pitch-portrait.png",
       "masterSize": [
         1536,
         2752
       ],
-      "masterSha256": "e972b580869f95b78f72105cdacafbe21c606fdea9fe6c0879d4f7178a764c3b",
+      "masterSha256": "bb87b90981de527cb42a6a90ec3c778023bd9ed295511823272e2f4a3b505b61",
       "backgroundRemoval": {
         "required": false,
         "status": "not_needed",
         "reason": "scene background / full-bleed texture"
       },
+      "notes": "Step 3 revision (CP2 feedback \"background looks cheap\"): candidate A of 2 (jobs 758073a2-92d8-41f6-aad1-2fc4daedfb41 chosen, 14a9dbab-3e17-4f1b-8856-001d5d7812d2 rejected: flat seam in the top band, smaller goal). Landscape runtime = 16:9 crop of this master (LANDSCAPE_TOP in prepare_assets.py) until a dedicated landscape generation exists. Replaced masters: reference/rejected/soccer-ball/bg-pitch-*-v1.png (jobs 458458ef-d681-4218-875d-59524a25659f, e3680ca5-f0ca-482c-ad09-e8df8afda626).",
       "runtimePaths": [
         "public/assets/soccer-ball/bg-pitch-portrait.webp",
+        "public/assets/soccer-ball/bg-pitch-landscape.webp",
         "public/assets/soccer-ball/result-picture-soccer-ball.webp"
-      ],
-      "exportCommand": "python scripts/prepare_assets.py",
-      "review": {
-        "accepted": null,
-        "notes": "AI review PASS (style vs references, alpha, margins, no cropping, working point, game-size preview). Awaiting game designer acceptance at CP2."
-      }
-    },
-    {
-      "id": "bg-pitch-landscape",
-      "status": "completed",
-      "prompt": "Mobile game gameplay background, wide landscape 16:9. A football (soccer) pitch seen from player height looking toward a wide goal: the upper 24% of the image shows a dark navy blue goal net mesh with a white crossbar line spanning the width; the rest of the image is a bright green grass pitch with alternating mowed horizontal stripes, a white halfway line and part of the white center circle near the bottom. Soft depth of field, slightly blurred and calm so a game object placed in the center reads clearly, gentle vignette, empty open center area. Style: semi-realistic glossy premium casual mobile game render, soft daylight. No players, no ball, no people, no text, no logos, no advertising boards, no UI elements.",
-      "referenceFiles": [],
-      "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
-      "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
-      "requestedModel": "nano_banana_2",
-      "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
-      "parameters": {
-        "resolution": "2k",
-        "aspect_ratio": "16:9"
-      },
-      "jobId": "e3680ca5-f0ca-482c-ad09-e8df8afda626",
-      "generatedAt": "2026-10-04",
-      "masterPath": "reference/masters/soccer-ball/bg-pitch-landscape.png",
-      "masterSize": [
-        2752,
-        1536
-      ],
-      "masterSha256": "97e49268f5a3882adf41a5da36f89eeeb9dfd109a8a05c379253aaaabc5e7420",
-      "backgroundRemoval": {
-        "required": false,
-        "status": "not_needed",
-        "reason": "scene background / full-bleed texture"
-      },
-      "runtimePaths": [
-        "public/assets/soccer-ball/bg-pitch-landscape.webp"
       ],
       "exportCommand": "python scripts/prepare_assets.py",
       "review": {
@@ -591,9 +566,11 @@
         "status": "not_needed",
         "reason": "scene background / full-bleed texture"
       },
+      "notes": "Step 3 revision: also the colour and bubble source of tex-foam-scrubbed-full (the scrubbed state of the same foam).",
       "runtimePaths": [
         "public/assets/soccer-ball/tex-foam-full.webp",
-        "public/assets/soccer-ball/stamp-foam.webp"
+        "public/assets/soccer-ball/stamp-foam.webp",
+        "public/assets/soccer-ball/tex-foam-scrubbed-full.webp"
       ],
       "exportCommand": "python scripts/prepare_assets.py",
       "review": {
@@ -627,9 +604,9 @@
         "status": "not_needed",
         "reason": "scene background / full-bleed texture"
       },
+      "notes": "Step 3 revision: no longer shown as its own image (it read as a different foam). Only its swirl relief and faint beige tint are used to shape tex-foam-scrubbed-full, which keeps the colour and bubbles of tex-foam. Runtime files tex-foam-swirl-full.webp and stamp-swirl.webp removed.",
       "runtimePaths": [
-        "public/assets/soccer-ball/tex-foam-swirl-full.webp",
-        "public/assets/soccer-ball/stamp-swirl.webp"
+        "public/assets/soccer-ball/tex-foam-scrubbed-full.webp"
       ],
       "exportCommand": "python scripts/prepare_assets.py",
       "review": {

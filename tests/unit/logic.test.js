@@ -109,12 +109,15 @@ describe('BrushMechanic', () => {
     expect(m.completed).toBe(false);
   });
 
-  it('transform mode erases from-layer, paints to-layer and clears listed layers', () => {
+  it('scrub mode lays the scrubbed foam under the fresh foam once, then only erases foam and grime', () => {
     const stack = fakeStack();
-    const m = new BrushMechanic({ stack, params: { mode: 'transform', from: 'foam', to: 'swirl', stamp: 's', clear: ['stained'], radius: 85, threshold: 0.96 } });
+    const filled = [];
+    stack.fillLayer = async (id, d) => filled.push([id, d]);
+    const m = new BrushMechanic({ stack, params: { mode: 'scrub', from: 'foam', under: 'scrubbed', clear: ['stained'], radius: 85, threshold: 0.96 } });
+    expect(filled).toEqual([['scrubbed', 0]]);
     m.stroke({ x: 500, y: 860 }, { x: 580, y: 860 });
     const kinds = new Set(stack.ops.map(([k, id]) => `${k}:${id}`));
-    expect(kinds).toEqual(new Set(['erase:foam', 'paint:swirl', 'erase:stained', 'clip:swirl']));
+    expect(kinds).toEqual(new Set(['erase:foam', 'erase:stained']));
   });
 });
 

@@ -127,17 +127,31 @@ yy, xx = np.mgrid[0:OBJ, 0:OBJ]
 rr = np.hypot(xx - OBJ / 2, yy - OBJ / 2) / OBJ_R
 sphere = np.clip(1.0 - 0.28 * np.clip(rr, 0, 1) ** 2.2, 0, 1)
 light = np.clip(1.0 + 0.10 * (1 - np.hypot(xx - OBJ * 0.4, yy - OBJ * 0.38) / OBJ_R), 0.9, 1.1)
-for key, master in [('tex-foam-full', 'tex-foam'), ('tex-foam-swirl-full', 'tex-foam-swirl')]:
-    tex = Image.open(MASTERS / f'{master}.png').convert('RGB').resize((OBJ, OBJ), Image.LANCZOS)
-    arr = np.array(tex).astype(np.float32) * (sphere * light)[:, :, None]
-    rgba = np.dstack([np.clip(arr, 0, 255), clean_alpha * 255 * 0.96]).astype(np.uint8)
-    save_webp(Image.fromarray(rgba, 'RGBA'), OUT_LEVEL / f'{key}.webp')
+tex = Image.open(MASTERS / 'tex-foam.png').convert('RGB').resize((OBJ, OBJ), Image.LANCZOS)
+foam_rgb = np.clip(np.array(tex).astype(np.float32) * (sphere * light)[:, :, None], 0, 255)
+rgba = np.dstack([foam_rgb, clean_alpha * 255 * 0.96]).astype(np.uint8)
+save_webp(Image.fromarray(rgba, 'RGBA'), OUT_LEVEL / 'tex-foam-full.webp')
+
+# Scrubbed foam = the SAME foam material after scrubbing (Step 3 revision: no swap to an
+# unrelated image). Colour and bubbles come from tex-foam; only the swirl structure (ridges /
+# grooves) and a faint beige grime tint are taken from the tex-foam-swirl master. Ridges stay
+# dense, grooves thin out so the cleaned ball shows through. Compositing only, no new art.
+swirl = np.array(Image.open(MASTERS / 'tex-foam-swirl.png').convert('RGB').resize((OBJ, OBJ), Image.LANCZOS)).astype(np.float32) / 255
+lum = swirl.mean(2)
+mu = ndimage.gaussian_filter(lum, 40)
+sd = np.sqrt(ndimage.gaussian_filter((lum - mu) ** 2, 40)) + 1e-3
+ridge = 1 / (1 + np.exp(-1.4 * np.clip((lum - mu) / sd, -2.5, 2.5)))
+scrub_rgb = foam_rgb / 255 * (0.80 + 0.26 * ridge)[:, :, None]
+scrub_rgb = scrub_rgb * 0.88 + scrub_rgb * (swirl / (swirl.mean((0, 1)) + 1e-3)) * 0.12
+scrub_a = clean_alpha * np.clip(0.42 + 0.52 * ridge, 0, 0.93)
+rgba = np.dstack([np.clip(scrub_rgb, 0, 1) * 255, scrub_a * 255]).astype(np.uint8)
+save_webp(Image.fromarray(rgba, 'RGBA'), OUT_LEVEL / 'tex-foam-scrubbed-full.webp')
 
 ST = 256
 sy, sx = np.mgrid[0:ST, 0:ST]
 sr = np.hypot(sx - ST / 2, sy - ST / 2) / (ST / 2)
 soft = np.clip((1 - sr) / 0.45, 0, 1)
-for key, master in [('stamp-foam', 'tex-foam'), ('stamp-swirl', 'tex-foam-swirl')]:
+for key, master in [('stamp-foam', 'tex-foam')]:
     tex = Image.open(MASTERS / f'{master}.png').convert('RGB')
     c = tex.width // 2
     crop = tex.crop((c - 300, c - 300, c + 300, c + 300)).resize((ST, ST), Image.LANCZOS)
@@ -147,29 +161,37 @@ for key, master in [('stamp-foam', 'tex-foam'), ('stamp-swirl', 'tex-foam-swirl'
 # ---- thumbnails ---------------------------------------------------------------------------
 save_webp(fit(registered['dusty'], 512), OUT_LEVEL / 'thumb-soccer-ball.webp')
 
+# Result picture: the restored ball in front of the goal + lit grass of the gameplay background.
+RESULT_PIC_TOP = 0.17
 bgp = Image.open(MASTERS / 'bg-pitch-portrait.png').convert('RGBA')
 win_w, win_h = 640, 480
 crop_h = round(bgp.width * win_h / win_w)
-top = round(bgp.height * 0.42)
+top = round(bgp.height * RESULT_PIC_TOP)
 pic = bgp.crop((0, top, bgp.width, top + crop_h)).resize((win_w, win_h), Image.LANCZOS)
 shadow = Image.new('RGBA', (win_w, win_h), (0, 0, 0, 0))
-ImageDraw.Draw(shadow).ellipse((win_w / 2 - 170, 380, win_w / 2 + 170, 430), fill=(0, 30, 0, 110))
+ImageDraw.Draw(shadow).ellipse((win_w / 2 - 112, 420, win_w / 2 + 112, 446), fill=(0, 30, 0, 120))
 pic.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(12)))
-ball = fit(registered['clean'], 400)
-pic.alpha_composite(ball, (win_w // 2 - ball.width // 2, 30))
+ball = fit(registered['clean'], 290)  # ball ≈ 39 % of the picture width, resting on the lit grass
+pic.alpha_composite(ball, (win_w // 2 - ball.width // 2, 165))
 rounded = Image.new('L', (win_w, win_h), 0)
 ImageDraw.Draw(rounded).rounded_rectangle((0, 0, win_w - 1, win_h - 1), radius=44, fill=255)
 pic.putalpha(rounded)
 save_webp(pic, OUT_LEVEL / 'result-picture-soccer-ball.webp', quality=88)
 
 # ---- backgrounds (no cutout) ---------------------------------------------------------
-for key, size in [('bg-pitch-portrait', (1080, 1920)), ('bg-pitch-landscape', (1920, 1080))]:
-    img = Image.open(MASTERS / f'{key}.png').convert('RGB')
+# Step 3 revision: one Nano Banana 2 master (portrait). Landscape screens use a 16:9 crop of the
+# same master (goal + lit grass band) until a dedicated landscape generation exists.
+LANDSCAPE_TOP = 0.15  # crop top as a share of the master height
+src = Image.open(MASTERS / 'bg-pitch-portrait.png').convert('RGB')
+crop_h = round(src.width * 9 / 16)
+y0 = round(src.height * LANDSCAPE_TOP)
+sources = {'bg-pitch-portrait': (src, (1080, 1920)), 'bg-pitch-landscape': (src.crop((0, y0, src.width, y0 + crop_h)), (1920, 1080))}
+for key, (img, size) in sources.items():
     s = max(size[0] / img.width, size[1] / img.height)
     img = img.resize((round(img.width * s), round(img.height * s)), Image.LANCZOS)
     x = (img.width - size[0]) // 2
     y = (img.height - size[1]) // 2
-    img.crop((x, y, x + size[0], y + size[1])).save(OUT_LEVEL / f'{key}.webp', 'WEBP', quality=84, method=6)
+    img.crop((x, y, x + size[0], y + size[1])).save(OUT_LEVEL / f'{key}.webp', 'WEBP', quality=86, method=6)
     meta['files'][f'soccer-ball/{key}.webp'] = list(size)
 
 # ---- tools: crop, resize, working point -----------------------------------------------

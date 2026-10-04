@@ -1,4 +1,4 @@
-// Coverage sampling for reveal / apply / transform stages.
+// Coverage sampling for reveal / apply / scrub stages.
 // Only cells whose centre lies inside the object count; marking an already covered cell adds
 // nothing, so progress can only come from new valid contact.
 

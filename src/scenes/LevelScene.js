@@ -310,18 +310,33 @@ export class LevelScene extends Phaser.Scene {
     const to = this.coinsPill.iconWorld();
     const { coinsBefore, coinsAfter } = this.reward;
     this.coinsPill.setValue(coinsBefore);
+    // Each coin starts at the size of the card's reward coin, follows a gentle arc and shrinks
+    // to exactly the counter icon's size, so it lands "into" the icon (never larger than it).
     const n = 5;
-    const coinSize = 40 * this.layout.u;
+    const fromSize = this.result.rewardIconWorldSize();
+    const toSize = this.coinsPill.iconWorldSize();
+    const startSize = Math.min(fromSize, toSize * 1.1);
     for (let i = 0; i < n; i++) {
-      const coin = this.add.image(from.x, from.y, 'icon-coin').setDepth(800);
-      coin.setScale(coinSize / coin.width);
-      this.tweens.add({
-        targets: coin,
-        x: to.x,
-        y: to.y,
-        delay: 450 + i * 90,
-        duration: 600,
-        ease: 'Cubic.easeIn',
+      const coin = this.add.image(from.x, from.y, 'icon-coin').setDepth(800).setAlpha(0);
+      const base = 1 / Math.max(coin.width, coin.height);
+      coin.setScale(startSize * base);
+      const side = i % 2 === 0 ? 1 : -1;
+      const ctrl = { x: (from.x + to.x) / 2 + side * (0.06 + 0.03 * i) * this.layout.W, y: Math.min(from.y, to.y) + (from.y - to.y) * 0.25 };
+      const path = new Phaser.Curves.QuadraticBezier(new Phaser.Math.Vector2(from.x, from.y), new Phaser.Math.Vector2(ctrl.x, ctrl.y), new Phaser.Math.Vector2(to.x, to.y));
+      const pos = new Phaser.Math.Vector2();
+      this.tweens.addCounter({
+        from: 0,
+        to: 1,
+        delay: 450 + i * 110,
+        duration: 650,
+        ease: 'Sine.easeIn',
+        onStart: () => coin.setAlpha(1),
+        onUpdate: (tw) => {
+          const k = tw.getValue();
+          path.getPoint(k, pos);
+          coin.setPosition(pos.x, pos.y);
+          coin.setScale((startSize + (toSize * 0.9 - startSize) * k) * base);
+        },
         onComplete: () => {
           coin.destroy();
           const shown = i === n - 1 ? coinsAfter : coinsBefore + Math.round(((coinsAfter - coinsBefore) * (i + 1)) / n);

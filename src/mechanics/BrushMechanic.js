@@ -1,9 +1,12 @@
 import { CoverageGrid } from './CoverageGrid.js';
 
-// Reveal / apply / transform stages.
+// Reveal / apply / scrub stages.
 //   reveal    – erases the listed layers under the tool head (brush, washer, cloth…)
 //   apply     – paints a layer where the tool / jet hits (foam sprayer…)
-//   transform – erases `from`, paints `to` and clears `clear` layers in the same stroke (scrubbing)
+//   scrub     – one foam material evolving: the scrubbed (swirled, thinner) state of the same foam
+//               is laid instantly UNDER the fresh foam when the stage starts (hidden by it); each
+//               stroke erases the fresh foam and the grime layers listed in `clear`, so the swirled
+//               foam and the cleaned ball beneath appear gradually under the brush. No image swap.
 //
 // The mechanic receives working points in WORLD coordinates, converts them to OBJECT-LOCAL
 // coordinates (so behaviour is identical on every screen size) and talks to the object stack
@@ -24,6 +27,7 @@ export class BrushMechanic {
     this.sprayTime = 0;
     this.validContacts = 0;
     this._paintedSinceClip = false;
+    if (this.mode === 'scrub') stack.fillLayer(params.under, 0);
   }
 
   get progress() {
@@ -77,19 +81,16 @@ export class BrushMechanic {
     } else if (this.mode === 'apply') {
       this.stack.paint(p.layer, p.stamp, local, r);
       this._paintedSinceClip = true;
-    } else if (this.mode === 'transform') {
+    } else if (this.mode === 'scrub') {
       this.stack.erase(p.from, local, r);
-      this.stack.paint(p.to, p.stamp, local, r);
       for (const id of p.clear ?? []) this.stack.erase(id, local, r);
-      this._paintedSinceClip = true;
     }
     if (this.grid.mark(local.x, local.y, r * 0.85) > 0) this.validContacts += 1;
   }
 
   _afterInput() {
     if (this._paintedSinceClip) {
-      const id = this.mode === 'apply' ? this.params.layer : this.params.to;
-      this.stack.clipToObject(id);
+      this.stack.clipToObject(this.params.layer);
       this._paintedSinceClip = false;
     }
     if (!this.completed && this.grid.progress >= this.threshold) this.completed = true;
@@ -100,7 +101,7 @@ export class BrushMechanic {
     const p = this.params;
     if (this.mode === 'reveal') return this.stack.fadeOutLayers(p.layers, duration);
     if (this.mode === 'apply') return this.stack.fillLayer(p.layer, duration);
-    return Promise.all([this.stack.fillLayer(p.to, duration), this.stack.fadeOutLayers([p.from, ...(p.clear ?? [])], duration)]);
+    return this.stack.fadeOutLayers([p.from, ...(p.clear ?? [])], duration);
   }
 
   // Skip support (not exposed to players in Step 2): jump to the correct final material.

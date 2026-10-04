@@ -16,8 +16,7 @@ CLEAN_JOB = '5ff2b8e2-c11f-4ac0-9504-61eba0b243f9'
 
 P = {}
 P['ball-clean'] = "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a brand-new classic soccer ball with bright sunny yellow leather hexagon panels and royal blue pentagon panels, clean glossy surface, perfectly round, three-quarter front view from a slightly elevated camera, centered in the frame. The entire ball fits in the frame with 14% clear padding on every side. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp specular highlights, saturated clean colors, no outlines, no cel shading. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow on the background. No text, no logos, no labels, no brand marks, no extra objects."
-P['bg-pitch-portrait'] = "Mobile game gameplay background, portrait 9:16. A football (soccer) pitch seen from player height looking toward a goal: the upper 22% of the image shows a dark navy blue goal net mesh with a white crossbar and post line; the rest of the image is a bright green grass pitch with alternating mowed horizontal stripes, a white halfway line and part of the white center circle in the lower third. Soft depth of field, slightly blurred and calm so a game object placed in the center reads clearly, gentle vignette, empty open center area. Style: semi-realistic glossy premium casual mobile game render, soft daylight. No players, no ball, no people, no text, no logos, no advertising boards, no UI elements."
-P['bg-pitch-landscape'] = "Mobile game gameplay background, wide landscape 16:9. A football (soccer) pitch seen from player height looking toward a wide goal: the upper 24% of the image shows a dark navy blue goal net mesh with a white crossbar line spanning the width; the rest of the image is a bright green grass pitch with alternating mowed horizontal stripes, a white halfway line and part of the white center circle near the bottom. Soft depth of field, slightly blurred and calm so a game object placed in the center reads clearly, gentle vignette, empty open center area. Style: semi-realistic glossy premium casual mobile game render, soft daylight. No players, no ball, no people, no text, no logos, no advertising boards, no UI elements."
+P['bg-pitch-portrait'] = "Premium mobile game gameplay background, portrait 9:16, for a casual cleaning game whose hero object is the attached glossy yellow-and-blue soccer ball. Match the attached ball's rendering style exactly: semi-realistic polished 3D render, soft studio-quality lighting, rich but controlled colors. Do NOT draw the ball itself. Scene: an empty football stadium pitch seen from low player height, looking toward a goal. Upper 25% of the frame: a white goal frame with a softly blurred navy net with correct 3D depth (side netting and back netting visible), behind it softly out-of-focus dark stadium stands with warm floodlight bokeh glows, deep navy evening sky. Lower 75%: a lush, well-kept natural grass pitch with subtle alternating mown stripes running into perspective, fine realistic grass texture, a single crisp white penalty-area line in correct perspective near the goal; the foreground grass becomes gently blurred (shallow depth of field). Lighting: warm evening floodlights from behind the goal, a soft spotlight pool on the grass in the center of the frame where the game object will sit, gentle dark vignette at the edges and a darker top band so white UI elements on top read clearly. Colors: deep emerald and fresh green grass, not neon, cohesive with the ball's yellow and blue. Clean, calm, empty open center area. High-end polished casual mobile game art. No players, no ball, no people, no text, no logos, no advertising boards, no UI elements, no watermark."
 P['tool-chisel'] = "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one wood carving chisel standing perfectly vertical, polished steel blade pointing straight up with the flat sharp cutting edge at the very top, short steel ferrule, rounded orange-brown varnished wooden handle at the bottom. Straight front view, slim, centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects."
 P['tool-dry-brush'] = "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one rectangular wooden cleaning brush seen exactly from the side in horizontal orientation: light honey varnished wooden block body on top with rounded ends, dense dark brown natural bristles pointing straight down along the full length. Centered. The entire brush fits in the frame with 14% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects."
 P['tool-foam-sprayer'] = "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one handheld foam sprayer standing perfectly vertical: a short red spray nozzle pointing straight up at the very top, glossy red plastic pump head and grip, a transparent cylindrical plastic tank below it half filled with light blue soapy liquid, a small black hose connector at the bottom. Straight front view, centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects."
@@ -42,8 +41,7 @@ P['fx-sparkle'] = "Casual mobile game visual effect sprite: one single bright wh
 # id: (aspect, generation job, background-removal job or None, reference jobs)
 JOBS = {
     'ball-clean': ('1:1', CLEAN_JOB, '57f6769b-c864-4ee7-8015-5f6600ca501e', []),
-    'bg-pitch-portrait': ('9:16', '458458ef-d681-4218-875d-59524a25659f', None, []),
-    'bg-pitch-landscape': ('16:9', 'e3680ca5-f0ca-482c-ad09-e8df8afda626', None, []),
+    'bg-pitch-portrait': ('9:16', '758073a2-92d8-41f6-aad1-2fc4daedfb41', None, [CLEAN_JOB]),
     'tool-chisel': ('9:16', 'a46d1c6c-2598-4dde-890b-6b71548faef8', '2a2986c9-68d7-461c-b73a-31b77f713fa1', []),
     'tool-dry-brush': ('3:2', '9b8b3f3b-b1ee-4eb2-8152-6134492abc28', '86460919-5088-4f7c-9694-862d324abd6f', []),
     'tool-foam-sprayer': ('9:16', '450a026b-545b-49d1-bd3c-b1455fb6d9fb', 'd5b57024-f7cc-4085-9e62-6a2564a14abe', []),
@@ -71,10 +69,9 @@ RUNTIME = {
     'ball-stained': ['soccer-ball/ball-stained.webp'],
     'ball-dusty': ['soccer-ball/ball-dusty.webp', 'soccer-ball/thumb-soccer-ball.webp'],
     'ball-mudcrust': ['soccer-ball/ball-mudcrust.webp'],
-    'bg-pitch-portrait': ['soccer-ball/bg-pitch-portrait.webp', 'soccer-ball/result-picture-soccer-ball.webp'],
-    'bg-pitch-landscape': ['soccer-ball/bg-pitch-landscape.webp'],
-    'tex-foam': ['soccer-ball/tex-foam-full.webp', 'soccer-ball/stamp-foam.webp'],
-    'tex-foam-swirl': ['soccer-ball/tex-foam-swirl-full.webp', 'soccer-ball/stamp-swirl.webp'],
+    'bg-pitch-portrait': ['soccer-ball/bg-pitch-portrait.webp', 'soccer-ball/bg-pitch-landscape.webp', 'soccer-ball/result-picture-soccer-ball.webp'],
+    'tex-foam': ['soccer-ball/tex-foam-full.webp', 'soccer-ball/stamp-foam.webp', 'soccer-ball/tex-foam-scrubbed-full.webp'],
+    'tex-foam-swirl': ['soccer-ball/tex-foam-scrubbed-full.webp'],
     'ui-surfaces-sheet': ['ui/ui-tile-large.webp', 'ui/ui-tile-small.webp', 'ui/ui-btn-square.webp', 'ui/ui-pill.webp', 'ui/ui-progress-fill.webp'],
     'ui-buttons-sheet': ['ui/ui-btn-green.webp', 'ui/ui-btn-yellow.webp', 'ui/ui-btn-white.webp'],
     'ui-icons-sheet': ['ui/icon-coin.webp', 'ui/icon-diamond.webp', 'ui/icon-pause.webp', 'ui/icon-home.webp', 'ui/icon-check.webp', 'ui/icon-ad.webp'],
@@ -87,6 +84,9 @@ for t in ['chisel', 'dry-brush', 'foam-sprayer', 'scrub-brush', 'washer-lance', 
     RUNTIME[f'tool-{t}'] = [f'soccer-ball/tool-{t}.webp']
 
 NOTES = {
+    'bg-pitch-portrait': 'Step 3 revision (CP2 feedback "background looks cheap"): candidate A of 2 (jobs 758073a2-92d8-41f6-aad1-2fc4daedfb41 chosen, 14a9dbab-3e17-4f1b-8856-001d5d7812d2 rejected: flat seam in the top band, smaller goal). Landscape runtime = 16:9 crop of this master (LANDSCAPE_TOP in prepare_assets.py) until a dedicated landscape generation exists. Replaced masters: reference/rejected/soccer-ball/bg-pitch-*-v1.png (jobs 458458ef-d681-4218-875d-59524a25659f, e3680ca5-f0ca-482c-ad09-e8df8afda626).',
+    'tex-foam': 'Step 3 revision: also the colour and bubble source of tex-foam-scrubbed-full (the scrubbed state of the same foam).',
+    'tex-foam-swirl': 'Step 3 revision: no longer shown as its own image (it read as a different foam). Only its swirl relief and faint beige tint are used to shape tex-foam-scrubbed-full, which keeps the colour and bubbles of tex-foam. Runtime files tex-foam-swirl-full.webp and stamp-swirl.webp removed.',
     'fx-sheet': 'Background Remover dropped the two white sparkle stars (white glow on gray); mud chunks and droplets kept. Sparkle regenerated separately (fx-sparkle) on a dark navy background.',
     'ball-mudcrust': 'Crust cracks follow the panel seams (faint panel pattern visible); accepted as a readable mud-encased ball. Registered with the clean-ball scale so the crust volume extends ~1% beyond the ball.',
     'ui-icons-sheet': 'The pause icon came out as two separate bars; merged into one sprite during slicing.',
@@ -164,7 +164,8 @@ for aid, (ar, job, bg, refs) in JOBS.items():
 out = {
     'updated': '2026-10-04',
     'level': 'soccer-ball',
-    'credits': {'before': 1203, 'after': 1106, 'generations': 22, 'backgroundRemovals': 19, 'note': 'Nano Banana 2 at 2k = 2 credits per image (preflight)'},
+    'credits': {'before': 1203, 'after': 1106, 'generations': 22, 'backgroundRemovals': 19, 'note': 'Nano Banana 2 at 2k = 2 credits per image (preflight)',
+                'step3Revision': {'balanceBefore': 987, 'generations': 2, 'creditsSpent': 4, 'note': 'Two portrait background candidates (preflight 2 credits each).'}},
     'assets': assets,
     'codeDrawn': [
         {'id': 'brush-soft', 'purpose': 'erase brush mask (technical)'},

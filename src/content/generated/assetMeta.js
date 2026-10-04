@@ -315,15 +315,11 @@ export const ASSET_META = {
       1024,
       1024
     ],
-    "assets/soccer-ball/tex-foam-swirl-full.webp": [
+    "assets/soccer-ball/tex-foam-scrubbed-full.webp": [
       1024,
       1024
     ],
     "assets/soccer-ball/stamp-foam.webp": [
-      256,
-      256
-    ],
-    "assets/soccer-ball/stamp-swirl.webp": [
       256,
       256
     ],

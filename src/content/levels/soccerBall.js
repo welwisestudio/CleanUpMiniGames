@@ -18,7 +18,8 @@ export const soccerBall = {
       { id: 'clean', texture: 'ball-clean', initial: 'full', static: true },
       { id: 'wet', texture: 'ball-wet', initial: 'full' },
       { id: 'stained', texture: 'ball-stained', initial: 'full' },
-      { id: 'swirl', texture: 'tex-foam-swirl-full', initial: 'empty' },
+      // Scrubbed state of the SAME foam (derived from tex-foam, see scripts/prepare_assets.py).
+      { id: 'scrubbed', texture: 'tex-foam-scrubbed-full', initial: 'empty' },
       { id: 'foam', texture: 'tex-foam-full', initial: 'empty' },
       { id: 'dusty', texture: 'ball-dusty', initial: 'full' },
       { id: 'mud', texture: 'ball-mudcrust', initial: 'chunks' },
@@ -52,10 +53,9 @@ export const soccerBall = {
       tool: 'scrub-brush',
       mechanic: 'brush',
       params: {
-        mode: 'transform',
+        mode: 'scrub',
         from: 'foam',
-        to: 'swirl',
-        stamp: 'stamp-swirl',
+        under: 'scrubbed',
         clear: ['stained'],
         radius: 106,
         threshold: 0.96,
@@ -66,7 +66,7 @@ export const soccerBall = {
       id: 'rinse',
       tool: 'washer-lance',
       mechanic: 'brush',
-      params: { mode: 'reveal', layers: ['foam', 'swirl', 'stained'], radius: 103, threshold: 0.96 },
+      params: { mode: 'reveal', layers: ['foam', 'scrubbed', 'stained'], radius: 103, threshold: 0.96 },
       targetSeconds: [6, 9],
     },
     {

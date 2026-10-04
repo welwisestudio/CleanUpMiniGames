@@ -15,6 +15,7 @@ export class CurrencyPill {
     const h = UI.pillH;
     this.bg = nineSlice(scene, 'ui-pill', w, h, w / 2 + 10, 0);
     this.icon = fitImage(scene, icon, h * 1.18, h * 0.42, 0);
+    this.iconBaseScale = this.icon.scale;
     this.text = makeText(scene, w + 2, 1, String(value), { size: h * 0.56, color: TEXT.navy, weight: '900', originX: 1 });
     this.container.add([this.bg, this.icon, this.text]);
     this.value = value;
@@ -26,9 +27,18 @@ export class CurrencyPill {
     this.text.setText(String(v));
   }
 
+  // Short "catch" bounce. Always relative to the icon's fixed base scale: overlapping pulses
+  // (several coins landing 90 ms apart) restart the bounce instead of compounding it.
   pulse() {
-    const s = this.icon.scale;
-    this.scene.tweens.add({ targets: this.icon, scale: s * 1.25, duration: 90, yoyo: true, onComplete: () => this.icon.setScale(s) });
+    this.pulseTween?.stop();
+    this.icon.setScale(this.iconBaseScale);
+    this.pulseTween = this.scene.tweens.add({ targets: this.icon, scale: this.iconBaseScale * 1.15, duration: 80, yoyo: true, ease: 'Quad.easeOut', onComplete: () => this.icon.setScale(this.iconBaseScale) });
+  }
+
+  // Icon size on screen (device px), for the coin-fly animation.
+  iconWorldSize() {
+    const m = this.icon.getWorldTransformMatrix();
+    return Math.hypot(m.a, m.b) * (this.iconBaseScale / this.icon.scale) * Math.max(this.icon.width, this.icon.height);
   }
 
   iconWorld() {

@@ -9,7 +9,7 @@ export const LEVELS = {
 export const DISPLAY_ORDER = ['soccer-ball'];
 
 export const KNOWN_MECHANICS = ['chunkBreak', 'brush'];
-export const BRUSH_MODES = ['reveal', 'apply', 'transform'];
+export const BRUSH_MODES = ['reveal', 'apply', 'scrub'];
 
 export function getLevel(id) {
   const level = LEVELS[id];
@@ -39,7 +39,7 @@ export function validateCatalog() {
       const p = st.params ?? {};
       if (st.mechanic === 'brush') {
         if (!BRUSH_MODES.includes(p.mode)) errors.push(`${level.id}/${st.id}: bad brush mode ${p.mode}`);
-        const refs = [...(p.layers ?? []), p.layer, p.from, p.to, ...(p.clear ?? [])].filter(Boolean);
+        const refs = [...(p.layers ?? []), p.layer, p.from, p.under, ...(p.clear ?? [])].filter(Boolean);
         for (const r of refs) if (!layerIds.has(r)) errors.push(`${level.id}/${st.id}: unknown layer ${r}`);
         if (!(p.threshold > 0.5 && p.threshold <= 1)) errors.push(`${level.id}/${st.id}: threshold out of range`);
         if (!(p.radius > 0)) errors.push(`${level.id}/${st.id}: radius must be positive`);

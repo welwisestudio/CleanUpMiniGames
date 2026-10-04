@@ -24,6 +24,11 @@ function cardBase(scene) {
 
 // Ribbon title position on the generated card (measured on the asset: ribbon band ≈ 12 % from the top).
 const RIBBON_Y = -0.375;
+// Inner white panel of the card (fractions of card width / height from the centre).
+const PANEL = { cx: -0.011, w: 0.627 };
+const PIC = { y: -0.035, w: 0.74 }; // picture centre and width as a share of the panel width
+const REWARD_Y = 0.19;
+const BUTTONS_Y = 0.325;
 
 function titleText(scene, cw, ch, str) {
   return makeText(scene, 0, ch * RIBBON_Y, str, {
@@ -49,26 +54,49 @@ export class ResultCard {
     this.cw = cw;
     this.ch = ch;
     card.add(titleText(scene, cw, ch, 'Completed'));
-    const pic = scene.add.image(0, -ch * 0.12, picture);
-    pic.setScale((cw * 0.7) / pic.width);
-    card.add(pic);
-    // reward pill
-    const pill = nineSlice(scene, 'ui-pill', cw * 0.56, ch * 0.075, 0, ch * 0.165).setTint(COLORS.rewardPill);
-    this.rewardIcon = fitImage(scene, 'icon-coin', ch * 0.06, cw * 0.06, ch * 0.165);
-    card.add([
-      pill,
-      makeText(scene, -cw * 0.02, ch * 0.165, 'Reward :', { size: ch * 0.036, color: TEXT.neutral, weight: '900', family: FONT_UI, originX: 1 }),
-      this.rewardIcon,
-      makeText(scene, cw * 0.115, ch * 0.165, `+${reward.amount}`, { size: ch * 0.04, color: TEXT.neutral, weight: '900', family: FONT_UI, originX: 0 }),
-    ]);
-    const by = ch * 0.3;
-    const bh = ch * 0.118;
-    const home = new Button(scene, { id: 'result-home', x: -cw * 0.25, y: by, w: bh * 1.15, h: bh, style: 'yellow', icon: 'icon-home', iconSize: 0.6, onClick: onHome });
-    const replay = new Button(scene, { id: 'result-replay', x: onNext ? cw * 0.0 : cw * 0.1, y: by, w: onNext ? cw * 0.28 : cw * 0.46, h: bh, label: 'Replay', style: 'green', onClick: onReplay });
+    // Everything is laid out on the card's inner white panel, measured on the generated card
+    // (card px: x 147–672, y ≈ 300–950 below the ribbon), so contents stay centred inside it.
+    const px = PANEL.cx * cw;
+    const panelW = PANEL.w * cw;
+    // Picture: smaller than the panel, with a soft drop shadow (Step 3 revision).
+    const pic = scene.add.image(px, ch * PIC.y, picture);
+    pic.setScale((panelW * PIC.w) / pic.width);
+    const picW = pic.width * pic.scale;
+    const picH = pic.height * pic.scale;
+    const picShadow = scene.add.graphics();
+    picShadow.fillStyle(0x6b4a33, 0.16).fillRoundedRect(px - picW / 2, ch * PIC.y - picH / 2 + ch * 0.012, picW, picH, picW * 0.07);
+    card.add([picShadow, pic]);
+    // Reward pill: label · coin · amount as one centred group.
+    const pillY = ch * REWARD_Y;
+    const pill = nineSlice(scene, 'ui-pill', panelW * 0.66, ch * 0.07, px, pillY).setTint(COLORS.rewardPill);
+    const label = makeText(scene, 0, pillY, 'Reward :', { size: ch * 0.034, color: TEXT.neutral, weight: '900', family: FONT_UI, originX: 0 });
+    const amount = makeText(scene, 0, pillY, `+${reward.amount}`, { size: ch * 0.038, color: TEXT.neutral, weight: '900', family: FONT_UI, originX: 0 });
+    const iconBox = ch * 0.052;
+    const gap = ch * 0.014;
+    const groupW = label.width + gap + iconBox + gap + amount.width;
+    let gx = px - groupW / 2;
+    label.setX(gx);
+    gx += label.width + gap;
+    this.rewardIcon = fitImage(scene, 'icon-coin', iconBox, gx + iconBox / 2, pillY);
+    gx += iconBox + gap;
+    amount.setX(gx);
+    card.add([pill, label, this.rewardIcon, amount]);
+    // Buttons: one row, equal height, same baseline, symmetric about the panel centre.
+    const by = ch * BUTTONS_Y;
+    const bh = ch * 0.11; // ≥ 48 CSS px on a 390-px phone
+    const rowW = panelW * 0.84;
+    const bgap = cw * 0.03;
+    const homeW = bh * 1.18;
+    const wide = onNext ? (rowW - homeW - 2 * bgap) / 2 : rowW - homeW - bgap;
+    let bx = px - rowW / 2;
+    const home = new Button(scene, { id: 'result-home', x: bx + homeW / 2, y: by, w: homeW, h: bh, style: 'yellow', icon: 'icon-home', iconSize: 0.58, onClick: onHome });
+    bx += homeW + bgap;
+    const replay = new Button(scene, { id: 'result-replay', x: bx + wide / 2, y: by, w: wide, h: bh, label: 'Replay', style: 'green', onClick: onReplay });
     card.add([home.container, replay.container]);
     this.buttons = [home, replay];
     if (onNext) {
-      const next = new Button(scene, { id: 'result-next', x: cw * 0.28, y: by, w: cw * 0.26, h: bh, label: 'Next', style: 'green', onClick: onNext });
+      bx += wide + bgap;
+      const next = new Button(scene, { id: 'result-next', x: bx + wide / 2, y: by, w: wide, h: bh, label: 'Next', style: 'green', onClick: onNext });
       card.add(next.container);
       this.buttons.push(next);
     }
@@ -97,9 +125,18 @@ export class ResultCard {
     this.card.setPosition(l.W / 2, l.H * 0.54).setScale(this.fitScale);
   }
 
+  // Where the reward coin will sit once the pop-in has settled at the fitted scale.
   rewardIconWorld() {
     const m = this.rewardIcon.getWorldTransformMatrix();
-    return { x: m.tx, y: m.ty };
+    const k = this.fitScale / this.card.scale;
+    return { x: this.card.x + (m.tx - this.card.x) * k, y: this.card.y + (m.ty - this.card.y) * k };
+  }
+
+  // On-screen size of the reward coin at its final (fitted) card scale.
+  rewardIconWorldSize() {
+    const m = this.rewardIcon.getWorldTransformMatrix();
+    const k = this.fitScale / this.card.scale; // the card may still be popping in
+    return Math.hypot(m.a, m.b) * k * Math.max(this.rewardIcon.width, this.rewardIcon.height);
   }
 
   setEnabled(v) {
