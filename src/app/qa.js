@@ -44,7 +44,12 @@ function qaTargetsLocal(scene) {
   const pts = [];
   const step = (b[2] - b[0]) / 40;
   for (let y = b[1]; y <= b[3]; y += step) for (let x = b[0]; x <= b[2]; x += step) if (st.inRegion(x, y, region)) pts.push([Math.round(x), Math.round(y)]);
-  return { kind: 'area', bounds: b, points: pts, step };
+  // chisel: the grid points that still lie on a remaining crust chunk
+  const crust = m.map ? pts.filter(([x, y]) => {
+    const id = m.map.labelAt(x, y);
+    return id >= 0 && !m.removed[id];
+  }) : undefined;
+  return { kind: 'area', bounds: b, points: pts, step, crust };
 }
 
 function snapshot() {
@@ -59,6 +64,20 @@ function snapshot() {
     pause: s.pause.snapshot(),
     build: s.build,
     audio: { requested: s.audio.requested, played: s.audio.played },
+    // reward state (read-only): balances, x3 receipt, timed chest, level-progress chest
+    rewards: s.save.loaded
+      ? {
+          diamonds: s.save.get('diamonds'),
+          lastCompletion: s.save.get('lastCompletion'),
+          timedChest: s.rewards.timedChestState(),
+          timedReadyAt: s.save.get('timedChest.readyAt'),
+          progressChest: s.rewards.progressChestState(),
+          opened: s.save.get('progressChest.opened'),
+          x3State: scene?.result?.x3State ?? null,
+          chestOffer: Boolean(scene?.chestOffer),
+          adDialog: typeof document !== 'undefined' && Boolean(document.getElementById('dev-ad-dialog')),
+        }
+      : null,
   };
   if (!scene || !scene.layout) return base;
   const layout = scene.layout;
@@ -82,15 +101,24 @@ function snapshot() {
       tool: scene.tool && {
         id: scene.tool.id,
         kind: scene.tool.kind,
-        workOffset: { x: (scene.tool.workOffset?.x ?? 0) * k, y: (scene.tool.workOffset?.y ?? 0) * k },
+        // effective finger → work point offset and nozzle → impact vector, CSS px
+        workOffset: scene.tool.kind === 'target' ? { x: 0, y: 0 } : { x: scene.tools.offset().x / layout.dpr, y: scene.tools.offset().y / layout.dpr },
+        jet: scene.tool.kind === 'jet' ? { x: scene.tools.jetVector().x / layout.dpr, y: scene.tools.jetVector().y / layout.dpr } : { x: 0, y: 0 },
         jetLength: (scene.tool.jetLength ?? 0) * k,
+        holdAngle: scene.tool.holdAngle ?? 0,
+        shown: Boolean(scene.tools.sprite?.visible && scene.tools.sprite.alpha > 0.5),
+        inert: Boolean(scene.tools.inert),
       },
       object: { x: c.x, y: c.y, radius: (scene.stack.radius ?? 0) * k },
       // object-local → CSS px transform (for driving real input on any object shape)
       xf: { cx: c.x, cy: c.y, k, size: scene.stack.size },
       region: scene.stage?.region ?? scene.stage?.params?.region ?? null,
       family: scene.family,
-      brush: { radius: scene.stage?.params?.radius ?? null, aspect: scene.stage?.params?.aspect ?? 1, mechanic: scene.stage?.mechanic },
+      brush: { radius: scene.stage?.params?.radius ?? null, aspect: scene.stage?.params?.aspect ?? 1, aspectY: scene.mechanic?.aspectY ?? 1, mechanic: scene.stage?.mechanic },
+      // active-area indicator: null, 'traced' (region outline) or circles (count still shown)
+      outline: scene.stack.outlineRings ? { kind: 'circles', shown: scene.stack.outlineRings.filter((r) => !r.done).length, r: scene.stack.outlineRings[0]?.r ?? null } : scene.stack.outline ? { kind: 'traced' } : null,
+      // repair-spot centres of the level (object-local), e.g. the chair holes
+      repairSpots: (scene.level.object.regions?.spots?.circles ?? []).map(([x, y]) => [x, y]),
       hint: Boolean(scene.hint?.visible),
       hintHand: scene.hint?.visible && scene.hint.hand.alpha > 0.5 ? { x: scene.hint.hand.x / layout.dpr, y: scene.hint.hand.y / layout.dpr } : null,
       targets: qaTargetsLocal(scene),

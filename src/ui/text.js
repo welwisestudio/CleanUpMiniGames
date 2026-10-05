@@ -35,9 +35,10 @@ export function centerGlyphsVertically(t) {
     const metrics = t.style.metrics ?? t.style.getTextMetrics();
     const lines = Math.max(1, str.split(String.fromCharCode(10)).length);
     if (lines > 1 || !(m.actualBoundingBoxAscent >= 0)) return;
-    // baseline position inside the text canvas (unscaled units)
+    // baseline position inside the text canvas (unscaled units). Phaser draws each line at
+    // padding.top + strokeThickness / 2 + ascent (Text.updateText), so stroked labels are offset too.
     const padTop = t.padding.top;
-    const baseline = padTop + metrics.ascent;
+    const baseline = padTop + (t.style.strokeThickness || 0) / 2 + metrics.ascent;
     const inkCentre = baseline - (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
     const h = t.height || 1;
     t.setOrigin(t.originX, Math.min(1, Math.max(0, inkCentre / h)));
@@ -49,4 +50,24 @@ export function centerGlyphsVertically(t) {
     return t;
   };
   apply();
+}
+
+// Shrinks a text (never enlarges) so it fits `maxW` in its parent's units; keeps its origin.
+export function fitText(t, maxW, baseScale = 1) {
+  t.setScale(baseScale);
+  if (t.displayWidth > maxW) t.setScale((baseScale * maxW) / t.displayWidth);
+  return t;
+}
+
+// Lays out display objects (texts / icons) left-to-right as ONE group centred on (cx, cy):
+// each item's own centre lands on the row's centre line, so icons and numbers share a baseline.
+export function centerRow(items, cx, cy, gap) {
+  const widths = items.map((o) => o.displayWidth);
+  const total = widths.reduce((a, b) => a + b, 0) + gap * (items.length - 1);
+  let x = cx - total / 2;
+  items.forEach((o, i) => {
+    o.setPosition(x + widths[i] * o.originX, cy);
+    x += widths[i] + gap;
+  });
+  return total;
 }

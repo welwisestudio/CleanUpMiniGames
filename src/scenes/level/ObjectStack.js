@@ -138,8 +138,10 @@ export class ObjectStack {
     return true;
   }
 
-  // Inside the object and (optionally) inside a stage region.
+  // Inside the object and (optionally) inside a stage region. A `free` region (chair repair
+  // spots) is not limited to the object silhouette: its decals overhang the object's edges.
   inRegion(lx, ly, regionId) {
+    if (regionId && this.def.regions?.[regionId]?.free) return this._regionTest(regionId, lx, ly);
     if (!this.isInside(lx, ly)) return false;
     return regionId ? this._regionTest(regionId, lx, ly) : true;
   }
@@ -183,9 +185,9 @@ export class ObjectStack {
     return entry.display;
   }
 
-  erase(id, local, r, aspect = 1, angle = 0) {
+  erase(id, local, r, aspect = 1, angle = 0, aspectY = 1) {
     const scale = (2 * r) / 128 / 0.82; // brush-soft is fully opaque to ~65 % of its radius
-    this._rt(id).stamp('brush-soft', null, local.x, local.y, { erase: true, scaleX: scale * aspect, scaleY: scale, angle });
+    this._rt(id).stamp('brush-soft', null, local.x, local.y, { erase: true, scaleX: scale * aspect, scaleY: scale * aspectY, angle });
   }
 
   paint(id, stampKey, local, r) {
@@ -290,6 +292,38 @@ export class ObjectStack {
     });
   }
 
+  // Discrete repair spots (stage `outline: 'circles'`): one clean dashed green circle per spot,
+  // the same visual language as the putty-dent rings, instead of tracing the patch shape. A ring
+  // fades out once its spot is done (see updateRegionOutline).
+  showCircleTargets(regionId) {
+    this.hideRegionOutline();
+    this.outlineRings = this.regionCircles(regionId).map(([x, y, rr]) => {
+      const g = this.scene.add.graphics();
+      const p = this.childPos(x, y);
+      const r = rr * 1.1; // just outside the patch
+      g.lineStyle(5, 0x00f010, 1);
+      const n = 18;
+      for (let i = 0; i < n; i++) {
+        const a0 = (i / n) * Math.PI * 2;
+        g.beginPath();
+        g.arc(p.x, p.y, r, a0, a0 + Math.PI / n);
+        g.strokePath();
+      }
+      this.overlay.add(g);
+      return { g, x, y, r: rr, done: false };
+    });
+  }
+
+  // Fades the ring of each spot whose area is (almost) fully worked.
+  updateRegionOutline(grid) {
+    if (!this.outlineRings || !grid?.coverageIn) return;
+    for (const ring of this.outlineRings) {
+      if (ring.done || grid.coverageIn(ring.x, ring.y, ring.r) < 0.9) continue;
+      ring.done = true;
+      this.scene.tweens.add({ targets: ring.g, alpha: 0, duration: 250 });
+    }
+  }
+
   // Dashed bright-green outline of a region (reference style, STYLE-GUIDE §3), shown during
   // localized stages so the active area is obvious. Returns a pulsing image in the overlay.
   showRegionOutline(regionId) {
@@ -335,6 +369,11 @@ export class ObjectStack {
   }
 
   hideRegionOutline() {
+    this.outlineRings?.forEach((ring) => {
+      this.scene.tweens.killTweensOf(ring.g);
+      ring.g.destroy();
+    });
+    this.outlineRings = null;
     if (!this.outline) return;
     this.scene.tweens.killTweensOf(this.outline);
     this.outline.destroy();

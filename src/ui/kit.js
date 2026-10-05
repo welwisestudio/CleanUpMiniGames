@@ -1,9 +1,10 @@
 import { ASSET_META } from '../content/generated/assetMeta.js';
+import { LEVEL_META } from '../content/generated/levelMeta.js';
 
 // Nine-slice from a generated UI surface: corners keep their proportions at any size.
 // The slice is scaled so its height matches `h`; the width is filled by the stretchable middle.
 export function nineSlice(scene, key, w, h, x = 0, y = 0) {
-  const meta = ASSET_META.ui[key];
+  const meta = ASSET_META.ui[key] ?? LEVEL_META.ui?.[key];
   if (!meta?.slice) throw new Error(`No nine-slice data for ${key}`);
   const [tw, th] = meta.size;
   const [l, r, t, b] = meta.slice;

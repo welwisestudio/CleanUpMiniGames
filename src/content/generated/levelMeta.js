@@ -345,28 +345,32 @@ export const LEVEL_META = {
     768
    ],
    "workingPoint": [
-    0.4978,
-    0.1592
+    0.4979,
+    0.3307
+   ],
+   "head": [
+    0.2122,
+    0.5326
    ]
   },
   "tool-foam-can": {
    "size": [
-    215,
+    458,
     768
    ],
    "workingPoint": [
-    0.4974,
-    0.0456
+    0.9214,
+    0.0786
    ]
   },
   "tool-drill-brush": {
    "size": [
-    291,
-    768
+    768,
+    608
    ],
    "workingPoint": [
-    0.4498,
-    0.0456
+    0.1051,
+    0.2803
    ]
   },
   "tool-putty-knife": {
@@ -467,6 +471,48 @@ export const LEVEL_META = {
    "tip": [
     0.3,
     0.0391
+   ]
+  },
+  "ui-btn-orange": {
+   "size": [
+    400,
+    129
+   ],
+   "slice": [
+    64,
+    64,
+    46,
+    57
+   ]
+  },
+  "ui-chest-timed": {
+   "size": [
+    384,
+    347
+   ]
+  },
+  "ui-chest-progress": {
+   "size": [
+    512,
+    472
+   ]
+  },
+  "ui-btn-purple": {
+   "size": [
+    400,
+    138
+   ],
+   "slice": [
+    69,
+    69,
+    50,
+    61
+   ]
+  },
+  "icon-ad-clapper": {
+   "size": [
+    191,
+    192
    ]
   }
  },

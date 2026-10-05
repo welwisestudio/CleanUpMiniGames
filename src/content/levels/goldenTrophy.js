@@ -31,7 +31,7 @@ export const goldenTrophy = {
   stages: [
     { id: 'chisel', tool: 'chisel', mechanic: 'chunkBreak', params: { layer: 'mud', chunkCount: 26, breakDistance: 170, tipRadius: 38, seed: 3301 }, targetSeconds: [14, 20] },
     { id: 'dry-brush', tool: 'dry-brush', mechanic: 'brush', region: 'ball', params: { mode: 'reveal', layers: ['dusty'], radius: 62, aspect: 2.6, threshold: 0.96 }, targetSeconds: [5, 8] },
-    { id: 'detail-brush', tool: 'detail-brush', mechanic: 'brush', region: 'base', params: { mode: 'reveal', layers: ['dusty'], radius: 34, threshold: 0.96 }, targetSeconds: [5, 8] },
+    { id: 'detail-brush', tool: 'detail-brush', mechanic: 'brush', region: 'base', outline: true, params: { mode: 'reveal', layers: ['dusty'], radius: 34, threshold: 0.96 }, targetSeconds: [5, 8] },
     { id: 'wet', tool: 'mist-nozzle', mechanic: 'brush', params: { mode: 'reveal', layers: ['tarnished'], radius: 100, threshold: 0.96 }, targetSeconds: [5, 8] },
     { id: 'foam-spray', tool: 'foam-sprayer', mechanic: 'brush', params: { mode: 'apply', layer: 'foam', stamp: 'stamp-foam', radius: 115, threshold: 0.96 }, targetSeconds: [6, 9] },
     { id: 'scrub', tool: 'scrub-brush', mechanic: 'brush', params: { mode: 'scrub', from: 'foam', under: 'scrubbed', clear: ['tarnishWet'], radius: 106, threshold: 0.96 }, targetSeconds: [6, 9] },

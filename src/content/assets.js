@@ -51,6 +51,12 @@ export const IMAGE_ASSETS = {
   'icon-home': `${U}icon-home.webp`,
   'icon-check': `${U}icon-check.webp`,
   'icon-ad': `${U}icon-ad.webp`,
+  // Step 6 UI / reward pass (Nano Banana 2; scripts/prepare_levels.py rewards)
+  'ui-btn-orange': `${U}ui-btn-orange.webp`,
+  'ui-btn-purple': `${U}ui-btn-purple.webp`,
+  'icon-ad-clapper': `${U}icon-ad-clapper.webp`,
+  'ui-chest-timed': `${U}ui-chest-timed.webp`,
+  'ui-chest-progress': `${U}ui-chest-progress.webp`,
 };
 
 // ---- Step 5: levels 2–5, shared tools and UI (scripts/prepare_levels.py) ----

@@ -6,13 +6,19 @@ import { COLORS, TEXT } from '../ui/theme.js';
 import { CurrencyPill, addStatusBadges } from '../ui/hud.js';
 import { Button } from '../ui/Button.js';
 import { SettingsModal } from '../ui/modals.js';
+import { TimedChestWidget, ProgressChestMini, ChestOfferModal, TIMED_CHEST_SIZE, flyIcons } from '../ui/rewards.js';
 import { registerQaScene } from '../app/qa.js';
 
 // Object selection (reference Menu_screen.PNG, video 00:00 / 08:04–08:16): a vertical list of
 // shelves that scrolls downward, 2 objects per shelf row. All objects are open from the start
 // (decision 2026-10-04). Header: currency counters and settings. No game-name text (logo later).
+// Step 6 reward pass: the timed chest and the level-progress chest form one column on the left,
+// directly below the counters; the header keeps its approved single-row height. On narrow
+// screens the shelves get a left gutter so the column never covers a level while scrolling.
 
 const COMING_SOON_SLOTS = 1; // fills the last row; more objects arrive at Step 8
+const CHEST_SCALE = 0.72; // chest widgets relative to their base size (UI units)
+const CHEST_GAP = 8; // UI units: header → first chest, chest → chest, column → shelves
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -30,6 +36,7 @@ export class MenuScene extends Phaser.Scene {
     this.drag = null;
     this.settings = null;
     this.lastDragMoved = 0;
+    this.chestOffer = null;
 
     this.bg = this.add.rectangle(0, 0, 10, 10, COLORS.menuBg).setOrigin(0);
     this.list = this.add.container(0, 0);
@@ -42,7 +49,10 @@ export class MenuScene extends Phaser.Scene {
     this.diamonds = new CurrencyPill(this, { icon: 'icon-diamond', value: save.get('diamonds') });
     this.pills.add([this.coins.container, this.diamonds.container]);
     this.gear = new Button(this, { id: 'menu-settings', x: 0, y: 0, w: UI.pause, h: UI.pause, style: 'square', icon: 'icon-gear', iconSize: 0.62, onClick: () => this.openSettings() });
-    this.header.add([this.headerBg, this.headerShade, this.pills, this.gear.container]);
+    const rewards = this.services.rewards;
+    this.timedChest = new TimedChestWidget(this, { rewards, onClaimed: (r, from) => this.flyToPill(this.coins, 'icon-coin', from, r.coinsBefore, r.coinsAfter, 5) });
+    this.progressChest = new ProgressChestMini(this, { rewards, onOpen: () => this.openChestOffer() });
+    this.header.add([this.headerBg, this.headerShade, this.pills, this.gear.container, this.timedChest.container, this.progressChest.container]);
 
     this.entries = DISPLAY_ORDER.map((id) => this._levelEntry(getLevel(id)));
     for (let i = 0; i < COMING_SOON_SLOTS; i++) this.entries.push(this._comingSoon());
@@ -68,6 +78,10 @@ export class MenuScene extends Phaser.Scene {
       this.input.off('wheel', this.onWheel, this);
       this.settings?.destroy();
       this.settings = null;
+      this.chestOffer?.destroy();
+      this.chestOffer = null;
+      this.timedChest.destroy();
+      this.progressChest.destroy();
     });
     attachResponsiveLayout(this, (l) => this.relayout(l));
     registerQaScene(this);
@@ -76,7 +90,7 @@ export class MenuScene extends Phaser.Scene {
   relayout(l) {
     const { W, H, u, margin: m } = l;
     this.bg.setSize(W, H);
-    // header
+    // header: counters · settings (approved single row)
     const headerH = m * 2 + UI.pause * u;
     this.headerH = headerH;
     this.headerBg.setSize(W, headerH);
@@ -85,22 +99,31 @@ export class MenuScene extends Phaser.Scene {
     this.diamonds.container.setPosition(this.coins.width + 14, 0);
     this.pills.setPosition(m + 6 * u, m + (UI.pause / 2) * u).setScale(u);
     this.gear.setPlacement(W - m - (UI.pause / 2) * u, m + (UI.pause / 2) * u, u);
+    // chest column under the counters, left-aligned with the coin counter
+    const chestW = TIMED_CHEST_SIZE.w * CHEST_SCALE * u;
+    const chestH = TIMED_CHEST_SIZE.h * CHEST_SCALE * u;
+    const colX = this.pills.x + 10 * u + chestW / 2;
+    const y1 = headerH + CHEST_GAP * u + chestH / 2;
+    this.timedChest.container.setPosition(colX, y1).setScale(CHEST_SCALE * u);
+    this.progressChest.container.setPosition(colX, y1 + chestH + CHEST_GAP * u).setScale(CHEST_SCALE * u);
+    const gutter = colX + chestW / 2 + CHEST_GAP * u; // shelves start right of the column
 
     // list: one shelf per row with 2 objects; row height follows the width (the list scrolls)
-    const shelfW = Math.min(W - 2 * m, 560 * u);
+    const shelfW = Math.min(W - m - gutter, 560 * u);
+    const shelfCx = Math.max(W / 2, gutter + shelfW / 2); // centred when there is room
     const thumb = shelfW * 0.34;
     const rowH = thumb * 1.62 + 46 * u; // object + shelf + its label, then the next row
     const top = headerH + 18 * u;
     this.shelves.forEach((s, r) => {
       const y = top + rowH * r + thumb * 1.02;
-      s.setScale(shelfW / s.width).setPosition(W / 2, y);
+      s.setScale(shelfW / s.width).setPosition(shelfCx, y);
     });
     this.entries.forEach((e, i) => {
       const shelf = this.shelves[Math.floor(i / 2)];
-      const x = W / 2 + (i % 2 === 0 ? -1 : 1) * shelfW * 0.24;
+      const x = shelfCx + (i % 2 === 0 ? -1 : 1) * shelfW * 0.24;
       e.layout(x, shelf.y - shelf.displayHeight * 0.12, thumb, u, shelf.y + shelf.displayHeight * 0.5 + 14 * u);
     });
-    this.footer.setPosition(W / 2, top + rowH * this.rows + 4 * u).setScale(u);
+    this.footer.setPosition(shelfCx, top + rowH * this.rows + 4 * u).setScale(u);
     this.contentH = top + rowH * this.rows + 40 * u;
     this.viewH = H - 30 * u;
     this.maxScroll = Math.max(0, this.contentH - this.viewH);
@@ -108,13 +131,14 @@ export class MenuScene extends Phaser.Scene {
     this.list.y = -this.scrollY;
     this.badges.layoutTo(l);
     this.settings?.layout(l);
+    this.chestOffer?.layout(l);
     this._updateQa();
     refreshTextResolution(this);
   }
 
   // ---- scrolling ---------------------------------------------------------------------------
   onDown(pointer) {
-    if (this.settings || pointer.y < this.headerH) return;
+    if (this.settings || this.chestOffer || pointer.y < this.headerH) return;
     this.drag = { startY: pointer.y, lastY: pointer.y, startScroll: this.scrollY, moved: 0, lastT: this.time.now };
     this.lastDragMoved = 0;
     this.velocity = 0;
@@ -138,7 +162,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   onWheel(pointer, over, dx, dy) {
-    if (this.settings) return;
+    if (this.settings || this.chestOffer) return;
     this._scrollTo(this.scrollY + dy);
   }
 
@@ -157,6 +181,15 @@ export class MenuScene extends Phaser.Scene {
 
   _updateQa() {
     for (const e of this.entries) e.qa?.();
+    // counters (read-only QA geometry for the chest-placement check)
+    for (const [id, pill] of [['menu-coins', this.coins], ['menu-diamonds', this.diamonds]]) {
+      const m = pill.bg.getWorldTransformMatrix();
+      this.qaTargets.set(id, { x: m.tx, y: m.ty, w: Math.abs(pill.bg.displayWidth * this.pills.scaleX), h: Math.abs(pill.bg.displayHeight * this.pills.scaleY), visible: true });
+    }
+    for (const [id, w] of [['menu-timed-chest', this.timedChest], ['menu-progress-chest', this.progressChest]]) {
+      const s = w.container.scaleX;
+      this.qaTargets.set(id, { x: w.container.x, y: w.container.y, w: TIMED_CHEST_SIZE.w * s, h: TIMED_CHEST_SIZE.h * s, visible: true });
+    }
   }
 
   // ---- entries ------------------------------------------------------------------------------
@@ -212,8 +245,47 @@ export class MenuScene extends Phaser.Scene {
     };
   }
 
+  // Coins / diamonds fly from a chest into the counter, which catches up to the saved value.
+  flyToPill(pill, icon, from, before, after, n, delay = 0) {
+    pill.setValue(before);
+    flyIcons(this, {
+      icon,
+      from,
+      to: pill.iconWorld(),
+      fromSize: Math.min(from.size || pill.iconWorldSize(), pill.iconWorldSize() * 1.6),
+      toSize: pill.iconWorldSize(),
+      n,
+      delay,
+      depth: 900,
+      onEach: (i) => {
+        pill.setValue(i === n - 1 ? after : before + Math.round(((after - before) * (i + 1)) / n));
+        pill.pulse();
+        if (i === n - 1) this.services.audio.play('coins');
+      },
+    });
+  }
+
+  openChestOffer() {
+    if (this.chestOffer || this.settings || !this.services.rewards.progressChestState().full) return;
+    this.chestOffer = new ChestOfferModal(this, {
+      rewards: this.services.rewards,
+      onLater: () => this.closeChestOffer(),
+      onOpened: (r, from) => {
+        this.flyToPill(this.coins, 'icon-coin', from, r.coinsBefore, r.coinsAfter, 7);
+        this.flyToPill(this.diamonds, 'icon-diamond', from, r.diamondsBefore, r.diamondsAfter, 3, 150);
+        this.time.delayedCall(1500, () => this.closeChestOffer());
+      },
+    });
+  }
+
+  closeChestOffer() {
+    this.chestOffer?.destroy();
+    this.chestOffer = null;
+    this.progressChest.refresh();
+  }
+
   openSettings() {
-    if (this.settings) return;
+    if (this.settings || this.chestOffer) return;
     this.services.audio.play('ui-tap');
     this.settings = new SettingsModal(this, {
       save: this.services.save,
@@ -225,7 +297,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   _openLevel(levelId) {
-    if (this.leaving || this.settings) return;
+    if (this.leaving || this.settings || this.chestOffer) return;
     this.leaving = true;
     this.services.audio.play('ui-tap');
     this.services.pause.set('navigationBusy', true);

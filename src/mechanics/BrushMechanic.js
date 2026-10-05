@@ -10,6 +10,8 @@ import { CoverageGrid } from './CoverageGrid.js';
 //
 // Options: `region` (stage-restricted area: only it counts and is cleaned at the end),
 // `aspect` (> 1 = wide stamp, e.g. a squeegee blade), `clip` (outside-mask key for painting).
+// A tool with a long soft head (duster, `tool.head` = [width, length]) cleans an upright ellipse
+// of the head's shape: `radius` = half the head width, aspectY = length / width (Step 6).
 //
 // The mechanic receives working points in WORLD coordinates, converts them to OBJECT-LOCAL
 // coordinates (so behaviour is identical on every screen size) and talks to the object stack
@@ -34,6 +36,8 @@ export class BrushMechanic {
     this.threshold = params.threshold;
     this.region = params.region ?? null;
     this.aspect = params.aspect ?? 1;
+    // fluffy tips are sparse: the effective length is 90 % of the measured head
+    this.aspectY = params.aspectY ?? (tool?.head ? (tool.head[1] / tool.head[0]) * 0.9 : 1);
     this.grid = new CoverageGrid({ size: stack.size, cells: 48, isInside: (x, y) => (stack.inRegion ? stack.inRegion(x, y, this.region) : stack.isInside(x, y)) });
     this.completed = false;
     this.sprayTime = 0;
@@ -86,23 +90,28 @@ export class BrushMechanic {
   _stampAt(local) {
     const r = this.radius;
     // Only stamps that touch the object have any effect (visual or progress).
-    const reach = r * (this.aspect > 1 ? this.aspect * 0.8 : 0.6);
+    const reach = r * (this.aspect > 1 ? this.aspect * 0.8 : this.aspectY > 1 ? this.aspectY * 0.8 : 0.6);
     if (!this.stack.touchesObject(local.x, local.y, reach, this.region)) return;
     const p = this.params;
     if (this.mode === 'reveal') {
-      for (const id of p.layers) this.stack.erase(id, local, r, this.aspect);
+      for (const id of p.layers) this.stack.erase(id, local, r, this.aspect, 0, this.aspectY);
     } else if (this.mode === 'apply') {
       this.stack.paint(p.layer, p.stamp, local, r);
       this._paintedSinceClip = true;
     } else if (this.mode === 'scrub') {
-      this.stack.erase(p.from, local, r, this.aspect);
-      for (const id of p.clear ?? []) this.stack.erase(id, local, r, this.aspect);
+      this.stack.erase(p.from, local, r, this.aspect, 0, this.aspectY);
+      for (const id of p.clear ?? []) this.stack.erase(id, local, r, this.aspect, 0, this.aspectY);
     }
     let added = 0;
     if (this.aspect > 1) {
       // A wide blade covers a band: mark overlapping circles along its width.
       const half = r * (this.aspect - 0.6);
       for (let dx = -half; dx <= half + 0.1; dx += r * 0.8) added += this.grid.mark(local.x + dx, local.y, r * 0.85);
+    } else if (this.aspectY > 1) {
+      // a long head covers a vertical band: overlapping circles along its length (the band's
+      // outer edge matches the drawn ellipse, 2·r·aspectY tall)
+      const half = r * (this.aspectY - 0.85);
+      for (let dy = -half; dy <= half + 0.1; dy += r * 0.8) added += this.grid.mark(local.x, local.y + dy, r * 0.85);
     } else {
       added = this.grid.mark(local.x, local.y, r * 0.85);
     }

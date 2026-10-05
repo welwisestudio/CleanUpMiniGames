@@ -20,7 +20,7 @@ export function createApp({ platform, parent }) {
 
   const pause = new PauseState();
   const save = new SaveService(platform);
-  const rewards = new RewardService({ save, economy });
+  const rewards = new RewardService({ save, economy, platform, pause });
   const audio = new AudioService({ save, pause });
   let runCounter = 0;
 
@@ -82,6 +82,8 @@ export function createApp({ platform, parent }) {
       audio.setPlatformAudio(audioEnabled);
     });
     await loadSaveWithRetry(save, platform);
+    // timed chest: start its first cycle (or repair a clock jump) once the save is loaded
+    await rewards.ensureTimedChest().catch((e) => platform.reportWarning('timed chest init', e));
   })();
 
   return { game, services };

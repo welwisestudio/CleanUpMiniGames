@@ -4,11 +4,19 @@ import { nineSlice } from './kit.js';
 
 // Button = generated surface (nine-slice, never stretched corners) + optional generated icon
 // + dynamic label. Sizes are in the parent container's local units.
+// `face` = vertical centre of the button's flat face (above its darker bottom lip) as a share of
+// the height, measured on each generated surface; icons are centred on it. `label` = optical
+// centre for text: on the glossy surfaces the bright highlight band across the top makes text on
+// the geometric face centre read high, so labels sit slightly lower (designer review, build #41).
 const STYLES = {
-  green: { key: 'ui-btn-green', text: TEXT.white, stroke: TEXT.greenStroke },
-  yellow: { key: 'ui-btn-yellow', text: TEXT.white, stroke: TEXT.yellowStroke },
-  white: { key: 'ui-btn-white', text: TEXT.navy, stroke: null },
-  square: { key: 'ui-btn-square', text: TEXT.navy, stroke: null },
+  green: { key: 'ui-btn-green', text: TEXT.white, stroke: TEXT.greenStroke, face: -0.075, label: -0.045 },
+  yellow: { key: 'ui-btn-yellow', text: TEXT.white, stroke: TEXT.yellowStroke, face: -0.076, label: -0.046 },
+  white: { key: 'ui-btn-white', text: TEXT.navy, stroke: null, face: -0.062, label: -0.062 },
+  square: { key: 'ui-btn-square', text: TEXT.navy, stroke: null, face: -0.058, label: -0.058 },
+  // rewarded-ad offer (chest): warm orange, clearly different from the green / yellow actions
+  orange: { key: 'ui-btn-orange', text: TEXT.white, stroke: '#A8361A', face: -0.081, label: -0.051 },
+  // x3 rewarded offer on the completed screen
+  purple: { key: 'ui-btn-purple', text: TEXT.white, stroke: '#4B1D7A', face: -0.069, label: -0.039 },
 };
 
 export class Button {
@@ -23,15 +31,18 @@ export class Button {
     this.container = scene.add.container(x, y);
     this.bg = nineSlice(scene, st.key, w, h);
     this.container.add(this.bg);
+    // Content sits on the button face (above its darker bottom lip), measured per surface.
+    this.faceY = h * st.face;
+    this.labelY = h * st.label;
     if (icon) {
-      const img = scene.add.image(0, -h * 0.03, icon);
-      const s = (Math.min(w, h) * iconSize) / Math.max(img.width, img.height);
-      img.setScale(s);
-      this.container.add(img);
+      this.icon = scene.add.image(0, this.faceY, icon);
+      const s = (Math.min(w, h) * (label ? Math.min(iconSize, 0.56) : iconSize)) / Math.max(this.icon.width, this.icon.height);
+      this.icon.setScale(s);
+      this.container.add(this.icon);
     }
     if (label) {
       const fs = fontSize ?? h * 0.42;
-      this.label = makeText(scene, 0, -h * 0.05, label, {
+      this.label = makeText(scene, 0, this.labelY, label, {
         size: fs,
         color: st.text,
         family: FONT_DISPLAY,
@@ -39,10 +50,8 @@ export class Button {
         stroke: st.stroke ?? undefined,
         strokeThickness: st.stroke ? fs * 0.16 : 0,
       });
-      // Shrink long labels to fit inside the button (keeps text centred; localization-safe).
-      const maxW = w * 0.78;
-      if (this.label.width > maxW) this.label.setScale(maxW / this.label.width);
       this.container.add(this.label);
+      this._fitContent();
     }
     this.zone = scene.add.zone(0, 0, w, h).setInteractive({ useHandCursor: true });
     this.container.add(this.zone);
@@ -63,6 +72,28 @@ export class Button {
     });
     this.baseScale = 1;
     scene.qaButtons?.set(id, this);
+  }
+
+  // Icon + label are one group centred on the button; long labels shrink to the free width
+  // (keeps text centred; localization-safe).
+  _fitContent() {
+    const t = this.label;
+    t.setScale(1);
+    const gap = this.h * 0.12;
+    const iconW = this.icon ? this.icon.displayWidth + gap : 0;
+    const maxW = this.w * 0.8 - iconW;
+    if (t.width > maxW) t.setScale(maxW / t.width);
+    const groupW = iconW + t.displayWidth;
+    const left = -groupW / 2;
+    if (this.icon) this.icon.setX(left + this.icon.displayWidth / 2);
+    t.setX(left + iconW + t.displayWidth / 2);
+  }
+
+  setLabel(str) {
+    if (!this.label) return this;
+    this.label.setText(str);
+    this._fitContent();
+    return this;
   }
 
   setPlacement(x, y, scale = 1) {

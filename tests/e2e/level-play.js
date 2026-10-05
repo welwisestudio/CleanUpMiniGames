@@ -8,16 +8,35 @@ import { snap, waitFor } from './helpers.js';
 const toCss = (xf, lx, ly) => ({ x: xf.cx + (lx - xf.size / 2) * xf.k, y: xf.cy + (ly - xf.size / 2) * xf.k });
 
 function finger(tool, p) {
-  if (tool.kind === 'jet') return { x: p.x - tool.workOffset.x, y: p.y + tool.jetLength - tool.workOffset.y };
+  if (tool.kind === 'jet') return { x: p.x - tool.jet.x - tool.workOffset.x, y: p.y - tool.jet.y - tool.workOffset.y };
   if (tool.kind === 'target') return p;
   return { x: p.x - tool.workOffset.x, y: p.y - tool.workOffset.y };
 }
 
+// Hold mode (Step 6 release rule): `opts.hold` keeps the pointer down when the stage completes
+// during the path (the caller then checks PENDING_RELEASE and releases); `opts.mid` is called
+// once in the middle of the first path (mid-stroke screenshot with the tool in use).
+let opts = {};
 async function dragPath(page, drv, pts, wait = 0) {
   await drv.down(pts[0].x, pts[0].y);
-  for (const p of pts.slice(1)) {
+  const midAt = Math.floor(pts.length / 2);
+  for (let i = 1; i < pts.length; i++) {
+    const p = pts[i];
     await drv.move(p.x, p.y);
     if (wait) await page.waitForTimeout(wait);
+    if (i === midAt && opts.mid) {
+      const f = opts.mid;
+      opts.mid = null;
+      await f();
+    }
+    if (opts.hold && i % 4 === 0 && (await snap(page)).level.state !== 'playing') {
+      opts.held = { x: p.x, y: p.y };
+      return;
+    }
+  }
+  if (opts.hold && (await snap(page)).level.state !== 'playing') {
+    opts.held = pts[pts.length - 1];
+    return;
   }
   await drv.up();
 }
@@ -25,9 +44,11 @@ async function dragPath(page, drv, pts, wait = 0) {
 async function areaPass(page, drv, L, pass) {
   const { xf, tool, targets, brush } = L;
   const wide = brush.aspect > 1;
-  // a wide blade (squeegee, bristle bar) sweeps up/down, rows spaced by most of its width
-  const vertical = wide ? true : pass % 2 === 1;
-  const r = brush.mechanic === 'chunkBreak' ? 30 : wide ? brush.radius * brush.aspect * 1.1 : (brush.radius ?? 90) * 1.05;
+  const tall = brush.aspectY > 1;
+  // a wide blade (squeegee, bristle bar) sweeps up/down, rows spaced by most of its width;
+  // a tall head (duster) sweeps left/right, rows spaced by most of its length
+  const vertical = wide ? true : tall ? pass % 3 === 2 : pass % 2 === 1;
+  const r = brush.mechanic === 'chunkBreak' ? 30 : wide ? brush.radius * brush.aspect * 1.1 : tall && !vertical ? brush.radius * brush.aspectY * 1.1 : (brush.radius ?? 90) * 1.05;
   const lines = new Map();
   for (const [x, y] of targets.points) {
     const key = Math.round((vertical ? x : y) / r);
@@ -56,16 +77,19 @@ async function areaPass(page, drv, L, pass) {
   await dragPath(page, drv, path, tool.kind === 'jet' ? 16 : 0);
 }
 
-export async function playStage5(page, drv, { maxPasses = 14 } = {}) {
+export async function playStage5(page, drv, { maxPasses = 14, hold = false, mid = null } = {}) {
   const s0 = await waitFor(page, (s) => s.level && s.level.state === 'playing', { label: 'stage playing' });
   const idx = s0.level.stageIndex;
   const id = s0.level.stageId;
+  opts = { hold, mid, held: null };
   for (let pass = 0; pass < maxPasses; pass++) {
+    if (opts.held) break;
     const s = await snap(page);
     if (s.level.stageIndex !== idx || s.level.state !== 'playing') break;
     const L = s.level;
     if (L.targets.kind === 'drag') {
       for (const it of L.targets.items) {
+        if (opts.held) break;
         const a = toCss(L.xf, it.x, it.y);
         const b = toCss(L.xf, L.targets.target.x, L.targets.target.y);
         const path = [];
@@ -75,6 +99,7 @@ export async function playStage5(page, drv, { maxPasses = 14 } = {}) {
       }
     } else if (L.targets.kind === 'spots') {
       for (const sp of L.targets.spots) {
+        if (opts.held) break;
         // dip the knife into the putty tub first (reference behaviour)
         const cur = (await snap(page)).level.targets;
         if (cur?.needsLoad && cur.tub) {
@@ -104,8 +129,11 @@ export async function playStage5(page, drv, { maxPasses = 14 } = {}) {
   }
   const done = await snap(page);
   expect(done.level.state === 'playing' && done.level.stageIndex === idx, `stage ${id} did not complete (progress ${done.level.progress})`).toBe(false);
+  if (hold) return { id, held: opts.held };
   return id;
 }
+
+export { toCss };
 
 export async function playLevel5(page, drv, { onStage } = {}) {
   const s = await waitFor(page, (x) => x.level && x.level.state === 'playing' && x.level.stageIndex === 0, { label: 'level start' });

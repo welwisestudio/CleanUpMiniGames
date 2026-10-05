@@ -10,6 +10,7 @@ import { attachResponsiveLayout, coverImage, fitObject, refreshTextResolution, U
 import { CurrencyPill, ToolStrip, ProgressBar, addStatusBadges } from '../ui/hud.js';
 import { Button } from '../ui/Button.js';
 import { ResultCard, PauseModal, SettingsModal } from '../ui/modals.js';
+import { ChestOfferModal, TimedChestWidget, ProgressChestMini, TIMED_CHEST_SIZE, flyIcons, worldOf } from '../ui/rewards.js';
 import { registerQaScene } from '../app/qa.js';
 
 // One play run of a level: sequential stages → completion → result.
@@ -72,7 +73,11 @@ export class LevelScene extends Phaser.Scene {
     this.strip = new ToolStrip(this, { stages: this.level.stages, getTool });
     this.progressBar = new ProgressBar(this);
     this.pauseButton = new Button(this, { id: 'hud-pause', x: 0, y: 0, w: UI.pause, h: UI.pause, style: 'square', icon: 'icon-pause', iconSize: 0.5, onClick: () => this.openPause() });
-    this.hud.add([this.topLeft, this.strip.container, this.progressBar.container, this.pauseButton.container]);
+    // Chests stay visible during play (display only: a touch here never claims mid-stroke;
+    // claiming happens in the hub and on the completed screen).
+    this.hudTimedChest = new TimedChestWidget(this, { rewards: s.rewards, interactive: false });
+    this.hudProgressChest = new ProgressChestMini(this, { rewards: s.rewards, interactive: false });
+    this.hud.add([this.topLeft, this.strip.container, this.progressBar.container, this.pauseButton.container, this.hudTimedChest.container, this.hudProgressChest.container]);
     this.badges = addStatusBadges(this, { build: s.build, testMode: s.platform.testMode });
 
     // Input (single active pointer; mouse and touch go through the same Phaser pointer API).
@@ -116,6 +121,18 @@ export class LevelScene extends Phaser.Scene {
     this.strip.container.setPosition(W / 2, l.stripY).setScale(u);
     this.progressBar.container.setPosition(W / 2, l.progressY).setScale(u);
     this.pauseButton.setPlacement(W - m - (UI.pause / 2) * u, m + (UI.pause / 2) * u, u);
+    // chest column under the counters, left of the tool strip, above the play area
+    {
+      const cs = 0.7;
+      const cw = TIMED_CHEST_SIZE.w * cs * u;
+      const ch = TIMED_CHEST_SIZE.h * cs * u;
+      const top = m + (l.compact ? UI.pillH : UI.pillH * 2 + 10) * u + 6 * u;
+      const cx = m + 2 * u + cw / 2;
+      this.hudTimedChest.container.setPosition(cx, top + ch / 2).setScale(cs * u);
+      this.hudProgressChest.container.setPosition(cx, top + ch * 1.5 + 4 * u).setScale(cs * u);
+      this.qaTargets.set('hud-timed-chest', { x: cx, y: top + ch / 2, w: cw, h: ch, visible: this.hud.alpha > 0.5 });
+      this.qaTargets.set('hud-progress-chest', { x: cx, y: top + ch * 1.5 + 4 * u, w: cw, h: ch, visible: this.hud.alpha > 0.5 });
+    }
     this.badges.layoutTo(l);
 
     // QA geometry of HUD blocks (read-only, used by layout tests)
@@ -134,6 +151,7 @@ export class LevelScene extends Phaser.Scene {
     this.buildFx(this.objFit.scale / 0.4);
 
     this.result?.layout(l);
+    this.chestOffer?.layout(l);
     this.pauseModal?.layout(l);
     this.settingsModal?.layout(l);
     if (this.hint.visible) this.showHint();
@@ -151,7 +169,10 @@ export class LevelScene extends Phaser.Scene {
       for (const st of this.level.stages) {
         if ((st.focus ?? 'default') !== key) continue;
         const t = getTool(st.tool);
-        reach = Math.max(reach, t.kind === 'jet' ? t.jetLength + 60 : t.kind === 'target' ? 0 : 170);
+        // finger distance below the work point: offset + vertical part of the jet
+        const g = t.scaleOffset ? st.toolScale ?? 1 : 1;
+        const jy = t.kind === 'jet' ? Math.sin(((t.jetAngle ?? -90) * Math.PI) / 180) * t.jetLength : 0;
+        reach = Math.max(reach, t.kind === 'jet' ? -(t.workOffset.y + jy) * g : t.kind === 'target' ? 0 : 170);
       }
     }
     return { key, bounds, reach };
@@ -212,9 +233,12 @@ export class LevelScene extends Phaser.Scene {
     this.tools.toolScale = this.stage.toolScale ?? 1;
     this.tools.setTool(this.tool, { animate: i > 0 });
     this.tools.sprayRadius = this.stage.params?.radius ?? 100;
-    // Localized stage: show the active area (dashed green outline, reference style).
+    // Dashed green outline only where the active part would otherwise be unclear (stage
+    // `outline: true`: trophy ball / base, chair seat close-ups, sanding spots). Whole-object or
+    // obvious targets (whole chair, black scuff marks) rely on the hand hint instead.
     const region = this.stage.region;
-    if (region) this.stack.showRegionOutline(region);
+    if (region && this.stage.outline === 'circles') this.stack.showCircleTargets(region);
+    else if (region && this.stage.outline) this.stack.showRegionOutline(region);
     else this.stack.hideRegionOutline();
     this.idleMs = 0;
     this.hint.hide();
@@ -260,6 +284,11 @@ export class LevelScene extends Phaser.Scene {
 
   onPointerMove(pointer) {
     if (pointer.id !== this.activePointerId) return;
+    // Stage done but the finger is still down: the tool keeps following it (no effect any more).
+    if (this.state === 'pendingRelease') {
+      if (this.tool.kind !== 'target') this.tools.move(this.toWorld(pointer));
+      return;
+    }
     if (!this.canInteract()) {
       this.endStroke();
       return;
@@ -288,6 +317,8 @@ export class LevelScene extends Phaser.Scene {
     this.activePointerId = null;
     if (this.tool?.kind === 'target') this.mechanic.release();
     else this.tools.release();
+    // pending completion: the player let go → now play the completion feedback and move on
+    if (this.state === 'pendingRelease') this.afterRelease();
   }
 
   // ---- hints -----------------------------------------------------------------------------
@@ -311,7 +342,14 @@ export class LevelScene extends Phaser.Scene {
     // lookup of remaining-work cells, so a stroke can be split into continuous runs
     const key = (x, y) => `${Math.floor(x / cell)},${Math.floor(y / cell)}`;
     const work = new Set(pts.map((p) => key(p.x, p.y)));
-    const near = (x, y) => work.has(key(x, y));
+    // chisel: a point is work only where a remaining crust chunk lies under it (the line between
+    // chunk centres may cross background, e.g. above the sneaker laces — Step 6 pass 2)
+    const near = this.family === 'chisel' && m.map
+      ? (x, y) => {
+          const id = m.map.labelAt(x, y);
+          return id >= 0 && !m.removed[id];
+        }
+      : (x, y) => work.has(key(x, y));
     let x0 = Infinity;
     let y0 = Infinity;
     let x1 = -Infinity;
@@ -333,7 +371,7 @@ export class LevelScene extends Phaser.Scene {
       let cur = null;
       for (let v = lo; v <= hi + 0.1; v += step) {
         const q = vertical ? { x: at, y: v } : { x: v, y: at };
-        if (this.family === 'chisel' || near(q.x, q.y)) {
+        if (near(q.x, q.y)) {
           if (!cur) cur = { a: q, b: q, len: 0 };
           cur.b = q;
           cur.len += step;
@@ -384,7 +422,11 @@ export class LevelScene extends Phaser.Scene {
     if (!m) return;
     const finger = (local) => {
       const w = st.toWorld(local);
-      if (tool.kind === 'jet') return { x: w.x - tool.workOffset.x * k, y: w.y + tool.jetLength * k - tool.workOffset.y * k };
+      if (tool.kind === 'jet') {
+        const o = this.tools.offset();
+        const v = this.tools.jetVector();
+        return { x: w.x - v.x - o.x, y: w.y - v.y - o.y };
+      }
       // contact tools: the hand rubs over the target area itself (the tool head follows just
       // above the finger), so the demonstration never leaves the active area
       return w;
@@ -450,26 +492,43 @@ export class LevelScene extends Phaser.Scene {
         (this.tool.jetStyle === 'foam' ? this.fx.foam : this.fx.mist).emitParticleAt(impact.x, impact.y, 1);
       }
     }
-    this.progressBar.set(this.mechanic.progress);
+    if (this.state === 'playing') {
+      this.progressBar.set(this.mechanic.progress);
+      this.stack.updateRegionOutline(this.mechanic.grid);
+    }
     if (this.mechanic.completed) this.completeStage();
   }
 
-  async completeStage() {
+  // Stage lifecycle (Step 6): ACTIVE → work done (manual 100 % or gentle auto-complete) →
+  // the remaining fragments fade out and the bar runs smoothly to 100 % → PENDING_RELEASE while
+  // the finger / mouse is still down (the tool stays in the hand, no effect) → release →
+  // completion feedback → next stage. The tool is never taken away mid-stroke.
+  completeStage() {
     if (this.state !== 'playing') return;
-    this.state = 'transition';
-    this.endStroke();
-    const s = this.services;
+    this.state = 'pendingRelease';
+    this.tools.inert = true; // the tool stays in the hand but no longer sprays / works
     const stage = this.stage;
-    this.stageLog.push({ id: stage.id, seconds: (this.time.now - this.stageStartedAt) / 1000, contacts: this.mechanic.validContacts });
-    this.progressBar.set(1);
-    this.strip.markDone();
+    this.stageLog.push({ id: stage.id, seconds: (this.time.now - this.stageStartedAt) / 1000, contacts: this.mechanic.validContacts, autoCompleted: (this.mechanic.grid?.progress ?? 1) < 0.999 });
     this.hint.hide();
     this.stack.hideRegionOutline();
+    const from = this.progressBar.value;
+    this.tweens.addCounter({ from, to: 1, duration: 450, ease: 'Sine.easeOut', onUpdate: (tw) => this.progressBar.set(tw.getValue()) });
+    this.finishing = this.mechanic.finish(500);
+    if (this.activePointerId === null) this.afterRelease();
+  }
+
+  async afterRelease() {
+    if (this.state !== 'pendingRelease') return;
+    this.state = 'transition';
+    const s = this.services;
+    await this.finishing;
+    if (!this.alive) return;
+    this.progressBar.set(1);
+    this.strip.markDone();
     s.audio.play('stage-complete');
     if (s.save.get('settings.vibration')) s.platform.vibrate?.(30);
     if (!s.save.get('tutorial')?.[this.family]) s.save.update((st) => (st.tutorial[this.family] = true)).catch(() => {});
-    await this.mechanic.finish(500);
-    await this.wait(700);
+    await this.wait(600);
     if (!this.alive) return;
     await this.tools.exit();
     if (!this.alive) return;
@@ -532,12 +591,27 @@ export class LevelScene extends Phaser.Scene {
   showResult() {
     this.state = 'result';
     const next = nextLevelId(this.levelId);
+    const rw = this.services.rewards;
+    const max = rw.config.progressChest.steps;
     this.result = new ResultCard(this, {
       reward: this.reward,
       picture: this.level.resultPicture,
+      x3: rw.x3Offer(this.reward.completionId),
+      chest: { from: this.reward.chestStepsBefore / max },
+      onX3: () => this.claimX3(),
+      onOpenChest: () => this.openChestOffer(),
       onHome: () => this.goMenu(),
       onReplay: () => this.replay(),
       onNext: next ? () => this.goLevel(next) : null,
+    });
+    // Level chest: the bar runs +20 % for this completion; a full chest is offered right away
+    // (and stays offered from the bar if the player chooses "Later").
+    const card = this.result;
+    const full = rw.progressChestState().full;
+    card.chestRow.animate(this.reward.chestStepsBefore / max, this.reward.chestStepsAfter / max, { ready: full, delay: 1150 }).then(() => {
+      if (!this.alive || this.result !== card) return;
+      card.setChestReady(full);
+      if (full) this.time.delayedCall(450, () => this.result === card && this.openChestOffer());
     });
     // Coins fly into the counter; the counter catches up to the already-saved value.
     this.hud.setAlpha(1).setDepth(700);
@@ -581,6 +655,78 @@ export class LevelScene extends Phaser.Scene {
           if (i === n - 1) this.services.audio.play('coins');
         },
       });
+    }
+  }
+
+  // ---- rewards on the result card ---------------------------------------------------------
+  // x3: rewarded ad → RewardService adds 2 × the base reward (once). Navigation is blocked while
+  // the ad runs; a cancelled / failed ad grants nothing and the offer stays.
+  async claimX3() {
+    const card = this.result;
+    if (!card || card.x3State !== 'idle' || this.chestOffer) return;
+    this.services.audio.play('ui-tap');
+    card.setEnabled(false);
+    card.setX3State('busy');
+    const r = await this.services.rewards.claimX3(this.reward.completionId);
+    if (!this.alive || this.result !== card) return;
+    card.setEnabled(true);
+    if (r.status !== 'granted') {
+      card.setX3State('idle');
+      card.flashX3(r.status === 'not-earned' ? 'Ad closed early' : 'Ad not available');
+      return;
+    }
+    card.setX3State('granted');
+    card.setRewardAmount(r.total);
+    this.flyToPill(this.coinsPill, 'icon-coin', worldOf(card.x3.container), r.coinsBefore, r.coinsAfter, 5);
+  }
+
+  // Coins / diamonds fly into a HUD counter, which catches up to the already-saved value.
+  flyToPill(pill, icon, from, before, after, n, delay = 0) {
+    pill.setValue(before);
+    flyIcons(this, {
+      icon,
+      from,
+      to: pill.iconWorld(),
+      fromSize: Math.min(from.size || pill.iconWorldSize(), pill.iconWorldSize() * 1.6),
+      toSize: pill.iconWorldSize(),
+      n,
+      delay,
+      onEach: (i) => {
+        pill.setValue(i === n - 1 ? after : before + Math.round(((after - before) * (i + 1)) / n));
+        pill.pulse();
+        if (i === n - 1) this.services.audio.play('coins');
+      },
+    });
+  }
+
+  openChestOffer() {
+    const card = this.result;
+    if (!card || this.chestOffer || !this.services.rewards.progressChestState().full) return;
+    card.setEnabled(false);
+    // one card at a time: the result card steps back while the chest offer is shown
+    this.tweens.add({ targets: card.card, alpha: 0, duration: 160 });
+    this.chestOffer = new ChestOfferModal(this, {
+      rewards: this.services.rewards,
+      onLater: () => this.closeChestOffer(),
+      onOpened: (r, from) => {
+        this.flyToPill(this.coinsPill, 'icon-coin', from, r.coinsBefore, r.coinsAfter, 7);
+        this.flyToPill(this.diamondsPill, 'icon-diamond', from, r.diamondsBefore, r.diamondsAfter, 3, 150);
+        this.time.delayedCall(1500, () => {
+          if (this.result !== card) return;
+          this.closeChestOffer();
+          card.setChestReady(false);
+          card.chestRow.set(0);
+        });
+      },
+    });
+  }
+
+  closeChestOffer() {
+    this.chestOffer?.destroy();
+    this.chestOffer = null;
+    if (this.result) {
+      this.tweens.add({ targets: this.result.card, alpha: 1, duration: 180 });
+      this.result.setEnabled(true);
     }
   }
 
@@ -672,6 +818,10 @@ export class LevelScene extends Phaser.Scene {
     this.mechanic = null;
     this.hint.destroy();
     this.settingsModal?.destroy();
+    this.hudTimedChest?.destroy();
+    this.hudProgressChest?.destroy();
+    this.chestOffer?.destroy();
+    this.chestOffer = null;
     this.settingsModal = null;
     this.tools.destroy();
     this.stack.destroy();

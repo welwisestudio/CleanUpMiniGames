@@ -4,7 +4,8 @@ import { Emitter } from '../core/Emitter.js';
 // Rules: load (and validate) before any write; a read error is NOT an empty save;
 // writes are serialized through one queue; status is observable.
 
-export const SAVE_VERSION = 1;
+// v2 (Step 6 reward pass): completion receipts, x3, timed chest, level-progress chest.
+export const SAVE_VERSION = 2;
 
 export function createDefaultState() {
   return {
@@ -14,6 +15,12 @@ export function createDefaultState() {
     levels: {}, // levelId -> { completed: boolean, completions: number }
     settings: { sound: true, music: true, vibration: true },
     tutorial: {}, // gesture families whose hint has been introduced (Step 4)
+    // Reward receipts (one per accepted level completion). `lastCompletion` lets the x3 offer of
+    // that completion be paid exactly once, even after a reload.
+    completionSeq: 0,
+    lastCompletion: null, // { id, levelId, amount, x3: boolean }
+    timedChest: { readyAt: 0 }, // epoch ms when the next timed chest opens (0 = not started)
+    progressChest: { steps: 0, opened: 0 }, // steps 0..max; opened = chests claimed so far
   };
 }
 
@@ -43,6 +50,11 @@ export function parseSave(serialized) {
     tutorial: {},
   };
   for (const [k, v] of Object.entries(raw.tutorial ?? {})) if (v) state.tutorial[k] = true;
+  state.completionSeq = toNonNegativeInt(raw.completionSeq);
+  const lc = raw.lastCompletion;
+  state.lastCompletion = lc && typeof lc === 'object' && typeof lc.levelId === 'string' ? { id: toNonNegativeInt(lc.id), levelId: lc.levelId, amount: toNonNegativeInt(lc.amount), x3: Boolean(lc.x3) } : null;
+  state.timedChest = { readyAt: toNonNegativeInt(raw.timedChest?.readyAt) };
+  state.progressChest = { steps: toNonNegativeInt(raw.progressChest?.steps), opened: toNonNegativeInt(raw.progressChest?.opened) };
   for (const [id, entry] of Object.entries(raw.levels ?? {})) {
     state.levels[id] = {
       completed: Boolean(entry?.completed),

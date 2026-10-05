@@ -1,16 +1,25 @@
 # Current project status
 
-Updated: 2026-10-04 (rev. 9) · Build **#24** (2026-10-04T22:14:58Z) · Commit: `b263241` + uncommitted Steps 4–5 work
+Updated: 2026-10-06 (rev. 16) · Build **#43** (2026-10-05T22:09:17Z UTC) · Commit: `2229c2d` + uncommitted Step 6 work
 
-- **Current stage goal:** Step 6 — gameplay / UX / visual polish and bug fixing from the game designer's Step 5 review (16 items). **Fixes done, waiting for approval.** Step 7 not started. Nothing committed.
-- **Step 6 fixes (build #24, see DECISIONS 2026-10-04 Step 6 rows):**
-  - **Hint:** stage- and target-aware strokes inside the remaining work area; lifts between strokes; dip → dent for putty; item → bin for drag.
-  - **Tools:** cleaning radii match the visible tool heads; spray radii per level and stage; mist nozzle, foam can and drill brush re-drawn to point at the object.
-  - **Materials:** foam per material (rug, metal, leather, sneaker).
-  - **Localized stages:** dashed green outlines on every one.
-  - **Chair:** bigger; full-seat foam mask; putty dip with a tub.
-  - **Edge remnants:** region finish erases with the region mask, so thin edges are cleaned; the sneaker eraser targets the real scuff marks.
-  - **Soft auto-complete** for scattered remnants.
+- **Current stage goal:** Step 6 — UI / reward polish before designer review (gameplay approved). Step 7 not started. Nothing committed.
+- **Step 6 gameplay approved** (2026-10-06).
+- **x3 button v4 (build #43), waiting for approval:** purple button with the clapperboard watch-ad icon, "Claim" + large yellow "x3".
+- **UI polish 2 (build #42):** chests always visible in the gameplay HUD; hub chests in one left column under the counters with the approved compact header; Replay / Next labels optically centred; green x3 button after the reference composition.
+- **UI corrections (build #41):** hub background and shelves reverted to the approved version, emblem removed, chests under the coin / diamond counters, x3 button redesigned, completed-screen text alignment fixed and verified on rendered pixels.
+- **Step 6 UI / reward pass (build #36):** global text-layout rules, x3 post-level reward (rewarded ad, dev adapter), timed chest (menu), level-progress chest (result card, offer window, menu). Values in `src/content/economy.js` (provisional). No real ads / SDK.
+- **Step 6 chair duster fix (build #33):** the frame starts visibly dusty (new Nano Banana 2 dust film) and turns into clean wood under the duster; the holes are above the dust layers and visible the whole time (approved with Step 6 gameplay).
+- **Step 6 polish pass (build #32):** trophy ball dry-brush without outline (hint kept); chair putty fully covers each hole (solid patch, repair spots no longer cut by the chair silhouette); sanding shows clean circle targets and removes the whole patch. (approved with Step 6 gameplay).
+- **Step 6 second pass (build #29, see DECISIONS 2026-10-05 rows, VALIDATION "Step 6 — second pass"):**
+  - **Completion lifecycle (all levels):** work done (manual 100 % or gentle auto-complete from 85 %) → bar runs to 100 % → **waits while the finger / mouse is still down** (tool stays in the hand) → on release: completion feedback → next stage.
+  - **Outlines** only where the target is ambiguous (trophy ball / pedestal, chair seat close-ups, putty / sanding spots); removed from whole-chair dusting and sneaker scuffs.
+  - **Duster:** cleans with a tall footprint matching its fluffy head (was a circle at the tip).
+  - **Foam can v3** (Nano Banana 2): side nozzle tube, can held tilted, foam visibly leaves the nozzle and travels to the object.
+  - **Drill brush v3** (Nano Banana 2): side view per the reference, brush face on the surface (chair + sneaker).
+  - **Chair putty:** no residue after sanding (putty clipped to the chair, sanding covers the whole patch).
+  - **Sneaker chisel:** no stall at 95 % (wider tip probe on speckled mud, last crumbs break off).
+  - **Chisel hint** stays on the remaining crust (found by the phone run).
+- **Step 6 first pass (build #24):** target-aware hints, radii = tool heads, spray radii per stage, material foams, larger chair, putty dip, region-mask finishing, soft auto-complete.
 - **Accepted by the game designer:**
   - Step 0 decisions, Step 1, CP1 (core gameplay).
   - **Step 3 revision approved as the Soccer Ball baseline** (responsive layout, larger UI, new pitch, continuous foam, result card, coin fly).
@@ -28,7 +37,7 @@ Updated: 2026-10-04 (rev. 9) · Build **#24** (2026-10-04T22:14:58Z) · Commit: 
       - **Result:** Home, Replay, Next.
     - Text alignment fix (glyph-centred labels, labels shrink to fit their buttons).
     - Art: 42 Nano Banana 2 generations (2 rejected, kept for the record) and 36 Background Remover jobs, recorded in `project/asset-manifest.json` (section `step5`).
-- **Current task:** game designer review of Step 5.
+- **Current task:** game designer review of the Step 6 second pass.
 - **Active constraints:**
   - Dev adapter only; no YouTube SDK.
   - No sound assets (Step 9).
@@ -38,16 +47,23 @@ Updated: 2026-10-04 (rev. 9) · Build **#24** (2026-10-04T22:14:58Z) · Commit: 
   - Level data: `src/content/levels/*.js`; menu / Next order: `src/content/catalog.js` (`DISPLAY_ORDER`).
   - Mechanics: `src/mechanics/` (brush with region and aspect, chunk break, drag to target, spots).
   - Hints: `src/scenes/level/HintController.js`.
-  - Art pipeline: `scripts/prepare_levels.py`, `scripts/write_step5_manifest.py`.
+  - Art pipeline: `scripts/prepare_levels.py`, `scripts/write_step5_manifest.py`, `scripts/write_step6_manifest.py`.
+  - Tool geometry (offset, jet direction, hold angle, head footprint): `src/content/tools.js`, `src/scenes/level/ToolController.js`.
 - **How to run:**
   - `npm test`; `npm run build`; `npm run preview` (LAN: `npx vite preview --host 0.0.0.0 --port 4173`).
   - Step 5 E2E: `npx playwright test levels5`.
+  - Step 6 E2E: `npx playwright test step6-release` (hold to release, all levels) and `npx playwright test step6-review`.
   - Art pipeline (Python with Pillow / NumPy / SciPy): `python scripts/prepare_levels.py` (all, or e.g. `rug chair`), then `python scripts/write_step5_manifest.py`.
-- **Checks actually performed:** see `project/VALIDATION.md` (Step 5 section).
+- **Checks actually performed:** see `project/VALIDATION.md` (Step 6 sections).
 - **Known defects / limitations:**
+  - Landscape phone: result / chest-offer card buttons are ≈ 35 CSS px tall (card fitted to the short height).
+  - Timed chest uses the device clock (moving it forward opens the chest early); receipts are client-side only.
+  - The dev save now persists across reloads (`?devStorage=memory` for a clean start).
+  - Phone, sneaker scrub: when the drill brush works the right end of the shoe, the drill body extends past the right screen edge (playable; possible fix: mirror the drill near the right edge).
+  - Gentle auto-complete thresholds and level timing are bot-measured; human pacing is Step 10.
   - On landscape / desktop windows the objects are framed smaller than on phones (they fit under the HUD with room for jet tools). To be reviewed in the Step 6 audit.
   - Landscape backgrounds for levels 2–5 are crops of the portrait art.
-- **Next concrete step:** game designer review → Step 6 UI / responsive audit.
+- **Next concrete step:** game designer review of the UI / reward pass → on approval, Step 7.
 
 ## Questions for the game designer
 

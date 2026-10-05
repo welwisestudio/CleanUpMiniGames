@@ -209,6 +209,127 @@ describe('RewardService', () => {
   });
 });
 
+describe('Rewards: x3, timed chest, level-progress chest (Step 6 reward pass)', () => {
+  async function setup({ ad = 'earned', now = 1_000_000 } = {}) {
+    const platform = createDevPlatform({ rewardedOutcome: ad, rewardedDelayMs: 1 });
+    const save = new SaveService(platform);
+    await save.load();
+    const clock = { now };
+    const pause = new PauseState();
+    const rewards = new RewardService({ save, economy, platform, pause, clock: () => clock.now });
+    return { platform, save, rewards, clock, pause };
+  }
+
+  it('x3: ad success pays 3 × in total exactly once; repeated / parallel clicks pay nothing more', async () => {
+    const { save, rewards, pause } = await setup();
+    const c = rewards.grantLevelCompletion('chair', 1); // +20
+    expect(save.get('coins')).toBe(20);
+    expect(rewards.x3Offer(c.completionId)).toMatchObject({ available: true, base: 20, total: 60, bonus: 40 });
+    const pausedDuringAd = [];
+    pause.on('change', (sn) => pausedDuringAd.push(sn.reasons.includes('adBusy')));
+    const [a, b] = await Promise.all([rewards.claimX3(c.completionId), rewards.claimX3(c.completionId)]);
+    expect([a.status, b.status].sort()).toEqual(['granted', 'unavailable']);
+    expect(save.get('coins')).toBe(60);
+    expect(pausedDuringAd).toContain(true);
+    expect(pause.has('adBusy')).toBe(false);
+    expect((await rewards.claimX3(c.completionId)).status).toBe('unavailable');
+    expect(save.get('coins')).toBe(60);
+    // an older completion's x3 can never be claimed once a newer level is completed
+    const c2 = rewards.grantLevelCompletion('rug', 2);
+    expect(rewards.x3Offer(c.completionId).available).toBe(false);
+    expect(rewards.x3Offer(c2.completionId).available).toBe(true);
+  });
+
+  it('x3: cancelled, failed or unavailable ads grant nothing and keep the offer', async () => {
+    for (const ad of ['not-earned', 'error', 'unavailable']) {
+      const { save, rewards } = await setup({ ad });
+      const c = rewards.grantLevelCompletion('chair', 1);
+      const r = await rewards.claimX3(c.completionId);
+      expect(r.status).toBe(ad);
+      expect(save.get('coins')).toBe(20);
+      expect(rewards.x3Offer(c.completionId).available).toBe(true);
+    }
+  });
+
+  it('x3 claim survives a reload: the flag is in the save', async () => {
+    const { platform, rewards } = await setup();
+    const c = rewards.grantLevelCompletion('chair', 1);
+    await rewards.claimX3(c.completionId);
+    const save2 = new SaveService(platform);
+    await save2.load();
+    const r2 = new RewardService({ save: save2, economy, platform });
+    expect(r2.x3Offer(c.completionId)).toMatchObject({ available: false, claimed: true });
+    expect(save2.get('coins')).toBe(60);
+  });
+
+  it('timed chest: countdown, claim once, reset, persistence, clock jump repair', async () => {
+    const { platform, save, rewards, clock } = await setup();
+    const cfg = economy.rewards.timedChest;
+    await rewards.ensureTimedChest();
+    expect(rewards.timedChestState()).toMatchObject({ ready: false, remainingMs: cfg.firstDelaySec * 1000 });
+    expect(rewards.claimTimedChest().status).toBe('not-ready');
+    clock.now += 30_000;
+    expect(rewards.timedChestState().remainingMs).toBe((cfg.firstDelaySec - 30) * 1000);
+    clock.now += cfg.firstDelaySec * 1000;
+    expect(rewards.timedChestState().ready).toBe(true);
+    const a = rewards.claimTimedChest();
+    const b = rewards.claimTimedChest();
+    expect(a.status).toBe('granted');
+    expect(b.status).toBe('not-ready');
+    expect(save.get('coins')).toBe(cfg.coins);
+    expect(rewards.timedChestState()).toMatchObject({ ready: false, remainingMs: cfg.intervalSec * 1000 });
+    await a.savePromise;
+    // reload: the timer continues from the saved time (not reset)
+    const save2 = new SaveService(platform);
+    await save2.load();
+    const r2 = new RewardService({ save: save2, economy, platform, clock: () => clock.now + 10_000 });
+    await r2.ensureTimedChest();
+    expect(r2.timedChestState().remainingMs).toBe((cfg.intervalSec - 10) * 1000);
+    // device clock moved far back: the timer is repaired to one interval, never stuck
+    const r3 = new RewardService({ save: save2, economy, platform, clock: () => clock.now - 86_400_000 });
+    await r3.ensureTimedChest();
+    expect(r3.timedChestState().remainingMs).toBe(cfg.intervalSec * 1000);
+  });
+
+  it('progress chest: +20 % per completed run, offer at 100 %, no reset on cancel, reset after a successful claim', async () => {
+    const { platform, save, rewards } = await setup({ ad: 'not-earned' });
+    const seen = [];
+    for (let run = 1; run <= 5; run++) {
+      const r = rewards.grantLevelCompletion(run % 2 ? 'chair' : 'chair', run); // same level counts: completions, not unique levels
+      rewards.grantLevelCompletion('chair', run); // duplicate call for the same run: ignored
+      seen.push(Math.round(rewards.progressChestState().progress * 100));
+      expect(r.chestStepsAfter).toBe(run);
+    }
+    expect(seen).toEqual([20, 40, 60, 80, 100]);
+    expect(rewards.progressChestState().full).toBe(true);
+    rewards.grantLevelCompletion('rug', 99); // more completions while full: stays at 100 %
+    expect(rewards.progressChestState().steps).toBe(5);
+    const coins = save.get('coins');
+    for (const ad of ['not-earned', 'error', 'unavailable']) {
+      platform.dev.setRewardedOutcome(ad);
+      expect((await rewards.claimProgressChest()).status).toBe(ad);
+      expect(rewards.progressChestState().full).toBe(true); // never silently reset
+    }
+    expect(save.get('coins')).toBe(coins);
+    platform.dev.setRewardedOutcome('earned');
+    const [a, b] = await Promise.all([rewards.claimProgressChest(), rewards.claimProgressChest()]);
+    expect([a.status, b.status].sort()).toEqual(['granted', 'unavailable']);
+    expect(save.get('coins')).toBe(coins + economy.rewards.progressChest.coins);
+    expect(save.get('diamonds')).toBe(economy.rewards.progressChest.diamonds);
+    expect(rewards.progressChestState()).toMatchObject({ steps: 0, full: false });
+    expect((await rewards.claimProgressChest()).status).toBe('unavailable');
+    // persisted
+    const save2 = new SaveService(platform);
+    await save2.load();
+    expect(save2.get('progressChest')).toEqual({ steps: 0, opened: 1 });
+  });
+
+  it('save v1 migrates to v2 with empty reward state', () => {
+    const st = parseSave(JSON.stringify({ version: 1, coins: 40, levels: { rug: { completed: true, completions: 2 } } }));
+    expect(st).toMatchObject({ version: 2, coins: 40, completionSeq: 0, lastCompletion: null, timedChest: { readyAt: 0 }, progressChest: { steps: 0, opened: 0 } });
+  });
+});
+
 describe('PauseState and AudioService gate', () => {
   it('host resume does not lift the user pause', () => {
     const ps = new PauseState();
@@ -342,6 +463,7 @@ function overlayStack() {
     toLocal: (w) => ({ x: w.x, y: w.y }), // world == local in this fake
     regionCircles: () => [[300, 300, 40], [700, 300, 40]],
     stampTexture: (...a) => ops.push(a),
+    clipToObject: (id) => ops.push(['clip', id]),
   };
 }
 
@@ -397,6 +519,40 @@ describe('Step 6: soft auto-complete and putty dip', () => {
     }
     expect(g.progress).toBeGreaterThanOrEqual(0.85);
     expect(m2.completed).toBe(true);
+  });
+
+  it('chisel: the last small crumbs break off by themselves; a large piece still needs the chisel', () => {
+    const map = buildChunkMap({ size: SIZE, res: 320, radius: 306, count: 24, seed: 1201 });
+    const params = { layer: 'mud', chunkCount: 24, breakDistance: 120, tipRadius: 26 };
+    const ids = [...Array(map.chunkCount).keys()].sort((a, b) => map.counts[a] - map.counts[b]);
+    const area = map.counts.reduce((a, b) => a + b, 0);
+    // remove the smallest chunks first, keep the three largest: big remaining piece → no auto-complete
+    const big = new ChunkBreakMechanic({ stack: fakeStack(), params, chunkMap: map });
+    const keep = ids.slice(-3);
+    for (const id of ids.slice(0, -3)) big._remove(id, 1);
+    const leftBig = keep.reduce((a, id) => a + map.counts[id], 0) / area;
+    expect(big.progress).toBeGreaterThanOrEqual(0.85);
+    expect(leftBig).toBeGreaterThan(0.08);
+    expect(big.completed).toBe(false);
+    // remove the largest first: once only the smallest crumbs are left (≤ 8 %), they fall off
+    const small = new ChunkBreakMechanic({ stack: fakeStack(), params, chunkMap: map });
+    for (const id of [...ids].reverse()) {
+      if (small.completed) break;
+      small._remove(id, 1);
+    }
+    expect(small.completed).toBe(true);
+    expect(small.removedCount).toBe(map.chunkCount);
+  });
+
+  it('a long soft head (duster) cleans an upright band of the head shape, not a circle', () => {
+    const plain = new BrushMechanic({ stack: fakeStack(), params: { mode: 'reveal', layers: ['d'], radius: 30, threshold: 0.99 } });
+    const duster = new BrushMechanic({ stack: fakeStack(), params: { mode: 'reveal', layers: ['d'], radius: 30, threshold: 0.99 }, tool: { head: [0.2, 0.5] } });
+    expect(duster.aspectY).toBeCloseTo(2.25, 2);
+    plain.stroke({ x: 440, y: 860 }, { x: 640, y: 860 });
+    duster.stroke({ x: 440, y: 860 }, { x: 640, y: 860 });
+    // same sweep, the band is about head-length tall instead of head-width
+    expect(duster.grid.progress / plain.grid.progress).toBeGreaterThan(1.8);
+    expect(duster.grid.progress / plain.grid.progress).toBeLessThan(2.6);
   });
 
   it('putty: rubbing a dent with an empty knife does nothing; after dipping it fills one dent', () => {

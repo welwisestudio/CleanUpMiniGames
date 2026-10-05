@@ -81,7 +81,7 @@ export async function pressButton(page, driver, id) {
 // ---- stage play ------------------------------------------------------------------------
 // Converts a desired working point / jet impact (screen px) into the pointer position.
 export function pointerFor(tool, target) {
-  if (tool.kind === 'jet') return { x: target.x - tool.workOffset.x, y: target.y + tool.jetLength - tool.workOffset.y };
+  if (tool.kind === 'jet') return { x: target.x - tool.jet.x - tool.workOffset.x, y: target.y - tool.jet.y - tool.workOffset.y };
   return { x: target.x - tool.workOffset.x, y: target.y - tool.workOffset.y };
 }
 

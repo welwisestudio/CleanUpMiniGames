@@ -115,6 +115,11 @@ export class SpotsMechanic {
 
   _complete(s) {
     s.done = true;
+    // solid round base patch first (the ragged putty shapes alone can leave the hole's rim
+    // visible), then the spot's own putty texture on top. Not clipped to the chair silhouette:
+    // the dent decals overhang the chair's edges and must be covered completely; the sanding
+    // stage cleans the whole patch (free spot region).
+    if (this.params.base) this.stack.stampTexture(this.params.layer, this.params.base, { x: s.x, y: s.y }, s.r * 2.3, 1);
     this.stack.stampTexture(this.params.layer, s.stamp, { x: s.x, y: s.y }, s.r * 2.3, 1);
     const ring = this.rings[this.spots.indexOf(s)];
     this.scene.tweens.add({ targets: ring, alpha: 0, duration: 250 });

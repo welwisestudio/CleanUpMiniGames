@@ -253,17 +253,37 @@ def tool(name, img, rule):
     elif rule == 'top-center':  # centre of the head in the top quarter (duster, drill brush)
         top = ys < ys.min() + (ys.max() - ys.min()) * 0.22
         wp = (float(xs[top].mean()) / w, float(ys[top].mean()) / h)
+    elif rule == 'head':  # long soft head (duster): centre of the wide part from the top down
+        widths = (a > 128).sum(1)
+        wide = np.where(widths >= widths.max() * 0.45)[0]
+        top = wide.min()
+        # the head = rows from the first wide row down to the first narrow row (the handle)
+        end = top
+        while end + 1 < h and widths[end + 1] >= widths.max() * 0.35:
+            end += 1
+        cols = np.where((a[top:end + 1] > 128).any(0))[0]
+        wp = ((cols.min() + cols.max()) / 2 / w, (top + end) / 2 / h)
+        meta['tools'].setdefault(name, {})['head'] = [round((cols.max() - cols.min() + 1) / max(w, h), 4), round((end - top + 1) / max(w, h), 4)]
+    elif rule == 'left-head':  # sideways drill: centre of the brush tuft at the left end
+        band = xs < xs.min() + (xs.max() - xs.min()) * 0.12
+        wp = (float(xs[band].mean()) / w, float(ys[band].mean()) / h)
+    elif rule == 'right-tip':  # sideways nozzle tube (foam can): its tip at the right end
+        band = xs > xs.max() - max(3, int(w * 0.01))
+        wp = (float(xs.max()) / w, float(ys[band].mean()) / h)
     elif rule == 'bottom':
         wp = ((xs.min() + xs.max()) / 2 / w, (ys.max() - (ys.max() - ys.min()) * 0.10) / h)
     else:
         wp = ((xs.min() + xs.max()) / 2 / w, (ys.min() + ys.max()) / 2 / h)
     save_webp(img, PUB / 'shared' / f'{name}.webp')
     review('shared', name, img)
+    head = meta['tools'].get(name, {}).get('head')
     meta['tools'][name] = {'size': [w, h], 'workingPoint': [round(wp[0], 4), round(wp[1], 4)]}
+    if head:
+        meta['tools'][name]['head'] = head  # head width / length as a share of the longest side
 
 
 def run_tools():
-    for name, rule in [('tool-squeegee', 'top'), ('tool-detail-brush', 'top'), ('tool-mist-nozzle', 'top'), ('tool-duster', 'top-center'), ('tool-foam-can', 'top'), ('tool-drill-brush', 'top'), ('tool-putty-knife', 'top')]:
+    for name, rule in [('tool-squeegee', 'top'), ('tool-detail-brush', 'top'), ('tool-mist-nozzle', 'top'), ('tool-duster', 'head'), ('tool-foam-can', 'right-tip'), ('tool-drill-brush', 'left-head'), ('tool-putty-knife', 'top')]:
         tool(name, Image.open(C / 'shared' / f'{name}.png').convert('RGBA'), rule)
     im, it = components(C / 'shared' / 'tools-sanding-sponge-eraser-sheet.png')
     it.sort(key=lambda t: t[1])
@@ -325,6 +345,43 @@ def run_trophy():
     finish_level(L, layers, clean_a, {'registration': reg, 'regions': {'ball': [b[0], b[1], b[2], split], 'base': [b[0], split, b[2], b[3]]}})
 
 
+def run_rewards():
+    """Step 6 UI / reward pass art (Nano Banana 2 + Background Remover): the two chests, the
+    orange (chest offer) and purple (x3) rewarded-ad button surfaces (nine-slice) and the
+    watch-ad clapperboard icon. The logo emblem and the menu wallpaper of
+    the first version were rejected by the game designer (reference/rejected/shared)."""
+    C2 = C / 'shared'
+    for name in ('ui-btn-orange', 'ui-btn-purple'):
+        btn = Image.open(C2 / f'{name}.png').convert('RGBA')
+        a = np.array(btn)[:, :, 3] > 24
+        if name == 'ui-btn-purple':
+            # the purple render came with a grey slab attached under its lip: keep the saturated
+            # (purple) shape only, with its highlights filled back in
+            rgb = np.array(btn)[:, :, :3].astype(int)
+            a = a & ((rgb.max(2) - rgb.min(2)) > 28)
+            a = ndimage.binary_fill_holes(ndimage.binary_closing(a, iterations=3))
+        lab, n = ndimage.label(a)
+        sizes = ndimage.sum(a, lab, range(1, n + 1))
+        keep = lab == (int(np.argmax(sizes)) + 1)  # the button itself (drops the soft reflection)
+        arr = np.array(btn)
+        arr[:, :, 3] = np.where(ndimage.binary_dilation(keep, iterations=3), arr[:, :, 3], 0)
+        img = fit(crop_padded(Image.fromarray(arr, 'RGBA'), 0.02), 400)
+        save_webp(img, PUB / 'ui' / f'{name}.webp')
+        review('shared', name, img)
+        w, h = img.size
+        meta['ui'][name] = {'size': [w, h], 'slice': [round(h * 0.5), round(h * 0.5), round(h * 0.36), round(h * 0.44)]}
+    # watch-ad icon (clapperboard tile) for the x3 button
+    img = fit(crop_padded(Image.open(C2 / 'icon-ad-clapper.png').convert('RGBA'), 0.02), 192)
+    save_webp(img, PUB / 'ui' / 'icon-ad-clapper.webp')
+    review('shared', 'icon-ad-clapper', img)
+    meta['ui']['icon-ad-clapper'] = {'size': list(img.size)}
+    for name, side in (('ui-chest-timed', 384), ('ui-chest-progress', 512)):
+        img = fit(crop_padded(Image.open(C2 / f'{name}.png').convert('RGBA'), 0.03), side)
+        save_webp(img, PUB / 'ui' / f'{name}.webp')
+        review('shared', name, img)
+        meta['ui'][name] = {'size': list(img.size)}
+
+
 def run_sneaker():
     L = 'sneaker'
     layers, clean_a, reg = register_states(L, ['sneaker-clean', 'sneaker-scuffed', 'sneaker-wet', 'sneaker-stained', 'sneaker-muddy'], crust='sneaker-mudcrust')
@@ -350,6 +407,29 @@ def run_sneaker():
     scuffs = ndimage.binary_fill_holes(ndimage.binary_closing(scuffs, iterations=6)) & (clean_a > 0.5)
     save_mask(scuffs.astype(np.float32), PUB / L / 'scuffs-mask.png', 512)
     finish_level(L, layers, clean_a, {'registration': reg, 'regions': {'sole': [b[0], sole_top, b[2], b[3]]}, 'scuffBounds': bounds_of(scuffs.astype(np.float32))})
+
+
+def dust_layer(wood, area_a, strength=0.62):
+    """Step 6 polish: a clearly visible dust film over the chair frame. Base = the registered
+    weathered wood itself (exact geometry of the layer the duster reveals); over it a light gray
+    powdery film whose fine detail (lint, specks) comes from the Nano Banana 2 dust material
+    (reference/masters/materials/dust-wood.png). Only the texture's high-frequency detail is used
+    (its own wood grain / light band would not follow the chair's posts); the wood's shading is
+    kept so the frame still reads as 3D."""
+    tex = np.array(Image.open(M / 'materials/dust-wood.png').convert('L').resize((OBJ, OBJ), Image.LANCZOS)).astype(np.float32) / 255
+    detail = tex - ndimage.gaussian_filter(tex, 3)
+    w = np.array(wood).astype(np.float32)
+    rgb = w[:, :, :3] / 255
+    lum = rgb.mean(2)
+    inside = area_a > 0.5
+    shade = np.clip(lum / max(float(lum[inside].mean()), 1e-3), 0.4, 1.6) ** 0.55
+    film = np.array([0.80, 0.78, 0.74], np.float32)[None, None, :] * shade[:, :, None] + detail[:, :, None] * 1.6
+    # patchy thickness: thicker on most of the surface, a little thinner in places
+    thick = 0.85 + 0.15 * (ndimage.gaussian_filter(tex, 18) - 0.5) * 4
+    k = np.clip(strength * thick, 0, 0.85)[:, :, None]
+    out = np.clip(rgb * (1 - k) + film * k, 0, 1)
+    arr = np.dstack([out * 255, w[:, :, 3]])
+    return mask_layer(Image.fromarray(arr.astype(np.uint8), 'RGBA'), area_a)
 
 
 def nearest_on(mask, x, y):
@@ -387,7 +467,9 @@ def run_chair():
         'chair-sanded': layers['chair-sanded'],
         'chair-dented': mask_layer(layers['chair-dented'], frame_f),
         'chair-seat-old': mask_layer(layers['chair-seat-old'], seat_f),
-        'chair-dusty-frame': mask_layer(layers['chair-dusty'], frame_f),
+        # Step 6 polish: dust film on the registered weathered frame (the old chair-dusty state
+        # differed from it by only ~10 % brightness, so dusting showed almost no change)
+        'chair-dusty-frame': dust_layer(layers['chair-dented'], frame_f),
         'chair-dusty-seat': mask_layer(layers['chair-dusty'], seat_f),
     }
     foam_layers(L, seat_f, 0.16, 'leather')
@@ -464,7 +546,7 @@ def run_soccer_masks():
 if __name__ == '__main__':
     import sys
     only = set(sys.argv[1:])
-    steps = {'soccer': run_soccer_masks, 'tools': run_tools, 'ui': run_ui, 'rug': run_rug, 'trophy': run_trophy, 'sneaker': run_sneaker, 'chair': run_chair}
+    steps = {'soccer': run_soccer_masks, 'tools': run_tools, 'ui': run_ui, 'rug': run_rug, 'trophy': run_trophy, 'sneaker': run_sneaker, 'chair': run_chair, 'rewards': run_rewards}
     old = {}
     if META_JS.exists():
         txt = META_JS.read_text(encoding='utf-8')

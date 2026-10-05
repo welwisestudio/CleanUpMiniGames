@@ -105,3 +105,40 @@ Checks (AI review, PASS):
 Known artefacts:
 - The toggle sheet contained an extra yellow capsule, which isn't used.
 - The trash-peel sprite includes a tiny speck at its left edge.
+
+## Step 6 — bug-fix review art (2026-10-04 / 2026-10-05)
+
+Status: generated, processed, integrated. Waiting for the game designer's review of Step 6.
+Full record (prompts, job IDs, Background Remover jobs, hashes): `project/asset-manifest.json` → `step6` (first pass) and `step6.pass2` (second pass). Script: `scripts/write_step6_manifest.py`.
+
+| Pass | Asset | Nano Banana 2 job | Background Remover job | Replaces (kept in `reference/rejected/shared/`) |
+|---|---|---|---|---|
+| 1 | tool-mist-nozzle | 56218069-81e2-48d6-bb1f-bd60f4b0858c | c1238a2e-9675-4975-a0b5-f96a044dbb8d | tool-mist-nozzle-v1 (nozzle head angled sideways) |
+| 1 | foam-rug / foam-metal / foam-leather / foam-sneaker (materials) | fd18fe19… / f858d6dc… / f323d2ad… / ebed0d1a… | not needed (full-bleed textures) | one shared foam |
+| 1 → rejected in 2 | tool-foam-can v2, tool-drill-brush v2 | 6506e4e2… / c44e45c5… | 756f84fe… / 31493798… | v1 versions |
+| 2 | **tool-drill-brush v3**: side view, round brush sticking out to the left, bristle face on the surface | 6cde3106-2bdd-4dcc-b02b-ce889dfa9bf4 | 65335f5d-b803-4c59-a961-51f1181e740d | tool-drill-brush-v2 (vertical drill, bristles up) |
+| 2 | **tool-foam-can v3**: upright can, nozzle tube sideways to the right | bb6f4db4-96dd-4341-abf1-329a83cf1661 | 2cfab6a4-188c-4d28-99ca-3bfca8daf77b | tool-foam-can-v2 (straw straight up) |
+
+Working points (`scripts/prepare_levels.py tools`, checked on the sprites): drill v3 → centre of the bristle tuft (rule `left-head`); foam can v3 → tip of the nozzle tube (rule `right-tip`); duster → centre of the fluffy head, plus the measured head size [width 0.21, length 0.53 of the sprite] used for its cleaning footprint (rule `head`).
+
+| Polish | **materials/dust-wood**: seamless powdery dust film with lint and specks (chair duster stage) | 682061f3-3b25-4c32-9e6a-6b888d40392f | not needed (full-bleed texture) | — (the old chair-dusty frame state is no longer used for the frame; it still provides the dusty seat and the menu thumbnail) |
+
+Chair dusty frame (polish): built in `prepare_levels.dust_layer` from the registered weathered frame + a light gray dust film with the dust material's lint / speck detail; wood shading kept.
+
+## Step 6 — UI / reward pass (2026-10-06)
+
+Nano Banana 2 (5 generations) + Background Remover (4). Full record: `project/asset-manifest.json` → `step6.uiRewards`. Export: `python scripts/prepare_levels.py rewards` → `public/assets/ui/`.
+
+| Asset | Nano Banana 2 job | Background Remover job | Use |
+|---|---|---|---|
+| ui-chest-timed (small wooden chest) | 8fb33204-6028-454c-816b-84c99d570bc4 | 7fbf0100-0a91-4eaa-9084-a4001d363d9a | timed chest (menu header) |
+| ui-chest-progress (premium mint / gold chest) | 27933333-29aa-41a9-b9d8-4bbe7b96ee95 | 08e60882-a10d-40eb-bc2d-b8c0ac4b2522 | level-progress chest (result bar, offer, menu) |
+| ui-logo-emblem (sponge badge, no text) | ae612815-72e5-4ffd-8e24-c81371039615 | 87c93c55-4687-4a45-bb01-b05a4b933b98 | menu title element (until the game name is final) |
+| ui-btn-orange (rewarded-ad button surface, nine-slice) | e2e51ad3-a9cf-49dd-a8ba-44b9b3254e52 (style reference: ui-buttons-sheet 80b72ba7…) | 0be78584-68c8-4ae7-bdce-3f6f2ed0807e | Claim x3, Open chest |
+| bg-menu-portrait (wallpaper) | 1dc437a5-ce62-4627-9673-525bf47b76f8 | not needed | menu background (cover-fitted) |
+
+Reused: icon-ad, ui-tile-large (level cards), ui-pill, ui-progress-fill, ui-result-card. Alpha review PASS (`reference/review/shared/`).
+
+**Update 2026-10-06 (designer review):** `ui-logo-emblem` and `bg-menu-portrait` are rejected (hub reverted to the approved background and shelves; no emblem). Files moved to `reference/rejected/shared/`, runtime files removed; manifest status `rejected` with the reason. The chests and the orange ad button stay in use.
+
+**Update 2026-10-06 (x3 button v4):** `ui-btn-purple` (Nano Banana 2 job 289f1b77-80b8-422c-9af6-a3d84c1a32de, Background Remover d6f050dc-6e7e-48a2-a18c-217eb57ad7e0, style reference ui-buttons-sheet) and `icon-ad-clapper` (job 0029610a-533d-4c89-886c-9e582987dc17, Background Remover 7e58dce9-a0f2-4eda-81a1-a4922a8c95c6; direction from the designer's reference icon, own render). Export: `python scripts/prepare_levels.py rewards`.

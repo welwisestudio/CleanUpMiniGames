@@ -56,6 +56,23 @@ export class CoverageGrid {
   // Size (cells) of the largest 4-connected group of uncovered inside cells. Used by the soft
   // auto-complete: small scattered remnants may be finished automatically, a big unfinished
   // patch may not.
+  // Share of the inside cells within a circle that are covered (0..1; 1 if none are inside).
+  coverageIn(x, y, r) {
+    let inside = 0;
+    let covered = 0;
+    const c = this.cellSize;
+    for (let j = 0; j < this.cells; j++) {
+      for (let i = 0; i < this.cells; i++) {
+        const k = j * this.cells + i;
+        if (!this.inside[k]) continue;
+        if (((i + 0.5) * c - x) ** 2 + ((j + 0.5) * c - y) ** 2 > r * r) continue;
+        inside += 1;
+        covered += this.covered[k];
+      }
+    }
+    return inside ? covered / inside : 1;
+  }
+
   largestUncoveredBlob() {
     const n = this.cells;
     const seen = new Uint8Array(n * n);
