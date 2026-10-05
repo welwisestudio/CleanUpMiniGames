@@ -1,51 +1,71 @@
 # Current project status
 
-Updated: 2026-10-04 (rev. 7) · Build **#12** (2026-10-04T15:34:39Z) · Commit: `e2a0125` (Step 3 committed) + uncommitted Step 3 revision
+Updated: 2026-10-04 (rev. 9) · Build **#24** (2026-10-04T22:14:58Z) · Commit: `b263241` + uncommitted Steps 4–5 work
 
-- **Current stage goal:** Step 3 / **CP2**: visual quality benchmark of the Soccer Ball level. **CP2 not approved yet.** A visual revision is in progress for the game designer's four notes. Step 4 not started.
+- **Current stage goal:** Step 6 — gameplay / UX / visual polish and bug fixing from the game designer's Step 5 review (16 items). **Fixes done, waiting for approval.** Step 7 not started. Nothing committed.
+- **Step 6 fixes (build #24, see DECISIONS 2026-10-04 Step 6 rows):**
+  - **Hint:** stage- and target-aware strokes inside the remaining work area; lifts between strokes; dip → dent for putty; item → bin for drag.
+  - **Tools:** cleaning radii match the visible tool heads; spray radii per level and stage; mist nozzle, foam can and drill brush re-drawn to point at the object.
+  - **Materials:** foam per material (rug, metal, leather, sneaker).
+  - **Localized stages:** dashed green outlines on every one.
+  - **Chair:** bigger; full-seat foam mask; putty dip with a tub.
+  - **Edge remnants:** region finish erases with the region mask, so thin edges are cleaned; the sneaker eraser targets the real scuff marks.
+  - **Soft auto-complete** for scattered remnants.
 - **Accepted by the game designer:**
-  - All Step 0 decisions.
-  - Step 1 (style guide, plan).
-  - **CP1 core gameplay**, with two required notes: (1) larger UI; (2) responsive layout instead of a fixed 9:16 canvas.
-- **Implemented, not yet accepted (Step 3):**
-  - **Full Soccer Ball visual set generated with Nano Banana 2** via Higgsfield MCP (22 generations): ball + 4 states, 6 tools, portrait and landscape pitch backgrounds, 2 foam textures, UI kit (tiles, buttons, pill, progress fill), 6 icons, result card, shelf, FX.
-  - Transparency via Higgsfield Background Remover (19 operations).
-  - Masters, cutouts, prompts, job IDs and reviews recorded in `project/ASSET-MANIFEST.md` and `project/asset-manifest.json`.
-  - Integrated into menu, gameplay HUD, all six stages, the completion card and the pause modal.
-  - **CP1 notes applied:** UI about 1.5× larger on phones (tool tile 80 vs ≈ 53 CSS px; touch targets ≥ 48 px). The canvas fills any window at native DPR (≤ 2); the HUD is anchored to the screen edges (two rows on narrow phones, one row on wide screens). The object is fitted to the free area; backgrounds cover-fit with portrait or landscape art; nothing is stretched.
-  - Fonts Rubik + Nunito bundled locally (OFL).
-- **Step 3 revision (CP2 feedback, build #12, not yet accepted):**
-  - Foam continuity: one foam material from spraying through scrubbing to rinsing (new `scrub` mode; scrubbed foam derived from the same foam texture). **Done.**
-  - Result card: measured inner-panel layout, smaller picture, centred reward row, even buttons ≥ 48 CSS px. **Done.**
-  - Coin fly: no compounding pulse; coins shrink to the counter-icon size along an arc. **Done.**
-  - Background: regenerated with Nano Banana 2 (2 candidates, the better one chosen) and integrated for portrait; landscape uses a 16:9 crop of it; result picture re-composited. **Done.** Limitation: no dedicated landscape generation (the Higgsfield connector disconnected in this session).
-  - Screenshots: `project/screenshots/step3-revision/`.
-- **Current task:** CP2 visual review of the Step 3 revision (build #12).
+  - Step 0 decisions, Step 1, CP1 (core gameplay).
+  - **Step 3 revision approved as the Soccer Ball baseline** (responsive layout, larger UI, new pitch, continuous foam, result card, coin fly).
+- **Implemented, not yet accepted:**
+  - **Step 4 (closed quickly):**
+    - Glove-hand hint (generated with Nano Banana 2) demonstrates the real gesture on the remaining work. It appears the first time each gesture family is introduced and after 5 s of inactivity, and never changes progress.
+    - Gameplay video: `project/videos/step4-soccer-ball.webm`.
+  - **Step 5:**
+    - Levels 2–5 (Rug, Golden Ball Trophy, Chair, Sneaker) with the reference stage sequences. All stages are playable by real input and each level ends in the correct final object state, a result card, Replay and Next.
+    - Main UI:
+      - **Menu:** a vertical scrolling list of shelves with 2 objects per row and all levels open. No title text. The header holds the counters and a settings gear.
+      - **HUD.**
+      - **Settings** (sound / music / vibration), reachable from the menu and from pause.
+      - **Pause:** Resume, Restart, Settings, Menu.
+      - **Result:** Home, Replay, Next.
+    - Text alignment fix (glyph-centred labels, labels shrink to fit their buttons).
+    - Art: 42 Nano Banana 2 generations (2 rejected, kept for the record) and 36 Background Remover jobs, recorded in `project/asset-manifest.json` (section `step5`).
+- **Current task:** game designer review of Step 5.
 - **Active constraints:**
-  - No real ads / SDK (dev adapter, TEST MODE).
+  - Dev adapter only; no YouTube SDK.
   - No sound assets (Step 9).
-  - No hint hand yet (feedback / hints are Step 4).
-  - Not tested on physical devices.
-- **Important files:** `src/`, `scripts/prepare_assets.py`, `scripts/write_asset_manifest.py`, `reference/masters|cutouts|review/soccer-ball/`, `public/assets/`, `project/screenshots/step3/`, `project/screenshots/step3-revision/`.
+  - Alternative tool cards and monetization are Step 7.
+  - Minor UI polish and the full responsive audit are Step 6.
+- **Important files:**
+  - Level data: `src/content/levels/*.js`; menu / Next order: `src/content/catalog.js` (`DISPLAY_ORDER`).
+  - Mechanics: `src/mechanics/` (brush with region and aspect, chunk break, drag to target, spots).
+  - Hints: `src/scenes/level/HintController.js`.
+  - Art pipeline: `scripts/prepare_levels.py`, `scripts/write_step5_manifest.py`.
 - **How to run:**
-  - Node: portable 24.21.0 on the Windows workstation (`C:\Users\Admin\AppData\Local\Programs\node-v24.21.0-win-x64`); Node 22 in the cloud session (E2E there needs the bundled Chromium and a longer timeout for the touch tests, because WebGL is software-rendered).
-  - `npm test`; `npm run build`; `npm run preview` → http://127.0.0.1:4173/; `npx playwright test`.
-  - Asset pipeline (Python with Pillow / NumPy / SciPy): `python scripts/prepare_assets.py`, then `python scripts/write_asset_manifest.py`.
-- **Checks actually performed:** see `project/VALIDATION.md`. Build #12 (revision): unit 21/21 PASS, production build + preview OK, one real phone playthrough + landscape shot PASS; full E2E not re-run (cloud software rendering). Build #9: unit 21/21, E2E 8/8 PASS.
-- **Known defects / blockers:** none known. Full E2E not re-run on the revision (see VALIDATION).
-- **Next concrete step:** CP2 decision. After CP2 approval → Step 4: feedback and hints for Level 1 (hint hand, stage feedback polish).
+  - `npm test`; `npm run build`; `npm run preview` (LAN: `npx vite preview --host 0.0.0.0 --port 4173`).
+  - Step 5 E2E: `npx playwright test levels5`.
+  - Art pipeline (Python with Pillow / NumPy / SciPy): `python scripts/prepare_levels.py` (all, or e.g. `rug chair`), then `python scripts/write_step5_manifest.py`.
+- **Checks actually performed:** see `project/VALIDATION.md` (Step 5 section).
+- **Known defects / limitations:**
+  - On landscape / desktop windows the objects are framed smaller than on phones (they fit under the HUD with room for jet tools). To be reviewed in the Step 6 audit.
+  - Landscape backgrounds for levels 2–5 are crops of the portrait art.
+- **Next concrete step:** game designer review → Step 6 UI / responsive audit.
 
-## Open items
+## Questions for the game designer
+
+| # | Question |
+|---|---|
+| Q1 | **Next after Level 5 (Sneaker):** not defined in the approved decisions. Currently the Sneaker result shows Home and Replay only. Options: no Next (as now); Next → back to the menu; Next → Level 1 (loop). |
+
+## Open items (not blocking)
 
 | # | Item | Needed by |
 |---|---|---|
-| 1 | Final game name for the logo | Step 5 |
-| 2 | Localization (fonts already support Latin + Cyrillic) | Before release |
+| 1 | Final game name / logo (menu shows no title text now) | Later (not blocking) |
+| 2 | Localization (fonts support Latin + Cyrillic; labels already shrink to fit) | Before release |
 | 3 | Full v1 object count | Step 8 |
 | 4 | Mt. Rushmore replacement / no real brands (AI suggestion) | Later levels |
 
 ## Provisional choices (reversible)
 
-- Replays pay the same base reward (+15); the real rule is set at Step 7.
-- The result card shows **Replay** where the reference has "Claim 2x" (monetization is Step 7).
-- Coin / diamond counters show values but have no "+" buttons yet (store is Step 7).
+- Rewards: ball +15, rug +15, trophy +20, chair +20, sneaker +20 (reference values); replays pay the same. Real economy at Step 7.
+- The result card shows **Replay** where the reference has "Claim 2x" (Step 7).
+- Vibration toggle uses `navigator.vibrate` through the dev adapter (no effect on desktop).

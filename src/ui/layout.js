@@ -40,18 +40,29 @@ export function computeLayout(W, H, dpr = 1) {
   return { W, H, dpr, cssW, cssH, u, portrait, compact, margin: m, stripY, progressY, hudBottom };
 }
 
-// Fits a round object of design radius `objR` (object-local units) into the play area,
-// leaving room below it for the resting tool and for jet tools (the jet hits ~1.1 R above
-// the nozzle, so the finger must be able to reach ~1.25 R below the object).
-export function fitObject(layout, objR) {
+// Fits an object into the play area below the HUD.
+// `target` = object-local bounds [x0, y0, x1, y1] to frame (whole object or a stage focus such as
+// the chair seat), or a number = radius of a round object centred on the canvas (Soccer Ball).
+// `reach` = how far below the framed bounds the finger must be able to go, in object-local units
+// (jet tools hit ~jetLength above the nozzle; contact tools sit ~120 above the finger).
+// Returns the world centre of the object CANVAS, the scale and the tool rest position.
+export function fitObject(layout, target, { reach = 540, canvasSize = 1024, share = null } = {}) {
+  const b = typeof target === 'number' ? [canvasSize / 2 - target, canvasSize / 2 - target, canvasSize / 2 + target, canvasSize / 2 + target] : target;
+  const objW = b[2] - b[0];
+  const objH = b[3] - b[1];
   const top = layout.hudBottom;
   const bottom = layout.H - layout.margin - 24 * layout.u; // keep clear of the status badges
   const playH = Math.max(1, bottom - top);
   const playW = layout.W - 2 * layout.margin;
-  const R = Math.max(40 * layout.dpr, Math.min(playW * 0.42, playH * (layout.portrait ? 0.29 : 0.305)));
-  const cx = layout.W / 2;
-  const cy = top + playH * 0.05 + R;
-  return { cx, cy, R, scale: R / objR, restY: Math.min(bottom - R * 0.2, cy + R + (bottom - (cy + R)) * 0.45) };
+  const hShare = share ?? (layout.portrait ? 0.58 : 0.61);
+  const minScale = (80 * layout.dpr) / Math.max(objW, objH);
+  const scale = Math.max(minScale, Math.min((playW * 0.84) / objW, (playH * hShare) / objH, (playH * 0.97) / (objH + reach)));
+  const boundsTop = top + playH * 0.05;
+  const cx = layout.W / 2 - ((b[0] + b[2]) / 2 - canvasSize / 2) * scale;
+  const cy = boundsTop - (b[1] - canvasSize / 2) * scale;
+  const boundsBottom = boundsTop + objH * scale;
+  const R = (Math.min(objW, objH) / 2) * scale;
+  return { cx, cy, scale, R, boundsTop, boundsBottom, restX: layout.W / 2, restY: Math.min(bottom - objH * scale * 0.1, boundsBottom + (bottom - boundsBottom) * 0.45) };
 }
 
 // Background "cover" fit: scale uniformly so the image fills the screen; centred.

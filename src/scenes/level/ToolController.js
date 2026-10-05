@@ -31,12 +31,19 @@ export class ToolController {
 
   _spriteScale() {
     const img = this.sprite;
-    return (this.tool.displayLength * this.objScale) / Math.max(img.width, img.height);
+    return (this.tool.displayLength * (this.toolScale ?? 1) * this.objScale) / Math.max(img.width, img.height);
   }
 
   setTool(tool, { animate = true } = {}) {
     this.tool = tool;
     this.sprite?.destroy();
+    this.sprite = null;
+    // A drop target (trash bin) is part of the scene, not a held tool: nothing follows the finger.
+    if (tool.kind === 'target') {
+      this.active = false;
+      this.pointerWorld = null;
+      return;
+    }
     const s = this.scene.add.image(this.rest.x, this.rest.y, tool.texture).setDepth(41);
     s.setOrigin(tool.workingPoint.x, tool.workingPoint.y);
     this.sprite = s;
@@ -50,7 +57,20 @@ export class ToolController {
     }
   }
 
+  // Material carried by the tool (putty on the knife after dipping): a small blob drawn at the
+  // working point, following the tool. null removes it.
+  setLoad(textureKey) {
+    this.loadSprite?.destroy();
+    this.loadSprite = null;
+    if (!textureKey) return;
+    this.loadSprite = this.scene.add.image(0, 0, textureKey).setDepth(42);
+    this.loadSprite.setScale(0);
+    const k = (70 * this.objScale) / Math.max(this.loadSprite.width, this.loadSprite.height);
+    this.scene.tweens.add({ targets: this.loadSprite, scale: k, duration: 220, ease: 'Back.easeOut' });
+  }
+
   exit() {
+    this.setLoad(null);
     if (!this.sprite) return Promise.resolve();
     const s = this.sprite;
     this.sprite = null;
@@ -125,23 +145,26 @@ export class ToolController {
 
   // Per-frame jet visuals (code-drawn stream between nozzle and impact).
   update() {
+    if (this.loadSprite && this.sprite) this.loadSprite.setPosition(this.sprite.x, this.sprite.y - 8 * this.objScale);
     this.jetGfx.clear();
     if (!this.active || !this.tool || this.tool.kind !== 'jet' || !this.pointerWorld) return;
     const nozzle = this.workPointFor(this.pointerWorld);
     const impact = this.impactFor(nozzle);
     const foam = this.tool.jetStyle === 'foam';
     const k = this.objScale;
+    const spread = (this.sprayRadius ?? 100) / 100; // impact spray follows the stage's spray radius
     this.jetGfx.lineStyle((foam ? 26 : 12) * k, 0xffffff, foam ? 0.55 : 0.8);
     this.jetGfx.lineBetween(nozzle.x, nozzle.y, impact.x, impact.y);
     this.jetGfx.lineStyle((foam ? 12 : 5) * k, 0xffffff, 0.95);
     this.jetGfx.lineBetween(nozzle.x, nozzle.y, impact.x, impact.y);
     this.jetGfx.fillStyle(0xffffff, 0.55);
     for (let i = 0; i < 7; i++) {
-      this.jetGfx.fillCircle(impact.x + Phaser.Math.Between(-45, 45) * k, impact.y + Phaser.Math.Between(-45, 45) * k, (foam ? 16 : 8) * k);
+      this.jetGfx.fillCircle(impact.x + Phaser.Math.Between(-45, 45) * k * spread, impact.y + Phaser.Math.Between(-45, 45) * k * spread, (foam ? 16 : 8) * k * spread);
     }
   }
 
   destroy() {
+    this.loadSprite?.destroy();
     this.sprite?.destroy();
     this.jetGfx.destroy();
   }

@@ -13,6 +13,7 @@ export function createDefaultState() {
     diamonds: 0,
     levels: {}, // levelId -> { completed: boolean, completions: number }
     settings: { sound: true, music: true, vibration: true },
+    tutorial: {}, // gesture families whose hint has been introduced (Step 4)
   };
 }
 
@@ -39,7 +40,9 @@ export function parseSave(serialized) {
     diamonds: toNonNegativeInt(raw.diamonds),
     levels: {},
     settings: { ...base.settings, ...(raw.settings ?? {}) },
+    tutorial: {},
   };
+  for (const [k, v] of Object.entries(raw.tutorial ?? {})) if (v) state.tutorial[k] = true;
   for (const [id, entry] of Object.entries(raw.levels ?? {})) {
     state.levels[id] = {
       completed: Boolean(entry?.completed),

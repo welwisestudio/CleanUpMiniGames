@@ -100,6 +100,10 @@ export class ResultCard {
       card.add(next.container);
       this.buttons.push(next);
     }
+    // Same label size for the green row buttons (consistent, centred text).
+    const labels = this.buttons.map((b) => b.label).filter(Boolean);
+    const labelScale = Math.min(...labels.map((t) => t.scaleX));
+    labels.forEach((t) => t.setScale(labelScale));
     this.root.add(card);
     this.layout(scene.layout);
     // Pop in (STYLE-GUIDE §10): scale 0.8 → 1.05 → 1 of the fitted scale.
@@ -150,7 +154,7 @@ export class ResultCard {
 }
 
 export class PauseModal {
-  constructor(scene, { onResume, onRestart, onMenu }) {
+  constructor(scene, { onResume, onRestart, onMenu, onSettings }) {
     this.scene = scene;
     this.root = scene.add.container(0, 0).setDepth(600);
     this.dim = dimLayer(scene).setAlpha(0.6);
@@ -160,13 +164,16 @@ export class PauseModal {
     this.cw = cw;
     this.ch = ch;
     card.add(titleText(scene, cw, ch, 'Paused'));
-    const bw = cw * 0.62;
-    const bh = ch * 0.105;
-    const resume = new Button(scene, { id: 'pause-resume', x: 0, y: -ch * 0.12, w: bw, h: bh, label: 'Resume', style: 'green', onClick: onResume });
-    const restart = new Button(scene, { id: 'pause-restart', x: 0, y: ch * 0.04, w: bw, h: bh, label: 'Restart', style: 'yellow', onClick: onRestart });
-    const menu = new Button(scene, { id: 'pause-menu', x: 0, y: ch * 0.2, w: bw, h: bh, label: 'Menu', style: 'white', onClick: onMenu });
-    card.add([resume.container, restart.container, menu.container]);
-    this.buttons = [resume, restart, menu];
+    const bw = cw * 0.56;
+    const bh = ch * 0.095;
+    const px = PANEL.cx * cw; // centred on the card's inner panel
+    const rows = [-0.155, -0.035, 0.085, 0.205];
+    const resume = new Button(scene, { id: 'pause-resume', x: px, y: ch * rows[0], w: bw, h: bh, label: 'Resume', style: 'green', onClick: onResume });
+    const restart = new Button(scene, { id: 'pause-restart', x: px, y: ch * rows[1], w: bw, h: bh, label: 'Restart', style: 'yellow', onClick: onRestart });
+    const settings = new Button(scene, { id: 'pause-settings', x: px, y: ch * rows[2], w: bw, h: bh, label: 'Settings', style: 'white', onClick: onSettings });
+    const menu = new Button(scene, { id: 'pause-menu', x: px, y: ch * rows[3], w: bw, h: bh, label: 'Menu', style: 'white', onClick: onMenu });
+    card.add([resume.container, restart.container, settings.container, menu.container]);
+    this.buttons = [resume, restart, settings, menu];
     this.root.add(card);
     this.layout(scene.layout);
     refreshTextResolution(scene);
@@ -184,6 +191,73 @@ export class PauseModal {
 
   destroy() {
     this.buttons.forEach((b) => b.destroy());
+    this.root.destroy();
+  }
+}
+
+// Settings: sound, music, vibration toggles (reference 12:30). Values live in the save; the audio
+// service reads them through its gate. Used from the menu gear and from the pause window.
+export class SettingsModal {
+  constructor(scene, { save, onClose, depth = 650 }) {
+    this.scene = scene;
+    this.save = save;
+    this.root = scene.add.container(0, 0).setDepth(depth);
+    this.dim = dimLayer(scene).setAlpha(0.6);
+    this.root.add(this.dim);
+    const { card, cw, ch } = cardBase(scene);
+    this.card = card;
+    this.cw = cw;
+    this.ch = ch;
+    card.add(titleText(scene, cw, ch, 'Settings'));
+    const px = PANEL.cx * cw;
+    const panelW = PANEL.w * cw;
+    const rowH = ch * 0.11;
+    const rows = [
+      { key: 'sound', label: 'Sound', icon: 'icon-sound' },
+      { key: 'music', label: 'Music', icon: 'icon-music' },
+      { key: 'vibration', label: 'Vibration', icon: 'icon-vibration' },
+    ];
+    this.toggles = [];
+    rows.forEach((r, i) => {
+      const y = -ch * 0.15 + i * rowH * 1.15;
+      const left = px - panelW / 2 + panelW * 0.08;
+      const icon = fitImage(scene, r.icon, rowH * 0.62, left + rowH * 0.31, y);
+      const label = makeText(scene, left + rowH * 0.75, y, r.label, { size: ch * 0.036, color: TEXT.navy, weight: '900', family: FONT_UI, originX: 0 });
+      const tx = px + panelW / 2 - panelW * 0.08 - rowH * 0.7;
+      const toggle = scene.add.image(tx, y, 'ui-toggle-on');
+      toggle.setScale((rowH * 1.4) / toggle.width);
+      const zone = scene.add.zone(tx, y, rowH * 1.6, rowH).setInteractive({ useHandCursor: true });
+      const sync = () => toggle.setTexture(this.save.get(`settings.${r.key}`) ? 'ui-toggle-on' : 'ui-toggle-off');
+      zone.on('pointerup', () => {
+        this.save.update((st) => (st.settings[r.key] = !st.settings[r.key])).catch(() => {});
+        sync();
+      });
+      sync();
+      card.add([icon, label, toggle, zone]);
+      this.toggles.push({ key: r.key, zone, toggle });
+      scene.qaTargets?.set(`settings-${r.key}`, { get x() { return zone.getWorldTransformMatrix().tx; }, get y() { return zone.getWorldTransformMatrix().ty; }, w: 10, h: 10 });
+    });
+    const close = new Button(scene, { id: 'settings-close', x: px, y: ch * 0.24, w: panelW * 0.62, h: ch * 0.1, label: 'OK', style: 'green', onClick: onClose });
+    card.add(close.container);
+    this.buttons = [close];
+    this.root.add(card);
+    this.layout(scene.layout);
+    refreshTextResolution(scene);
+  }
+
+  layout(l) {
+    this.dim.setSize(l.W, l.H);
+    const s = Math.min(Math.min(l.W * 0.86, 380 * l.u) / this.cw, (l.H * 0.8) / this.ch);
+    this.card.setPosition(l.W / 2, l.H / 2).setScale(s);
+  }
+
+  setEnabled(v) {
+    this.buttons.forEach((b) => b.setEnabled(v));
+  }
+
+  destroy() {
+    this.buttons.forEach((b) => b.destroy());
+    for (const k of ['sound', 'music', 'vibration']) this.scene.qaTargets?.delete(`settings-${k}`);
     this.root.destroy();
   }
 }

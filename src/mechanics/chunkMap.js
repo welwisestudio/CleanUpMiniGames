@@ -1,9 +1,11 @@
 import { createRng } from '../core/random.js';
 
-// Splits a round crust into irregular Voronoi chunks (deterministic per seed).
+// Splits a crust into irregular Voronoi chunks (deterministic per seed).
+// The crust area is a circle of `radius` (with optional edge noise) or, when `insideFn(x, y)` is
+// given, any shape (e.g. the alpha of the generated crust art).
 // Returns a label grid at `res` x `res` over a `size` x `size` canvas; -1 = outside the crust.
 
-export function buildChunkMap({ size, res, radius, count, seed, edgeNoise = 0.035 }) {
+export function buildChunkMap({ size, res, radius, count, seed, edgeNoise = 0.035, insideFn = null, bounds = null }) {
   const rng = createRng(seed);
   const c = size / 2;
   const cell = size / res;
@@ -13,15 +15,28 @@ export function buildChunkMap({ size, res, radius, count, seed, edgeNoise = 0.03
   const aSum = waves.reduce((s, w) => s + w.a, 0) || 1;
   const edgeRadius = (angle) => radius * (1 + (edgeNoise * waves.reduce((s, w) => s + w.a * Math.sin(w.f * angle + w.p), 0)) / aSum);
 
+  const inArea = insideFn
+    ? (x, y) => insideFn(x, y)
+    : (x, y) => {
+        const dx = x - c;
+        const dy = y - c;
+        return Math.hypot(dx, dy) <= edgeRadius(Math.atan2(dy, dx));
+      };
+  // Area estimate for an even seed spacing.
+  const [bx0, by0, bx1, by1] = bounds ?? [c - radius, c - radius, c + radius, c + radius];
+  let areaCells = 0;
+  const probe = 64;
+  for (let j = 0; j < probe; j++) for (let i = 0; i < probe; i++) if (inArea(bx0 + ((i + 0.5) * (bx1 - bx0)) / probe, by0 + ((j + 0.5) * (by1 - by0)) / probe)) areaCells += 1;
+  const area = Math.max(1, (areaCells / (probe * probe)) * (bx1 - bx0) * (by1 - by0));
+
   // Seeds: rejection sampling with a minimum distance → evenly sized chunks.
   const seeds = [];
-  const minDist = radius * Math.sqrt(Math.PI / count) * 0.9;
+  const minDist = Math.sqrt(area / count) * 0.9;
   let guard = 0;
   while (seeds.length < count && guard++ < 20000) {
-    const ang = rng() * Math.PI * 2;
-    const rr = Math.sqrt(rng()) * radius * 0.95;
-    const x = c + Math.cos(ang) * rr;
-    const y = c + Math.sin(ang) * rr;
+    const x = bx0 + rng() * (bx1 - bx0);
+    const y = by0 + rng() * (by1 - by0);
+    if (!inArea(x, y)) continue;
     const relax = guard > 8000 ? 0.7 : 1;
     if (seeds.every((s) => (s.x - x) ** 2 + (s.y - y) ** 2 >= (minDist * relax) ** 2)) seeds.push({ x, y });
   }
@@ -33,9 +48,7 @@ export function buildChunkMap({ size, res, radius, count, seed, edgeNoise = 0.03
     for (let gx = 0; gx < res; gx++) {
       const x = (gx + 0.5) * cell;
       const y = (gy + 0.5) * cell;
-      const dx = x - c;
-      const dy = y - c;
-      if (Math.hypot(dx, dy) > edgeRadius(Math.atan2(dy, dx))) continue;
+      if (!inArea(x, y)) continue;
       let best = -1;
       let bestD = Infinity;
       let next = -1;

@@ -51,3 +51,38 @@ Environment: Claude Code cloud session (Linux), Node 22.22.0, Playwright 1.63.0 
 | Full E2E suite | — | **NOT RE-RUN** on build #12 at the game designer's request (slow software-rendered WebGL in the cloud). On build #10 code (before the revision) all tests passed, with the touch tests needing a longer timeout. | — | Re-run `npm run check` on the Windows workstation before the commit |
 | Real devices | — | NOT RUN | — | Please check on a phone |
 
+
+## Step 4 (closing) + Step 5 · build #18 (2026-10-04T20:07:46Z)
+
+Environment: Windows 10, Node 24.21.0, Google Chrome via Playwright 1.63.0 (headless, GPU WebGL), production build served by `vite preview` on 0.0.0.0:4173. Platform profile: dev adapter (TEST MODE). Base commit `b263241` + uncommitted Steps 4–5 work.
+
+| Check | Command / steps | Result | Artifact | Limitations |
+|---|---|---|---|---|
+| Unit tests | `npm test`: previous 21 + stage order of levels 2–5, drag-to-target (empty presses / wrong drop do nothing), spots (taps / outside strokes do nothing) | **PASS** 24/24 | console | — |
+| All five levels, desktop mouse (1280×800) | `npx playwright test levels5 --project=desktop-mouse`: menu → every stage by real mouse input → result → Replay (stage 1 again) → Next (opens the following level); Sneaker has no Next | **PASS** 5/5 on build #18 | `project/screenshots/step5/desktop-mouse-*` | Bot sweeps, not human times |
+| All five levels, phone touch (390×844, DPR 2) | same with CDP touch events, list scrolled by touch drag | **PASS** 5/5 on build #17 (only the result-label size and button-label fit changed in #18); Soccer Ball + Chair re-run on #18: **PASS** 2/2 | `project/screenshots/step5/phone-touch-*` | Emulated touch |
+| Stage order | each run asserts the exact reference stage list per level | **PASS** | — | — |
+| Final object states / result | screenshots of every result card; clean object pictures and rewards (+15, +15, +20, +20, +20) | **PASS** (visual) | `*-result.png` | — |
+| Soccer Ball regression | `mouse`, `touch`, `invalid`, `resize`, `pause`, `visual` (phone + desktop + responsive matrix) | **PASS** 8/8 (build #17) | `project/screenshots/step3/` | — |
+| Main UI | `npx playwright test step5-ui` (phone + desktop): menu, touch / wheel scroll to the last row, settings from the menu (Sound toggle), HUD with hint, pause, settings from pause | **PASS** 2/2 | `project/screenshots/step5/ui-*` | — |
+| Hint never changes progress | hint shown at level start (first-time) while progress stays 0 % (screenshots); the hint code has no access to mechanics | **PASS** (design + visual) | `ui-*-4-hud-hint.png` | — |
+| Step 4 video | Soccer Ball played by touch, recorded via Chrome screencast → MP4 (2:34, 390×844) | **DONE** | `project/videos/step4-soccer-ball.mp4` | Bot input (chisel phase is long because the bot sweeps densely) |
+| Console errors | asserted empty in every e2e test | **PASS** | — | — |
+| Real devices | — | NOT RUN | — | Please check on a phone via the LAN URL |
+
+Automated level times (bot, desktop mouse, build #18): ball 61 s, rug 32 s, trophy 60 s, chair 39 s, sneaker 44 s. Phone touch (build #17): 147 / 60 / 134 / 73 / 93 s. These are not human times.
+
+Build size: JS 98 kB (game) + 1.2 MB Phaser; runtime art 7.3 MB (all five levels); `dist` 9.3 MB.
+
+Defects found and fixed during Step 5:
+- The QA snapshot threw on the trash-bin stage (test tooling).
+- The trash-bin tool had no held sprite and crashed `setTool`.
+- Speaker / vibration icons were split into pieces; shoe / bottle trash names were swapped.
+- Result-card labels overflowed with three buttons.
+- Chair seat stages were too fast (smaller brush).
+- Menu labels overlapped the next shelf.
+
+Open / for Step 6:
+- Objects are framed smaller on landscape / desktop.
+- The "more objects" footer sits under the status badges on phones.
+- Desktop menu labels are small relative to the thumbnails.

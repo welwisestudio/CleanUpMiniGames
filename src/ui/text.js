@@ -17,5 +17,36 @@ export function makeText(scene, x, y, str, opts = {}) {
   });
   if (shadow) t.setShadow(shadow.x ?? 0, shadow.y ?? 3, shadow.color ?? 'rgba(0,0,0,0.35)', shadow.blur ?? 0, true, true);
   t.setOrigin(originX, originY);
+  if (originY === 0.5) centerGlyphsVertically(t);
   return t;
+}
+
+// Phaser centres the text's line box (ascent + descent), which sits the visible glyphs low or high
+// depending on the font. For centred labels we shift the origin so the glyphs' actual ink box is
+// centred on the anchor point. Re-applied on every setText (numbers change).
+export function centerGlyphsVertically(t) {
+  const apply = () => {
+    const str = t.text || ' ';
+    const ctx = t.context;
+    ctx.save();
+    ctx.font = t.style._font;
+    const m = ctx.measureText(str);
+    ctx.restore();
+    const metrics = t.style.metrics ?? t.style.getTextMetrics();
+    const lines = Math.max(1, str.split(String.fromCharCode(10)).length);
+    if (lines > 1 || !(m.actualBoundingBoxAscent >= 0)) return;
+    // baseline position inside the text canvas (unscaled units)
+    const padTop = t.padding.top;
+    const baseline = padTop + metrics.ascent;
+    const inkCentre = baseline - (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+    const h = t.height || 1;
+    t.setOrigin(t.originX, Math.min(1, Math.max(0, inkCentre / h)));
+  };
+  const setText = t.setText.bind(t);
+  t.setText = (v) => {
+    setText(v);
+    apply();
+    return t;
+  };
+  apply();
 }

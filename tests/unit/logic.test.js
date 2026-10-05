@@ -9,6 +9,8 @@ import { AudioService } from '../../src/services/AudioService.js';
 import { PauseState } from '../../src/core/PauseState.js';
 import { createDevPlatform } from '../../src/platform/dev/DevPlatform.js';
 import { assertPlatform } from '../../src/platform/contract.js';
+import { DragToTargetMechanic } from '../../src/mechanics/DragToTargetMechanic.js';
+import { SpotsMechanic } from '../../src/mechanics/SpotsMechanic.js';
 import { validateCatalog, getLevel, DISPLAY_ORDER, nextLevelId } from '../../src/content/catalog.js';
 import { economy } from '../../src/content/economy.js';
 import { computeLayout, fitObject, UI } from '../../src/ui/layout.js';
@@ -257,10 +259,12 @@ describe('Dev platform contract', () => {
 describe('Content', () => {
   it('catalog is valid and the soccer ball has the 6 reference stages in order', () => {
     expect(validateCatalog()).toEqual([]);
-    expect(DISPLAY_ORDER).toEqual(['soccer-ball']);
+    expect(DISPLAY_ORDER).toEqual(['soccer-ball', 'rug', 'golden-trophy', 'chair', 'sneaker']);
     const lvl = getLevel('soccer-ball');
     expect(lvl.stages.map((s) => s.tool)).toEqual(['chisel', 'dry-brush', 'foam-sprayer', 'scrub-brush', 'washer-lance', 'cloth']);
-    expect(nextLevelId('soccer-ball')).toBe(null);
+    expect(nextLevelId('soccer-ball')).toBe('rug');
+    expect(nextLevelId('chair')).toBe('sneaker');
+    expect(nextLevelId('sneaker')).toBe(null);
   });
 });
 
@@ -298,5 +302,114 @@ describe('Responsive layout', () => {
       }
       expect(f.scale).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('Levels 2–5 content (reference stage order)', () => {
+  it('stage tool sequences follow REFERENCE-BREAKDOWN', () => {
+    const tools = (id) => getLevel(id).stages.map((s) => s.tool);
+    expect(tools('rug')).toEqual(['washer-lance', 'squeegee', 'foam-sprayer', 'scrub-brush', 'washer-lance', 'squeegee']);
+    expect(tools('golden-trophy')).toEqual(['chisel', 'dry-brush', 'detail-brush', 'mist-nozzle', 'foam-sprayer', 'scrub-brush', 'washer-lance', 'cloth']);
+    expect(tools('chair')).toEqual(['trash-bin', 'duster', 'duster', 'foam-can', 'drill-brush', 'cloth', 'putty-knife', 'sandpaper', 'stain-sponge']);
+    expect(tools('sneaker')).toEqual(['chisel', 'washer-lance', 'foam-sprayer', 'drill-brush', 'washer-lance', 'cloth', 'eraser']);
+  });
+});
+
+// Minimal fake scene/stack for the drag and spot mechanics (no Phaser).
+function fakeImage(x = 0, y = 0) {
+  const o = { x, y, angle: 0, scale: 1, alpha: 1, visible: true, width: 100, height: 100, displayWidth: 100, displayHeight: 100 };
+  o.setScale = (s) => ((o.scale = s), (o.displayWidth = 100 * s), (o.displayHeight = 100 * s), o);
+  o.setAngle = (a) => ((o.angle = a), o);
+  o.setPosition = (a, b) => ((o.x = a), (o.y = b), o);
+  o.setVisible = (v) => ((o.visible = v), o);
+  o.destroy = () => {};
+  return o;
+}
+function fakeScene() {
+  return {
+    add: { image: (x, y) => fakeImage(x, y), graphics: () => ({ clear() {}, lineStyle() {}, beginPath() {}, arc() {}, strokePath() {}, destroy() {} }) },
+    // tween stub: applies end values immediately
+    tweens: { add: (cfg) => { Object.assign(cfg.targets, Object.fromEntries(Object.entries(cfg).filter(([k]) => ['x', 'y', 'alpha', 'angle'].includes(k)))); cfg.onComplete?.(); } },
+  };
+}
+function overlayStack() {
+  const ops = [];
+  return {
+    size: 1024,
+    ops,
+    overlay: { add() {}, addAt() {}, bringToTop() {}, moveBelow() {} },
+    childPos: (x, y) => ({ x: x - 512, y: y - 512 }),
+    toLocal: (w) => ({ x: w.x, y: w.y }), // world == local in this fake
+    regionCircles: () => [[300, 300, 40], [700, 300, 40]],
+    stampTexture: (...a) => ops.push(a),
+  };
+}
+
+describe('DragToTargetMechanic', () => {
+  const params = { target: { texture: 'bin', x: 512, y: 900, size: 200 }, items: [{ texture: 'a', x: 300, y: 300, size: 100 }, { texture: 'b', x: 700, y: 300, size: 100 }] };
+  it('drops only over the target; empty-space presses and wrong drops do nothing', () => {
+    const m = new DragToTargetMechanic({ stack: overlayStack(), params, scene: fakeScene() });
+    expect(m.grab({ x: 50, y: 50 })).toBe(false); // empty space
+    expect(m.grab({ x: 300, y: 300 })).toBe(true);
+    m.drag({ x: 300, y: 600 });
+    m.release(); // not over the bin → back home
+    expect(m.progress).toBe(0);
+    expect(m.grab({ x: 300, y: 300 })).toBe(true);
+    m.drag({ x: 512, y: 880 });
+    m.release();
+    expect(m.progress).toBe(0.5);
+    m.grab({ x: 700, y: 300 });
+    m.drag({ x: 512, y: 890 });
+    m.release();
+    expect(m.completed).toBe(true);
+  });
+});
+
+describe('SpotsMechanic', () => {
+  it('needs rubbing inside each spot; taps and strokes elsewhere add nothing', () => {
+    const m = new SpotsMechanic({ stack: overlayStack(), params: { region: 'spots', layer: 'putty', stamps: ['p'], fillDistance: 200 }, scene: fakeScene() });
+    for (let i = 0; i < 50; i++) m.tap({ x: 300, y: 300 });
+    m.stroke({ x: 500, y: 600 }, { x: 900, y: 600 });
+    expect(m.progress).toBe(0);
+    for (let i = 0; i < 10; i++) m.stroke({ x: 280, y: 300 }, { x: 320, y: 300 });
+    expect(m.progress).toBe(0.5);
+    for (let i = 0; i < 10; i++) m.stroke({ x: 680, y: 300 }, { x: 720, y: 300 });
+    expect(m.completed).toBe(true);
+  });
+});
+
+describe('Step 6: soft auto-complete and putty dip', () => {
+  it('finishes when only small scattered remnants are left, never with a big unfinished patch', async () => {
+    const { BrushMechanic: B } = await import('../../src/mechanics/BrushMechanic.js');
+    // big patch: cover everything except the left 12 % band (one connected area)
+    const m1 = new B({ stack: fakeStack(), params: { mode: 'reveal', layers: ['d'], radius: 40, threshold: 0.99 } });
+    for (let y = 860 - R; y <= 860 + R; y += 25) m1.stroke({ x: 540 - R * 0.55, y }, { x: 540 + R, y });
+    expect(m1.progress).toBeGreaterThan(0.85);
+    m1.stroke({ x: 540, y: 860 }, { x: 541, y: 860 });
+    expect(m1.completed).toBe(false);
+    // scattered remnants: dense sweep leaving only gaps of a few cells
+    const m2 = new B({ stack: fakeStack(), params: { mode: 'reveal', layers: ['d'], radius: 40, threshold: 0.99 } });
+    for (let y = 860 - R; y <= 860 + R; y += 46) m2.stroke({ x: 540 - R, y }, { x: 540 + R, y });
+    const g = m2.grid;
+    if (!m2.completed) {
+      await new Promise((r) => setTimeout(r, 160));
+      m2.stroke({ x: 540, y: 860 }, { x: 541, y: 860 });
+    }
+    expect(g.progress).toBeGreaterThanOrEqual(0.85);
+    expect(m2.completed).toBe(true);
+  });
+
+  it('putty: rubbing a dent with an empty knife does nothing; after dipping it fills one dent', () => {
+    const stack = overlayStack();
+    const m = new SpotsMechanic({ stack, params: { region: 'spots', layer: 'putty', stamps: ['p'], fillDistance: 200, source: { texture: 'tub', x: 512, y: 900, size: 200, load: 'p' } }, scene: { ...fakeScene(), tools: { setLoad() {} } } });
+    for (let i = 0; i < 10; i++) m.stroke({ x: 280, y: 300 }, { x: 320, y: 300 });
+    expect(m.progress).toBe(0);
+    expect(m.needsLoad()).toBe(true);
+    const t = m.tubOpening();
+    for (let i = 0; i < 4; i++) m.stroke({ x: t.x - 30, y: t.y }, { x: t.x + 30, y: t.y });
+    expect(m.needsLoad()).toBe(false);
+    for (let i = 0; i < 10; i++) m.stroke({ x: 280, y: 300 }, { x: 320, y: 300 });
+    expect(m.progress).toBe(0.5);
+    expect(m.needsLoad()).toBe(true); // next dent needs a new dip
   });
 });

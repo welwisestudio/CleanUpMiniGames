@@ -1,16 +1,18 @@
 import Phaser from 'phaser';
 import { DISPLAY_ORDER, getLevel } from '../content/catalog.js';
-import { attachResponsiveLayout, UI } from '../ui/layout.js';
+import { attachResponsiveLayout, refreshTextResolution, UI } from '../ui/layout.js';
 import { makeText } from '../ui/text.js';
-import { COLORS, FONT_DISPLAY, TEXT } from '../ui/theme.js';
+import { COLORS, TEXT } from '../ui/theme.js';
 import { CurrencyPill, addStatusBadges } from '../ui/hud.js';
-import { fitImage } from '../ui/kit.js';
+import { Button } from '../ui/Button.js';
+import { SettingsModal } from '../ui/modals.js';
 import { registerQaScene } from '../app/qa.js';
 
-// Object selection on shelves (2 per shelf, reference Menu_screen.PNG). All objects are open
-// from the start (decision 2026-10-04). Layout adapts to the window; nothing is stretched.
+// Object selection (reference Menu_screen.PNG, video 00:00 / 08:04–08:16): a vertical list of
+// shelves that scrolls downward, 2 objects per shelf row. All objects are open from the start
+// (decision 2026-10-04). Header: currency counters and settings. No game-name text (logo later).
 
-const SLOTS = 6; // 3 shelves × 2: Soccer Ball + "coming soon" slots
+const COMING_SOON_SLOTS = 1; // fills the last row; more objects arrive at Step 8
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -23,25 +25,50 @@ export class MenuScene extends Phaser.Scene {
     this.services.pause.set('navigationBusy', false);
     this.qaButtons = new Map();
     this.qaTargets = new Map();
+    this.scrollY = 0;
+    this.velocity = 0;
+    this.drag = null;
+    this.settings = null;
+    this.lastDragMoved = 0;
 
     this.bg = this.add.rectangle(0, 0, 10, 10, COLORS.menuBg).setOrigin(0);
-    this.header = this.add.rectangle(0, 0, 10, 10, COLORS.menuHeader).setOrigin(0);
+    this.list = this.add.container(0, 0);
+    this.header = this.add.container(0, 0).setDepth(50);
+    this.headerBg = this.add.rectangle(0, 0, 10, 10, COLORS.menuHeader).setOrigin(0);
+    this.headerShade = this.add.rectangle(0, 0, 10, 10, 0x000000, 0.06).setOrigin(0);
     const save = this.services.save;
-    this.topLeft = this.add.container(0, 0);
+    this.pills = this.add.container(0, 0);
     this.coins = new CurrencyPill(this, { icon: 'icon-coin', value: save.get('coins') });
     this.diamonds = new CurrencyPill(this, { icon: 'icon-diamond', value: save.get('diamonds') });
-    this.topLeft.add([this.coins.container, this.diamonds.container]);
-    this.title = makeText(this, 0, 0, 'CleanUp Mini Games', { size: 30, color: TEXT.title, family: FONT_DISPLAY, weight: '900' });
-    this.subtitle = makeText(this, 0, 0, 'working title', { size: 14, color: TEXT.neutral, weight: '800' });
+    this.pills.add([this.coins.container, this.diamonds.container]);
+    this.gear = new Button(this, { id: 'menu-settings', x: 0, y: 0, w: UI.pause, h: UI.pause, style: 'square', icon: 'icon-gear', iconSize: 0.62, onClick: () => this.openSettings() });
+    this.header.add([this.headerBg, this.headerShade, this.pills, this.gear.container]);
 
-    this.shelves = [];
-    for (let i = 0; i < SLOTS / 2; i++) this.shelves.push(this.add.image(0, 0, 'ui-shelf'));
-    this.slots = [];
-    for (let i = 0; i < SLOTS; i++) {
-      const levelId = DISPLAY_ORDER[i];
-      this.slots.push(levelId ? this._levelSlot(getLevel(levelId)) : this._comingSoon());
-    }
+    this.entries = DISPLAY_ORDER.map((id) => this._levelEntry(getLevel(id)));
+    for (let i = 0; i < COMING_SOON_SLOTS; i++) this.entries.push(this._comingSoon());
+    this.rows = Math.ceil(this.entries.length / 2);
+    this.shelves = Array.from({ length: this.rows }, () => this.add.image(0, 0, 'ui-shelf'));
+    this.list.add(this.shelves);
+    this.entries.forEach((e) => this.list.add(e.objects));
+    this.footer = makeText(this, 0, 0, 'More objects coming soon', { size: 16, color: '#A1948E', weight: '800' });
+    this.list.add(this.footer);
+
     this.badges = addStatusBadges(this, { build: this.services.build, testMode: this.services.platform.testMode });
+
+    this.input.on('pointerdown', this.onDown, this);
+    this.input.on('pointermove', this.onMove, this);
+    this.input.on('pointerup', this.onUp, this);
+    this.input.on('pointerupoutside', this.onUp, this);
+    this.input.on('wheel', this.onWheel, this);
+    this.events.once('shutdown', () => {
+      this.input.off('pointerdown', this.onDown, this);
+      this.input.off('pointermove', this.onMove, this);
+      this.input.off('pointerup', this.onUp, this);
+      this.input.off('pointerupoutside', this.onUp, this);
+      this.input.off('wheel', this.onWheel, this);
+      this.settings?.destroy();
+      this.settings = null;
+    });
     attachResponsiveLayout(this, (l) => this.relayout(l));
     registerQaScene(this);
   }
@@ -49,73 +76,123 @@ export class MenuScene extends Phaser.Scene {
   relayout(l) {
     const { W, H, u, margin: m } = l;
     this.bg.setSize(W, H);
-    // header: pills left; title centred (below the pills on narrow screens)
-    const pillsRow = m + (UI.pillH / 2) * u;
+    // header
+    const headerH = m * 2 + UI.pause * u;
+    this.headerH = headerH;
+    this.headerBg.setSize(W, headerH);
+    this.headerShade.setPosition(0, headerH).setSize(W, 3 * u);
     this.coins.container.setPosition(0, 0);
-    if (l.compact) {
-      this.diamonds.container.setPosition(this.coins.width + 14, 0);
-      this.topLeft.setPosition(m + 6 * u, pillsRow).setScale(u);
-      this.title.setPosition(W / 2, pillsRow + (UI.pillH / 2 + 34) * u);
-    } else {
-      this.diamonds.container.setPosition(0, UI.pillH + 10);
-      this.topLeft.setPosition(m + 6 * u, pillsRow).setScale(u);
-      this.title.setPosition(W / 2, pillsRow + 6 * u);
-    }
-    this.title.setScale(u);
-    this.subtitle.setPosition(W / 2, this.title.y + 28 * u).setScale(u);
-    const headerBottom = this.subtitle.y + 26 * u;
-    this.header.setSize(W, headerBottom);
+    this.diamonds.container.setPosition(this.coins.width + 14, 0);
+    this.pills.setPosition(m + 6 * u, m + (UI.pause / 2) * u).setScale(u);
+    this.gear.setPlacement(W - m - (UI.pause / 2) * u, m + (UI.pause / 2) * u, u);
 
-    // shelves: one column on portrait screens, side by side on landscape screens
-    const top = headerBottom + 10 * u;
-    const bottom = H - m - 26 * u;
-    const nShelves = this.shelves.length;
-    const cols = W / H > 1.15 ? nShelves : 1;
-    const rows = Math.ceil(nShelves / cols);
-    const cellW = (W - 2 * m) / cols;
-    const cellH = (bottom - top) / rows;
-    const shelfW = Math.min(cellW * 0.92, 580 * u, cellH * 2.4);
-    const thumb = Math.min(shelfW * 0.36, cellH * 0.48);
-    this.shelves.forEach((shelf, i) => {
-      const cx = m + cellW * ((i % cols) + 0.5);
-      const cellTop = top + cellH * Math.floor(i / cols);
-      shelf.setScale(shelfW / shelf.width);
-      const labelSpace = 34 * u;
-      const y = Math.min(cellTop + cellH * 0.6, cellTop + cellH - labelSpace - shelf.displayHeight * 0.5);
-      shelf.setPosition(cx, y);
-      const shelfTopY = y - shelf.displayHeight * 0.12; // top surface of the plank
-      const labelY = y + shelf.displayHeight * 0.5 + 14 * u; // under the plank, on the wall
-      for (let c = 0; c < 2; c++) {
-        const slot = this.slots[i * 2 + c];
-        slot?.layout(cx + (c === 0 ? -1 : 1) * shelfW * 0.24, shelfTopY, thumb, u, labelY);
-      }
+    // list: one shelf per row with 2 objects; row height follows the width (the list scrolls)
+    const shelfW = Math.min(W - 2 * m, 560 * u);
+    const thumb = shelfW * 0.34;
+    const rowH = thumb * 1.62 + 46 * u; // object + shelf + its label, then the next row
+    const top = headerH + 18 * u;
+    this.shelves.forEach((s, r) => {
+      const y = top + rowH * r + thumb * 1.02;
+      s.setScale(shelfW / s.width).setPosition(W / 2, y);
     });
+    this.entries.forEach((e, i) => {
+      const shelf = this.shelves[Math.floor(i / 2)];
+      const x = W / 2 + (i % 2 === 0 ? -1 : 1) * shelfW * 0.24;
+      e.layout(x, shelf.y - shelf.displayHeight * 0.12, thumb, u, shelf.y + shelf.displayHeight * 0.5 + 14 * u);
+    });
+    this.footer.setPosition(W / 2, top + rowH * this.rows + 4 * u).setScale(u);
+    this.contentH = top + rowH * this.rows + 40 * u;
+    this.viewH = H - 30 * u;
+    this.maxScroll = Math.max(0, this.contentH - this.viewH);
+    this.scrollY = Phaser.Math.Clamp(this.scrollY, 0, this.maxScroll);
+    this.list.y = -this.scrollY;
     this.badges.layoutTo(l);
+    this.settings?.layout(l);
+    this._updateQa();
+    refreshTextResolution(this);
   }
 
-  _levelSlot(level) {
+  // ---- scrolling ---------------------------------------------------------------------------
+  onDown(pointer) {
+    if (this.settings || pointer.y < this.headerH) return;
+    this.drag = { startY: pointer.y, lastY: pointer.y, startScroll: this.scrollY, moved: 0, lastT: this.time.now };
+    this.lastDragMoved = 0;
+    this.velocity = 0;
+  }
+
+  onMove(pointer) {
+    if (!this.drag || !pointer.isDown) return;
+    const dy = pointer.y - this.drag.lastY;
+    const now = this.time.now;
+    this.drag.moved = Math.max(this.drag.moved, Math.abs(pointer.y - this.drag.startY));
+    this.lastDragMoved = this.drag.moved;
+    this.velocity = -dy / Math.max(1, now - this.drag.lastT);
+    this.drag.lastY = pointer.y;
+    this.drag.lastT = now;
+    this._scrollTo(this.drag.startScroll - (pointer.y - this.drag.startY));
+  }
+
+  onUp() {
+    if (!this.drag) return;
+    this.drag = null;
+  }
+
+  onWheel(pointer, over, dx, dy) {
+    if (this.settings) return;
+    this._scrollTo(this.scrollY + dy);
+  }
+
+  _scrollTo(y) {
+    this.scrollY = Phaser.Math.Clamp(y, 0, this.maxScroll ?? 0);
+    this.list.y = -this.scrollY;
+    this._updateQa();
+  }
+
+  update(time, delta) {
+    if (!this.drag && Math.abs(this.velocity) > 0.02) {
+      this._scrollTo(this.scrollY + this.velocity * delta);
+      this.velocity *= Math.pow(0.92, delta / 16);
+    }
+  }
+
+  _updateQa() {
+    for (const e of this.entries) e.qa?.();
+  }
+
+  // ---- entries ------------------------------------------------------------------------------
+  _levelEntry(level) {
     const img = this.add.image(0, 0, level.thumbnail).setOrigin(0.5, 0.92);
-    const name = makeText(this, 0, 0, level.title, { size: 18, color: TEXT.navy, weight: '900' });
+    const name = makeText(this, 0, 0, level.title, { size: 17, color: TEXT.navy, weight: '900' });
     const entry = this.services.save.get(`levels.${level.id}`);
     const badge = entry?.completed ? this.add.image(0, 0, 'icon-check') : null;
     const zone = this.add.zone(0, 0, 10, 10).setInteractive({ useHandCursor: true });
     let base = 1;
+    let geo = null;
     zone.on('pointerdown', () => img.setScale(base * 0.95));
     zone.on('pointerout', () => img.setScale(base));
-    zone.on('pointerup', () => {
+    zone.on('pointerup', (pointer) => {
       img.setScale(base);
+      if (pointer.y < this.headerH) return; // item scrolled under the header
+      // a scroll gesture that started on the item must not open it
+      if (this.lastDragMoved > 12 * (this.layout?.u ?? 1)) return;
       this._openLevel(level.id);
     });
+    const objects = [img, name, zone, ...(badge ? [badge] : [])];
     return {
+      objects,
       layout: (x, shelfY, size, u, labelY) => {
         base = size / Math.max(img.width, img.height);
         img.setScale(base).setPosition(x, shelfY + size * 0.08);
         name.setPosition(x, labelY).setScale(u);
-        if (badge) badge.setScale((30 * u) / badge.width).setPosition(x + size * 0.38, shelfY - size * 0.82);
+        if (badge) badge.setScale((30 * u) / badge.width).setPosition(x + size * 0.4, shelfY - size * 0.82);
         const hit = Math.max(size, UI.minTouch * u);
         zone.setPosition(x, shelfY - size * 0.42).setSize(hit, hit);
-        zone.input.hitArea.setSize(hit, hit);
-        this.qaTargets.set(`menu-level-${level.id}`, { x, y: shelfY - size * 0.42, w: hit, h: hit });
+        geo = { x, y: shelfY - size * 0.42, w: hit, h: hit };
+      },
+      qa: () => {
+        if (!geo) return;
+        const y = geo.y - this.scrollY;
+        this.qaTargets.set(`menu-level-${level.id}`, { x: geo.x, y, w: geo.w, h: geo.h, visible: y - geo.h / 2 > this.headerH && y + geo.h / 2 < this.viewH });
       },
     };
   }
@@ -125,6 +202,7 @@ export class MenuScene extends Phaser.Scene {
     const q = makeText(this, 0, 0, '?', { size: 40, color: '#CDBFB9', weight: '900' });
     const label = makeText(this, 0, 0, 'Coming soon', { size: 15, color: '#9E918B', weight: '800' });
     return {
+      objects: [g, q, label],
       layout: (x, shelfY, size, u, labelY) => {
         g.clear();
         g.fillStyle(0xeee4df, 1).fillCircle(x, shelfY - size * 0.38, size * 0.34);
@@ -134,8 +212,20 @@ export class MenuScene extends Phaser.Scene {
     };
   }
 
+  openSettings() {
+    if (this.settings) return;
+    this.services.audio.play('ui-tap');
+    this.settings = new SettingsModal(this, {
+      save: this.services.save,
+      onClose: () => {
+        this.settings.destroy();
+        this.settings = null;
+      },
+    });
+  }
+
   _openLevel(levelId) {
-    if (this.leaving) return;
+    if (this.leaving || this.settings) return;
     this.leaving = true;
     this.services.audio.play('ui-tap');
     this.services.pause.set('navigationBusy', true);

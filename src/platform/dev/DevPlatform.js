@@ -72,6 +72,15 @@ export function createDevPlatform({ storage = 'memory', rewardedOutcome = 'earne
       return (typeof navigator !== 'undefined' && navigator.language) || 'en';
     },
 
+    // Optional capability (not every platform has haptics): short vibration if available.
+    vibrate(ms) {
+      try {
+        navigator.vibrate?.(ms);
+      } catch {
+        /* unsupported */
+      }
+    },
+
     subscribe(listener) {
       listeners.add(listener);
       listener({ ...snapshot });

@@ -31,6 +31,22 @@ function rectToScreen(layout, r) {
   return { x: c.x, y: c.y, w: r.w / layout.dpr, h: r.h / layout.dpr, visible: r.visible ?? true };
 }
 
+// Work targets of the current stage in object-local units (read-only).
+function qaTargetsLocal(scene) {
+  const m = scene.mechanic;
+  const st = scene.stack;
+  if (!m || !st) return null;
+  if (m.itemsLocal) return { kind: 'drag', items: m.itemsLocal(), target: m.targetLocal() };
+  if (m.spotsLocal) return { kind: 'spots', spots: m.spotsLocal(), needsLoad: Boolean(m.needsLoad?.()), tub: m.params.source ? m.tubOpening() : null };
+  const region = scene.stage?.region ?? scene.stage?.params?.region;
+  const b = st.regionBounds(region);
+  // sample the valid area on a coarse grid so tests can sweep exactly the work area
+  const pts = [];
+  const step = (b[2] - b[0]) / 40;
+  for (let y = b[1]; y <= b[3]; y += step) for (let x = b[0]; x <= b[2]; x += step) if (st.inRegion(x, y, region)) pts.push([Math.round(x), Math.round(y)]);
+  return { kind: 'area', bounds: b, points: pts, step };
+}
+
 function snapshot() {
   const scene = current;
   const s = servicesRef;
@@ -66,10 +82,18 @@ function snapshot() {
       tool: scene.tool && {
         id: scene.tool.id,
         kind: scene.tool.kind,
-        workOffset: { x: scene.tool.workOffset.x * k, y: scene.tool.workOffset.y * k },
+        workOffset: { x: (scene.tool.workOffset?.x ?? 0) * k, y: (scene.tool.workOffset?.y ?? 0) * k },
         jetLength: (scene.tool.jetLength ?? 0) * k,
       },
-      object: { x: c.x, y: c.y, radius: scene.stack.radius * k },
+      object: { x: c.x, y: c.y, radius: (scene.stack.radius ?? 0) * k },
+      // object-local → CSS px transform (for driving real input on any object shape)
+      xf: { cx: c.x, cy: c.y, k, size: scene.stack.size },
+      region: scene.stage?.region ?? scene.stage?.params?.region ?? null,
+      family: scene.family,
+      brush: { radius: scene.stage?.params?.radius ?? null, aspect: scene.stage?.params?.aspect ?? 1, mechanic: scene.stage?.mechanic },
+      hint: Boolean(scene.hint?.visible),
+      hintHand: scene.hint?.visible && scene.hint.hand.alpha > 0.5 ? { x: scene.hint.hand.x / layout.dpr, y: scene.hint.hand.y / layout.dpr } : null,
+      targets: qaTargetsLocal(scene),
       stageLog: scene.stageLog,
       levelSeconds: scene.levelSeconds ?? null,
       reward: scene.reward ? { amount: scene.reward.amount, coinsAfter: scene.reward.coinsAfter } : null,

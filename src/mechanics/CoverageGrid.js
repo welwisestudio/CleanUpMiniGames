@@ -53,6 +53,40 @@ export class CoverageGrid {
     return this.count / this.total;
   }
 
+  // Size (cells) of the largest 4-connected group of uncovered inside cells. Used by the soft
+  // auto-complete: small scattered remnants may be finished automatically, a big unfinished
+  // patch may not.
+  largestUncoveredBlob() {
+    const n = this.cells;
+    const seen = new Uint8Array(n * n);
+    let best = 0;
+    const stack = [];
+    for (let i = 0; i < n * n; i++) {
+      if (!this.inside[i] || this.covered[i] || seen[i]) continue;
+      let size = 0;
+      stack.push(i);
+      seen[i] = 1;
+      while (stack.length) {
+        const c = stack.pop();
+        size += 1;
+        const x = c % n;
+        const y = (c - x) / n;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= n || ny >= n) continue;
+          const j = ny * n + nx;
+          if (this.inside[j] && !this.covered[j] && !seen[j]) {
+            seen[j] = 1;
+            stack.push(j);
+          }
+        }
+      }
+      if (size > best) best = size;
+    }
+    return best;
+  }
+
   // Centres of uncovered inside cells (used by QA/hints, never to grant progress).
   uncoveredCentres() {
     const out = [];

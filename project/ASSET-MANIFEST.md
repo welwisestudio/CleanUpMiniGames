@@ -68,3 +68,40 @@ Erase brush mask, soft dust/foam dot, confetti strips, the green frame of the cu
 ## Dynamic text
 
 All labels and numbers (counters, %, "Completed", "Reward : +15", "Replay", "Paused", menu titles) are live text in the bundled Rubik / Nunito fonts. No text is baked into images.
+
+
+## Step 5 — levels 2–5, shared tools and UI (2026-10-04)
+
+Status: generated, processed, integrated. Waiting for the game designer's review after Step 5.
+
+- **Generation:** 42 Nano Banana 2 jobs (2k). Two were rejected and kept in `reference/rejected/`: sneaker-clean v1 (the reference ball leaked into the image) and chair-dusty v1 (geometry drift).
+- **Background removal:** 36 Background Remover jobs.
+- **Credits:** 983 → 863.
+- **Full record:** exact prompts, references, job IDs, Background Remover jobs, hashes and alpha review are in `project/asset-manifest.json` → `step5`. Sources: `reference/step5-generations.json` and `reference/step5-jobs.tsv`.
+- **Pipeline:**
+  - `scripts/prepare_levels.py` does registration by silhouette bounds, masks, foam layers (from the Soccer Ball foam masters), chair seat / frame split, sheet slicing, tool working points, backgrounds (portrait + 16:9 crop) and result pictures.
+  - `scripts/write_step5_manifest.py` writes the manifest section.
+- **Folders:**
+  - Masters: `reference/masters/{rug,golden-trophy,chair,sneaker,shared}/`.
+  - Cutouts: `reference/cutouts/...`.
+  - Reviews: `reference/review/...`.
+  - Runtime: `public/assets/{rug,golden-trophy,chair,sneaker,shared,ui}/`.
+
+| Group | Assets |
+|---|---|
+| Rug | clean, wet, stained (damp grime), muddy (dirty water), sandy (dry dirt); bathroom background |
+| Golden Ball Trophy | clean, wet, tarnished-wet, tarnished, dusty, mud crust; trophy-room background |
+| Chair | clean, sanded (raw wood), weathered frame, old stained seat, dusty; trash bin + 5 trash items; 3 dent decals + 3 putty blobs; room background |
+| Sneaker | clean, scuffed sole, wet, stained, muddy, mud crust; studio background |
+| Shared tools | squeegee, detail brush, water mist nozzle, duster, foam can, drill brush, putty knife, sandpaper, stain sponge, eraser (working points measured and checked) |
+| UI | gear, sound, music, vibration, close, shop icons; toggle on/off; glove hint hand |
+
+Checks (AI review, PASS):
+- Transparent and opaque pixels are present in every cutout, with margins ≥ 100 px at 2k.
+- States are registered to their clean master (overlay check).
+- Tools have their working points on the tip, nozzle or contact face.
+- Every level was reviewed at game size on phone and desktop (`project/screenshots/step5/`).
+
+Known artefacts:
+- The toggle sheet contained an extra yellow capsule, which isn't used.
+- The trash-peel sprite includes a tiny speck at its left edge.

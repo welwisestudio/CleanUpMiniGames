@@ -39,6 +39,9 @@ export class Button {
         stroke: st.stroke ?? undefined,
         strokeThickness: st.stroke ? fs * 0.16 : 0,
       });
+      // Shrink long labels to fit inside the button (keeps text centred; localization-safe).
+      const maxW = w * 0.78;
+      if (this.label.width > maxW) this.label.setScale(maxW / this.label.width);
       this.container.add(this.label);
     }
     this.zone = scene.add.zone(0, 0, w, h).setInteractive({ useHandCursor: true });

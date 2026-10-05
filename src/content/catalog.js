@@ -1,14 +1,23 @@
 import { soccerBall } from './levels/soccerBall.js';
+import { rug } from './levels/rug.js';
+import { goldenTrophy } from './levels/goldenTrophy.js';
+import { chair } from './levels/chair.js';
+import { sneaker } from './levels/sneaker.js';
 import { TOOLS } from './tools.js';
 
 // Levels are addressed by their permanent string ID. The display order is separate data.
 export const LEVELS = {
   [soccerBall.id]: soccerBall,
+  [rug.id]: rug,
+  [goldenTrophy.id]: goldenTrophy,
+  [chair.id]: chair,
+  [sneaker.id]: sneaker,
 };
 
-export const DISPLAY_ORDER = ['soccer-ball'];
+// Menu / campaign order (approved first five levels, decision 2026-10-04). Separate from level data.
+export const DISPLAY_ORDER = ['soccer-ball', 'rug', 'golden-trophy', 'chair', 'sneaker'];
 
-export const KNOWN_MECHANICS = ['chunkBreak', 'brush'];
+export const KNOWN_MECHANICS = ['chunkBreak', 'brush', 'dragToTarget', 'spots'];
 export const BRUSH_MODES = ['reveal', 'apply', 'scrub'];
 
 export function getLevel(id) {
@@ -43,6 +52,15 @@ export function validateCatalog() {
         for (const r of refs) if (!layerIds.has(r)) errors.push(`${level.id}/${st.id}: unknown layer ${r}`);
         if (!(p.threshold > 0.5 && p.threshold <= 1)) errors.push(`${level.id}/${st.id}: threshold out of range`);
         if (!(p.radius > 0)) errors.push(`${level.id}/${st.id}: radius must be positive`);
+      }
+      const regionIds = new Set(Object.keys(level.object.regions ?? {}));
+      const reg = st.region ?? p.region;
+      if (reg && !regionIds.has(reg)) errors.push(`${level.id}/${st.id}: unknown region ${reg}`);
+      if (st.focus && !level.object.focus?.[st.focus]) errors.push(`${level.id}/${st.id}: unknown focus ${st.focus}`);
+      if (st.mechanic === 'dragToTarget' && !(p.items?.length && p.target)) errors.push(`${level.id}/${st.id}: items and target required`);
+      if (st.mechanic === 'spots') {
+        if (!layerIds.has(p.layer)) errors.push(`${level.id}/${st.id}: unknown layer ${p.layer}`);
+        if (!(level.object.regions?.[p.region]?.circles?.length)) errors.push(`${level.id}/${st.id}: spots need a circles region`);
       }
       if (st.mechanic === 'chunkBreak') {
         if (!layerIds.has(p.layer)) errors.push(`${level.id}/${st.id}: unknown layer ${p.layer}`);

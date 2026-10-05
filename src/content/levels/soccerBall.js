@@ -10,6 +10,8 @@ export const soccerBall = {
   backgrounds: { portrait: 'bg-pitch-portrait', landscape: 'bg-pitch-landscape' },
   thumbnail: 'thumb-soccer-ball',
   resultPicture: 'result-picture-soccer-ball',
+  // Framing reach used since the approved Step 3 layout (keeps the ball size unchanged).
+  fitReach: 540,
   object: {
     shape: 'circle',
     canvasSize: 1024,
@@ -38,7 +40,7 @@ export const soccerBall = {
       id: 'dry-brush',
       tool: 'dry-brush',
       mechanic: 'brush',
-      params: { mode: 'reveal', layers: ['dusty'], radius: 110, threshold: 0.96 },
+      params: { mode: 'reveal', layers: ['dusty'], radius: 62, aspect: 2.6, threshold: 0.96 },
       targetSeconds: [5, 8],
     },
     {

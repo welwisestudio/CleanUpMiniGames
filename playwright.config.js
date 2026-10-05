@@ -22,7 +22,7 @@ export default defineConfig({
     timeout: 60_000,
   },
   projects: [
-    { name: 'desktop-mouse', use: { viewport: { width: 1280, height: 800 } }, testMatch: /mouse|invalid|resize|pause|visual/ },
-    { name: 'phone-touch', use: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, testMatch: /touch|visual/ },
+    { name: 'desktop-mouse', use: { viewport: { width: 1280, height: 800 } }, testMatch: /mouse|invalid|resize|pause|visual|levels5|step5-ui|step6/ },
+    { name: 'phone-touch', use: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, testMatch: /touch|visual|levels5|step5|step6/ },
   ],
 });
