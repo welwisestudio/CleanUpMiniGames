@@ -10,6 +10,7 @@ export const sneaker = {
   title: 'Sneaker',
   backgrounds: { portrait: 'sneaker-bg-portrait', landscape: 'sneaker-bg-landscape' },
   thumbnail: 'sneaker-thumb',
+  thumbnailClean: 'sneaker-thumb-clean', // hub preview once completed
   resultPicture: 'sneaker-result-picture',
   object: {
     canvasSize: 1024,

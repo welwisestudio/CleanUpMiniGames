@@ -5,9 +5,11 @@ import { Emitter } from '../core/Emitter.js';
 //
 // Safety rules:
 // - level completion: one receipt per play run (`runId`), also advancing the progress chest once;
-// - x3: only for the latest completion receipt, once (flag stored in the save → reload-safe);
+// - boost (x2 / x3 / x5 zones): only for the latest completion receipt, once, with a configured multiplier
+//   (stored in the save → reload-safe);
 // - timed chest: claimable only when its time has come; claiming moves the timer forward;
-// - progress chest: claimable only at 100 %, resets to 0 only after a successful claim;
+// - progress chest: claimable only at 100 %; resets after a successful claim, or when the player
+//   explicitly skips it after the "lost forever" warning (forfeit); a cancelled / failed ad keeps it;
 // - rewarded ads: one request in flight per offer; anything but 'earned' grants nothing;
 //   the game is paused (reason 'adBusy') while an ad runs;
 // - every claim re-checks its condition inside the save mutation (double clicks are no-ops).
@@ -46,7 +48,7 @@ export class RewardService extends Emitter {
       entry.completions += 1;
       s.completionSeq += 1;
       r.completionId = s.completionSeq;
-      s.lastCompletion = { id: r.completionId, levelId, amount, x3: false };
+      s.lastCompletion = { id: r.completionId, levelId, amount, boost: 0 };
       r.chestStepsBefore = s.progressChest.steps;
       s.progressChest.steps = Math.min(max, s.progressChest.steps + 1);
       r.chestStepsAfter = s.progressChest.steps;
@@ -56,35 +58,35 @@ export class RewardService extends Emitter {
     return r;
   }
 
-  // ---- x3 ------------------------------------------------------------------------------------
-  x3Offer(completionId) {
+  // ---- post-level boost (x2…x5 multiplier, rewarded ad) -------------------------------------
+  boostOffer(completionId) {
     const lc = this.save.get('lastCompletion');
-    const m = this.config.x3.multiplier;
-    const available = Boolean(lc && lc.id === completionId && !lc.x3);
-    const amount = lc?.amount ?? 0;
-    return { available, claimed: Boolean(lc && lc.id === completionId && lc.x3), base: amount, total: amount * m, bonus: amount * (m - 1), busy: this._busy.has('x3') };
+    const mine = Boolean(lc && lc.id === completionId);
+    return { available: mine && !lc.boost, claimed: mine && lc.boost > 0, boost: mine ? lc.boost : 0, base: lc?.amount ?? 0, values: [...this.config.boost.values], zones: [...this.config.boost.zones], sweepMs: this.config.boost.sweepMs, busy: this._busy.has('boost') };
   }
 
-  async claimX3(completionId) {
-    if (!this.x3Offer(completionId).available || this._busy.has('x3')) return { status: 'unavailable' };
-    this._busy.add('x3');
+  // `multiplier` is the value the player locked (must be one of the configured values).
+  async claimBoost(completionId, multiplier) {
+    if (!this.config.boost.values.includes(multiplier)) return { status: 'invalid' };
+    if (!this.boostOffer(completionId).available || this._busy.has('boost')) return { status: 'unavailable' };
+    this._busy.add('boost');
     try {
-      const ad = await this._rewardedAd(this.config.x3.placement);
+      const ad = await this._rewardedAd(this.config.boost.placement);
       if (ad !== 'earned') return { status: ad };
       const r = { status: 'unavailable' };
       await this.save.update((s) => {
         const lc = s.lastCompletion;
-        if (!lc || lc.id !== completionId || lc.x3) return; // re-check inside the mutation
-        const bonus = lc.amount * (this.config.x3.multiplier - 1);
-        Object.assign(r, { status: 'granted', bonus, total: lc.amount + bonus, coinsBefore: s.coins });
+        if (!lc || lc.id !== completionId || lc.boost) return; // re-check inside the mutation
+        const bonus = lc.amount * (multiplier - 1);
+        Object.assign(r, { status: 'granted', multiplier, bonus, total: lc.amount + bonus, coinsBefore: s.coins });
         s.coins += bonus;
-        lc.x3 = true;
+        lc.boost = multiplier;
         r.coinsAfter = s.coins;
       });
-      if (r.status === 'granted') this.emit('granted', { kind: 'x3', ...r });
+      if (r.status === 'granted') this.emit('granted', { kind: 'boost', ...r });
       return r;
     } finally {
-      this._busy.delete('x3');
+      this._busy.delete('boost');
     }
   }
 
@@ -154,6 +156,19 @@ export class RewardService extends Emitter {
     } finally {
       this._busy.delete('progressChest');
     }
+  }
+
+  // The player skipped a full chest after the warning: it is lost (no reward), progress restarts.
+  forfeitProgressChest() {
+    if (!this.progressChestState().full || this._busy.has('progressChest')) return { status: 'unavailable' };
+    const r = { status: 'unavailable' };
+    r.savePromise = this.save.update((s) => {
+      if (s.progressChest.steps < this.config.progressChest.steps) return;
+      s.progressChest.steps = 0;
+      s.progressChest.forfeited += 1;
+      r.status = 'forfeited';
+    });
+    return r;
   }
 
   // ---- rewarded ad -------------------------------------------------------------------------

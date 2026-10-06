@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import { COLORS, FONT_DISPLAY, FONT_UI, TEXT } from './theme.js';
 import { makeText } from './text.js';
 import { Button } from './Button.js';
@@ -32,9 +33,10 @@ export const RIBBON_Y = -0.346;
 const PILL_FACE = -0.06;
 // Inner white panel of the card (fractions of card width / height from the centre).
 const PANEL = { cx: -0.011, w: 0.627 };
-// Result card rows (fractions of the card height from its centre), top to bottom (Step 6 reward
-// pass): picture · reward pill · level-chest bar · x3 offer · Home / Replay / Next.
-const RESULT = { picY: -0.165, picW: 0.6, rewardY: 0.005, rewardH: 0.066, chestY: 0.088, x3Y: 0.194, x3H: 0.116, navY: 0.324 };
+// Result card rows (fractions of the card height from its centre), top to bottom: picture ·
+// reward pill · level-chest bar · boost meter · boost button · Home + Replay · Next (rowW = share
+// of the panel width used by the meter, the boost button and both button rows).
+const RESULT = { picY: -0.18, picW: 0.46, rewardY: -0.055, rewardH: 0.062, chestY: 0.016, meterY: 0.078, meterH: 0.052, markerH: 0.024, boostY: 0.178, boostH: 0.098, row1Y: 0.28, row2Y: 0.374, rowH: 0.086, rowW: 0.86 };
 
 function titleText(scene, cw, ch, str) {
   return makeText(scene, 0, ch * RIBBON_Y, str, {
@@ -49,11 +51,12 @@ function titleText(scene, cw, ch, str) {
 }
 
 // "Completed" result card (reference: Soccer_ball_completed_reward.PNG, video 01:01.75) with the
-// x3 rewarded offer and the level-progress chest bar (references Reward_x3_reference,
-// Level_progress_chest_reference). The base reward is already credited when the card opens;
-// x3 adds the rest through a rewarded ad. Every value comes from RewardService.
+// level-progress chest bar and the post-level boost: a multiplier meter (x2…x5) whose highlight
+// travels back and forth; the player taps the pink button to lock the current multiplier, then
+// the rewarded ad plays. The base reward is already credited when the card opens. Layout, top to
+// bottom: picture · reward pill · chest bar · boost meter · boost button · Home + Replay · Next.
 export class ResultCard {
-  constructor(scene, { reward, picture, x3, chest, onX3, onOpenChest, onHome, onReplay, onNext }) {
+  constructor(scene, { reward, picture, boost, chest, onBoost, onOpenChest, onHome, onReplay, onNext }) {
     this.scene = scene;
     this.root = scene.add.container(0, 0).setDepth(500);
     this.dim = dimLayer(scene);
@@ -67,7 +70,9 @@ export class ResultCard {
     const panelW = PANEL.w * cw;
     this.px = px;
     this.panelW = panelW;
-    // Picture with a soft drop shadow (Step 3 revision), smaller now to make room for the offers.
+    const rowW = panelW * RESULT.rowW;
+    this.rowW = rowW;
+    // Picture with a soft drop shadow (Step 3 revision).
     const pic = scene.add.image(px, ch * RESULT.picY, picture);
     pic.setScale((panelW * RESULT.picW) / pic.width);
     const picW = pic.width * pic.scale;
@@ -75,63 +80,42 @@ export class ResultCard {
     const picShadow = scene.add.graphics();
     picShadow.fillStyle(0x6b4a33, 0.16).fillRoundedRect(px - picW / 2, ch * RESULT.picY - picH / 2 + ch * 0.01, picW, picH, picW * 0.07);
     card.add([picShadow, pic]);
-    // Reward pill: label · coin · amount as one centred group.
+    // Reward pill: label · coin · amount as one centred group on the pill's face.
     const pillY = ch * RESULT.rewardY;
     this.pill = nineSlice(scene, 'ui-pill', panelW * 0.66, ch * RESULT.rewardH, px, pillY).setTint(COLORS.rewardPill);
-    this.rewardLabel = makeText(scene, 0, pillY, 'Reward :', { size: ch * 0.032, color: TEXT.neutral, weight: '900', family: FONT_UI });
-    this.amount = makeText(scene, 0, pillY, `+${reward.amount}`, { size: ch * 0.036, color: TEXT.neutral, weight: '900', family: FONT_UI });
-    this.rewardIcon = fitImage(scene, 'icon-coin', ch * 0.05);
+    this.rewardLabel = makeText(scene, 0, pillY, 'Reward :', { size: ch * 0.031, color: TEXT.neutral, weight: '900', family: FONT_UI });
+    this.amount = makeText(scene, 0, pillY, `+${reward.amount}`, { size: ch * 0.035, color: TEXT.neutral, weight: '900', family: FONT_UI });
+    this.rewardIcon = fitImage(scene, 'icon-coin', ch * 0.048);
     card.add([this.pill, this.rewardLabel, this.rewardIcon, this.amount]);
     this._layoutPill();
-    // Level-progress chest bar (tap opens the offer when the chest is full).
-    this.chestRow = new ChestProgressRow(scene, { cx: px, cy: ch * RESULT.chestY, w: panelW * 0.8, h: ch * 0.046 });
+    // Level-progress chest bar (approved; tap opens the offer when the chest is full).
+    this.chestRow = new ChestProgressRow(scene, { cx: px, cy: ch * RESULT.chestY, w: panelW * 0.8, h: ch * 0.044 });
     this.chestRow.set(chest?.from ?? 0);
-    this.chestZone = scene.add.zone(px, ch * RESULT.chestY, panelW * 0.8, ch * 0.08).setInteractive({ useHandCursor: true });
+    this.chestZone = scene.add.zone(px, ch * RESULT.chestY, panelW * 0.8, ch * 0.07).setInteractive({ useHandCursor: true });
     this.chestZone.on('pointerup', () => this.chestReady && this.enabled && onOpenChest?.());
     card.add([this.chestRow.container, this.chestZone]);
-    // x3 offer (rewarded ad): purple reward button; on the left the watch-ad clapperboard icon
-    // (reference icon from the designer); then a large "Claim x3" with "x3" in yellow. Icon + text
-    // are one group centred on the button; text on the button's optical label centre.
     this.buttons = [];
-    const x3h = ch * RESULT.x3H;
-    this.x3 = new Button(scene, { id: 'result-x3', x: px, y: ch * RESULT.x3Y, w: panelW * 0.88, h: x3h, style: 'purple', onClick: () => onX3?.() });
-    this.x3Ad = fitImage(scene, 'icon-ad-clapper', x3h * 0.7);
-    this.x3Plate = this.x3Ad; // the icon is its own tile (no separate plate)
-    const fs = x3h * 0.42;
-    const outline = { stroke: '#4B1D7A', strokeThickness: fs * 0.18 };
-    this.x3Label = makeText(scene, 0, 0, 'Claim', { size: fs, color: TEXT.white, family: FONT_DISPLAY, weight: '900', ...outline });
-    this.x3Mult = makeText(scene, 0, 0, 'x3', { size: fs * 1.3, color: '#FFE45C', family: FONT_DISPLAY, weight: '900', ...outline });
-    this.x3Msg = makeText(scene, 0, 0, '', { size: fs * 0.9, color: TEXT.white, family: FONT_DISPLAY, weight: '900', ...outline }).setVisible(false);
-    this.x3.container.add([this.x3Ad, this.x3Label, this.x3Mult, this.x3Msg]);
-    card.add(this.x3.container);
-    this.buttons.push(this.x3);
-    this.x3State = 'idle';
-    // Buttons: one row, equal height, same baseline, symmetric about the panel centre.
-    const by = ch * RESULT.navY;
-    const bh = ch * 0.1; // ≥ 48 CSS px on a 390-px phone
-    const rowW = panelW * 0.84;
-    const bgap = cw * 0.03;
-    const homeW = bh * 1.18;
-    const wide = onNext ? (rowW - homeW - 2 * bgap) / 2 : rowW - homeW - bgap;
-    let bx = px - rowW / 2;
-    const home = new Button(scene, { id: 'result-home', x: bx + homeW / 2, y: by, w: homeW, h: bh, style: 'yellow', icon: 'icon-home', iconSize: 0.58, onClick: onHome });
-    bx += homeW + bgap;
-    const replay = new Button(scene, { id: 'result-replay', x: bx + wide / 2, y: by, w: wide, h: bh, label: 'Replay', style: 'green', onClick: onReplay });
+    this.base = reward.amount;
+    this._buildBoost(boost, onBoost);
+    // Buttons: row 1 = Home + Replay (wide, yellow, replay icon); row 2 = Next across the full row.
+    const r1 = ch * RESULT.row1Y;
+    const bh = ch * RESULT.rowH; // ≥ 48 CSS px on a 390-px phone
+    const gap = cw * 0.025;
+    const homeW = bh * 1.22;
+    const left = px - rowW / 2;
+    const home = new Button(scene, { id: 'result-home', x: left + homeW / 2, y: r1, w: homeW, h: bh, style: 'yellow', icon: 'icon-home', iconSize: 0.58, onClick: onHome });
+    const replayW = rowW - homeW - gap;
+    const replay = new Button(scene, { id: 'result-replay', x: left + homeW + gap + replayW / 2, y: r1, w: replayW, h: bh, label: 'Replay', style: 'yellow', icon: 'icon-replay', iconSize: 0.56, onClick: onReplay });
     card.add([home.container, replay.container]);
     this.buttons.push(home, replay);
     if (onNext) {
-      bx += wide + bgap;
-      const next = new Button(scene, { id: 'result-next', x: bx + wide / 2, y: by, w: wide, h: bh, label: 'Next', style: 'green', onClick: onNext });
+      const next = new Button(scene, { id: 'result-next', x: px, y: ch * RESULT.row2Y, w: rowW, h: bh, label: 'Next', style: 'green', icon: 'icon-next', iconSize: 0.52, onClick: onNext });
       card.add(next.container);
       this.buttons.push(next);
     }
-    // Same label size for the green row buttons (consistent, centred text).
-    const labels = [home, replay, ...this.buttons.slice(3)].map((b) => b.label).filter(Boolean);
-    const labelScale = Math.min(...labels.map((t) => t.scaleX));
-    labels.forEach((t) => t.setScale(labelScale));
     this.enabled = true;
-    this.setX3State(x3?.available ? 'idle' : x3?.claimed ? 'granted' : 'gone');
-    // read-only QA geometry (alignment checks): card, reward pill and chest bar rectangles
+    this.setBoostState(boost?.available ? 'idle' : boost?.claimed ? 'granted' : 'gone', boost?.boost);
+    // read-only QA geometry (alignment checks): card, reward pill, chest bar, boost meter
     const self = this;
     const rectOf = (obj, w, h) => ({
       get x() { return obj.getWorldTransformMatrix().tx; },
@@ -143,6 +127,8 @@ export class ResultCard {
     scene.qaTargets?.set('result-card', rectOf(card, cw, ch));
     scene.qaTargets?.set('result-pill', rectOf(this.pill, panelW * 0.66, ch * RESULT.rewardH));
     scene.qaTargets?.set('result-chestbar', rectOf(this.chestRow.track, this.chestRow.barW, this.chestRow.h));
+    scene.qaTargets?.set('result-meter', rectOf(this.meter, rowW, ch * RESULT.meterH));
+    scene.qaTargets?.set('result-marker', rectOf(this.marker, ch * RESULT.markerH, ch * RESULT.markerH));
     this.root.add(card);
     this.layout(scene.layout);
     // Pop in (STYLE-GUIDE §10): scale 0.8 → 1.05 → 1 of the fitted scale.
@@ -160,72 +146,189 @@ export class ResultCard {
     });
   }
 
-  _layoutPill() {
-    const ch = this.ch;
-    // label · coin · amount: one group centred on the pill's face
-    centerRow([this.rewardLabel, this.rewardIcon, this.amount], this.px, ch * (RESULT.rewardY + RESULT.rewardH * PILL_FACE), ch * 0.014);
+  // ---- boost meter (reference: multiplier bar) ---------------------------------------------
+  // Rounded green bar with a pale inner lane: zones x2 | x3 | x5 | x3 | x2 (x5 = orange centre).
+  // A purple marker below the bar sweeps left ↔ right at constant speed; the zone above it is the
+  // current multiplier (shown live on the button). A tap freezes the marker on that zone.
+  _buildBoost(boost, onBoost) {
+    const { scene, ch, px, rowW } = this;
+    this.zones = boost?.zones ?? [2, 3, 5, 3, 2];
+    this.sweepMs = boost?.sweepMs ?? 1100;
+    const bh = ch * RESULT.meterH;
+    this.meterBh = bh;
+    this.meter = scene.add.container(px, ch * RESULT.meterY);
+    const outer = nineSlice(scene, 'ui-btn-green', rowW, bh);
+    const face = bh * -0.075; // the green surface's face centre
+    const pad = bh * 0.2;
+    const zoneW = (rowW - pad * 2) / this.zones.length;
+    this.zoneW = zoneW;
+    this.laneX0 = -rowW / 2 + pad;
+    // inner segments: one shared height filling the green face evenly; each piece is placed so its
+    // own flat face (above its darker lip: pill −0.06 h, orange −0.081 h) sits on the bar's face
+    const segH = bh * 0.72;
+    const lane = nineSlice(scene, 'ui-pill', zoneW * 3 + bh * 0.2, segH, 0, face + segH * 0.06).setTint(0xfff1c2);
+    const centre = nineSlice(scene, 'ui-btn-orange', zoneW * 1.02, segH, 0, face + segH * 0.081);
+    // soft glow behind the zone the marker is under (moves with it)
+    this.zoneGlow = nineSlice(scene, 'ui-pill', zoneW * 0.94, segH, 0, face + segH * 0.06).setTint(0xffffff).setAlpha(0.55).setBlendMode(Phaser.BlendModes.ADD);
+    this.meter.add([outer, lane, centre, this.zoneGlow]);
+    this.zoneTexts = this.zones.map((v, i) => {
+      const x = this.laneX0 + zoneW * (i + 0.5);
+      const isCentre = v === Math.max(...this.zones);
+      const isEnd = i === 0 || i === this.zones.length - 1;
+      const style = isCentre
+        ? { color: TEXT.white, stroke: '#A8361A' }
+        : isEnd
+          ? { color: TEXT.white, stroke: TEXT.greenStroke }
+          : { color: '#FFE08A', stroke: '#B0742A' };
+      const t = makeText(scene, x, face + bh * 0.02, `x${v}`, { size: bh * 0.46, family: FONT_DISPLAY, weight: '900', strokeThickness: bh * (isCentre || isEnd ? 0.07 : 0.055), ...style });
+      this.meter.add(t);
+      return t;
+    });
+    // purple marker under the bar, pointing up at the current zone
+    const mh = ch * RESULT.markerH;
+    this.marker = scene.add.graphics();
+    const mw = mh * 1.15;
+    this.marker.fillStyle(0x6b2a9e, 1).fillTriangle(-mw / 2 - mh * 0.08, mh * 1.06, mw / 2 + mh * 0.08, mh * 1.06, 0, -mh * 0.08);
+    this.marker.fillStyle(0xb35ce8, 1).fillTriangle(-mw / 2, mh, mw / 2, mh, 0, 0);
+    this.marker.fillStyle(0xe2b6ff, 0.9).fillTriangle(-mw * 0.18, mh * 0.62, mw * 0.06, mh * 0.62, -mw * 0.04, mh * 0.18);
+    this.marker.setY(bh / 2 - mh * 0.15);
+    this.meter.add(this.marker);
+    this.card.add(this.meter);
+    // pink button: [ad] Claim  xN  [coin] total
+    const bth = ch * RESULT.boostH;
+    this.boostBtn = new Button(scene, { id: 'result-boost', x: px, y: ch * RESULT.boostY, w: rowW, h: bth, style: 'pink', onClick: () => onBoost?.() });
+    const fs = bth * 0.4;
+    const outline = { stroke: '#9C1458', strokeThickness: fs * 0.18 };
+    this.bIcon = fitImage(scene, 'icon-ad-clapper', bth * 0.68);
+    this.bClaim = makeText(scene, 0, 0, 'Claim', { size: fs, color: TEXT.white, family: FONT_DISPLAY, weight: '900', ...outline });
+    this.bMult = makeText(scene, 0, 0, 'x2', { size: fs * 1.25, color: '#FFE45C', family: FONT_DISPLAY, weight: '900', ...outline });
+    this.bCoin = fitImage(scene, 'icon-coin', bth * 0.42);
+    this.bTotal = makeText(scene, 0, 0, '0', { size: fs, color: TEXT.white, family: FONT_DISPLAY, weight: '900', ...outline });
+    this.bMsg = makeText(scene, 0, 0, '', { size: fs * 0.9, color: TEXT.white, family: FONT_DISPLAY, weight: '900', ...outline }).setVisible(false);
+    this.boostBtn.container.add([this.bIcon, this.bClaim, this.bMult, this.bCoin, this.bTotal, this.bMsg]);
+    this.card.add(this.boostBtn.container);
+    this.buttons.push(this.boostBtn);
+    this.idx = -1;
+    this._setPos(0.02);
   }
 
-  _layoutX3() {
-    const h = this.x3.h;
-    const msg = this.x3Msg.visible;
-    const texts = msg ? [this.x3Msg] : [this.x3Label, this.x3Mult];
-    const items = [this.x3Ad, ...texts];
+  get boostValue() {
+    return this.zones[Math.max(0, this.idx)];
+  }
+
+  // Marker position 0..1 along the lane → zone index → value shown on the button.
+  _setPos(p) {
+    this.pos = p;
+    this.marker.setX(this.laneX0 + this.zoneW * this.zones.length * p);
+    const idx = Math.min(this.zones.length - 1, Math.max(0, Math.floor(p * this.zones.length)));
+    if (idx === this.idx) return;
+    this.idx = idx;
+    this.zoneTexts.forEach((t, i) => t.setScale(i === idx ? 1.22 : 1));
+    this.zoneGlow.setX(this.laneX0 + this.zoneW * (idx + 0.5));
+    this.bMult.setText(`x${this.boostValue}`);
+    this.bTotal.setText(`${this.base * this.boostValue}`);
+    this._layoutBoost();
+  }
+
+  _startCycle() {
+    this._stopCycle();
+    // constant-speed ping-pong sweep (every zone gets the same time)
+    this.cycle = this.scene.tweens.addCounter({ from: 0.02, to: 0.98, duration: this.sweepMs, yoyo: true, repeat: -1, ease: 'Linear', onUpdate: (tw) => this._setPos(tw.getValue()) });
+  }
+
+  _stopCycle() {
+    this.cycle?.stop();
+    this.cycle = null;
+  }
+
+  // Player tap: freeze the marker on the current zone and return its multiplier.
+  lockBoost() {
+    this._stopCycle();
+    const t = this.zoneTexts[this.idx];
+    this.scene.tweens.add({ targets: t, scale: 1.5, duration: 150, yoyo: true, ease: 'Quad.easeOut', onComplete: () => t.setScale(1.22) });
+    this.scene.tweens.add({ targets: this.marker, y: this.marker.y - this.meterBh * 0.08, duration: 120, yoyo: true });
+    return this.boostValue;
+  }
+
+  _layoutBoost() {
+    const btn = this.boostBtn;
+    const h = btn.h;
+    const msg = this.bMsg.visible;
+    const items = msg ? [this.bIcon, this.bMsg] : [this.bIcon, this.bClaim, this.bMult, this.bCoin, this.bTotal];
     items.forEach((o) => {
       o.baseScale ??= { x: o.scaleX, y: o.scaleY };
       o.setScale(o.baseScale.x, o.baseScale.y);
     });
-    const gapPlate = h * 0.16;
-    const gapText = h * 0.1;
-    const wText = texts.reduce((a, o) => a + o.displayWidth, 0) + gapText * (texts.length - 1);
-    const total = this.x3Plate.displayWidth + gapPlate + wText;
-    const k = Math.min(1, (this.x3.w * 0.88) / total); // long localized text: shrink the group
+    const gaps = msg ? [h * 0.16] : [h * 0.16, h * 0.1, h * 0.12, h * 0.06];
+    const total = items.reduce((a, o) => a + o.displayWidth, 0) + gaps.reduce((a, g) => a + g, 0);
+    const k = Math.min(1, (btn.w * 0.9) / total); // long localized text: shrink the group
     if (k < 1) items.forEach((o) => o.setScale(o.baseScale.x * k, o.baseScale.y * k));
-    const left = (-total * k) / 2;
-    this.x3Ad.setPosition(left + this.x3Ad.displayWidth / 2, this.x3.faceY);
-    const tx = left + this.x3Ad.displayWidth + gapPlate * k + (wText * k) / 2;
-    centerRow(texts, tx, this.x3.labelY, gapText * k);
+    let x = (-total * k) / 2;
+    items.forEach((o, i) => {
+      // icons on the face centre, text on the optical label centre
+      const isText = o.type === 'Text';
+      o.setPosition(x + o.displayWidth / 2, isText ? btn.labelY : btn.faceY);
+      x += o.displayWidth + (gaps[i] ?? 0) * k;
+    });
   }
 
-  // x3 offer states: idle (offer) · busy (ad running) · granted (claimed) · gone (not offered).
-  setX3State(state) {
-    this.x3State = state;
+  // boost states: idle (meter running) · locked (value chosen, ad starting) · busy (ad running) ·
+  // granted (claimed) · gone (not offered)
+  setBoostState(state, value) {
+    this.boostState = state;
     const show = (msg) => {
-      this.x3Msg.setText(msg ?? '').setVisible(Boolean(msg));
-      this.x3Label.setVisible(!msg);
-      this.x3Mult.setVisible(!msg);
+      this.bMsg.setText(msg ?? '').setVisible(Boolean(msg));
+      [this.bClaim, this.bMult, this.bCoin, this.bTotal].forEach((o) => o.setVisible(!msg));
+      this.bMsg.baseScale = null;
+      this.bMsg.setScale(1);
     };
-    if (state === 'busy') show('Loading ad…');
-    else if (state === 'idle') show(null);
+    if (state === 'idle') {
+      show(null);
+      this._startCycle();
+    } else if (state === 'locked') show(`x${this.boostValue} locked!`);
+    else if (state === 'busy') show('Loading ad…');
     else if (state === 'granted') {
-      const box = this.x3Ad.displayHeight;
-      this.x3Ad.setTexture('icon-check');
-      this.x3Ad.baseScale = null;
-      this.x3Ad.setScale((box * 0.86) / Math.max(this.x3Ad.width, this.x3Ad.height));
-      show('x3 claimed!');
-    } else if (state === 'gone') this.x3.container.setVisible(false);
-    this.x3Msg.baseScale = null;
-    this.x3Msg.setScale(1);
-    this._layoutX3();
-    this.x3.setEnabled(state === 'idle' && this.enabled !== false);
-    if (state === 'granted' || state === 'busy') this.x3.container.setAlpha(1);
-    // gentle "look at me" pulse only while the offer is available
-    this.x3Pulse?.stop();
-    this.x3.container.setScale(this.x3.baseScale);
-    if (state === 'idle') this.x3Pulse = this.scene.tweens.add({ targets: this.x3.container, scale: this.x3.baseScale * 1.04, duration: 420, yoyo: true, repeat: -1, repeatDelay: 1100, ease: 'Sine.easeInOut' });
+      // marker on the claimed zone (kept where it stopped; after a reload: the zone of that value
+      // closest to the centre)
+      if (value && this.boostValue !== value) {
+        const mid = (this.zones.length - 1) / 2;
+        const zi = this.zones.map((v, i) => [v, i]).filter(([v]) => v === value).sort((a, b) => Math.abs(a[1] - mid) - Math.abs(b[1] - mid))[0]?.[1] ?? 0;
+        this._setPos((zi + 0.5) / this.zones.length);
+      }
+      const box = this.bIcon.displayHeight;
+      this.bIcon.setTexture('icon-check');
+      this.bIcon.baseScale = null;
+      this.bIcon.setScale((box * 0.86) / Math.max(this.bIcon.width, this.bIcon.height));
+      show(`x${value ?? this.boostValue} claimed!`);
+    } else if (state === 'gone') {
+      this.boostBtn.container.setVisible(false);
+      this.meter.setVisible(false);
+    }
+    if (state !== 'idle') this._stopCycle();
+    this._layoutBoost();
+    this.boostBtn.setEnabled(state === 'idle' && this.enabled !== false);
+    if (state !== 'idle' && state !== 'gone') this.boostBtn.container.setAlpha(1);
+    // gentle "look at me" pulse only while the offer is open
+    this.boostPulse?.stop();
+    this.boostBtn.container.setScale(this.boostBtn.baseScale);
+    if (state === 'idle') this.boostPulse = this.scene.tweens.add({ targets: this.boostBtn.container, scale: this.boostBtn.baseScale * 1.035, duration: 420, yoyo: true, repeat: -1, repeatDelay: 900, ease: 'Sine.easeInOut' });
     refreshTextResolution(this.scene);
   }
 
-  // Short message on the x3 button (ad cancelled / failed), then back to the offer.
-  flashX3(msg) {
-    this.x3Msg.setText(msg).setVisible(true);
-    this.x3Label.setVisible(false);
-    this.x3Mult.setVisible(false);
-    this.x3Msg.baseScale = null;
-    this.x3Msg.setScale(1);
-    this._layoutX3();
+  // Short message on the boost button (ad cancelled / failed), then the meter runs again.
+  flashBoost(msg) {
+    this.bMsg.setText(msg).setVisible(true);
+    [this.bClaim, this.bMult, this.bCoin, this.bTotal].forEach((o) => o.setVisible(false));
+    this.bMsg.baseScale = null;
+    this.bMsg.setScale(1);
+    this._layoutBoost();
     refreshTextResolution(this.scene);
-    this.scene.time.delayedCall(1400, () => this.x3State === 'idle' && this.setX3State('idle'));
+    this.scene.time.delayedCall(1300, () => this.boostState === 'idle' && this.setBoostState('idle'));
+  }
+
+  _layoutPill() {
+    const ch = this.ch;
+    centerRow([this.rewardLabel, this.rewardIcon, this.amount], this.px, ch * (RESULT.rewardY + RESULT.rewardH * PILL_FACE), ch * 0.014);
   }
 
   setRewardAmount(v) {
@@ -242,7 +345,7 @@ export class ResultCard {
   layout(l) {
     this.dim.setSize(l.W, l.H);
     const maxW = Math.min(l.W * 0.92, 440 * l.u);
-    const maxH = l.H * 0.9;
+    const maxH = l.H * 0.92;
     this.fitScale = Math.min(maxW / this.cw, maxH / this.ch);
     this.card.setPosition(l.W / 2, l.H * 0.53).setScale(this.fitScale);
   }
@@ -263,13 +366,14 @@ export class ResultCard {
 
   setEnabled(v) {
     this.enabled = v;
-    this.buttons.forEach((b) => b.setEnabled(v && (b !== this.x3 || this.x3State === 'idle')));
-    if (this.x3State === 'granted' || this.x3State === 'busy') this.x3.container.setAlpha(1);
+    this.buttons.forEach((b) => b.setEnabled(v && (b !== this.boostBtn || this.boostState === 'idle')));
+    if (this.boostState !== 'idle' && this.boostState !== 'gone') this.boostBtn.container.setAlpha(1);
   }
 
   destroy() {
-    ['result-card', 'result-pill', 'result-chestbar'].forEach((k) => this.scene.qaTargets?.delete(k));
-    this.x3Pulse?.stop();
+    this._stopCycle();
+    ['result-card', 'result-pill', 'result-chestbar', 'result-meter', 'result-marker'].forEach((k) => this.scene.qaTargets?.delete(k));
+    this.boostPulse?.stop();
     this.chestRow.setGlow(false);
     this.buttons.forEach((b) => b.destroy());
     this.root.destroy();

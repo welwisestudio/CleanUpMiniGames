@@ -18,7 +18,8 @@ import { registerQaScene } from '../app/qa.js';
 
 const COMING_SOON_SLOTS = 1; // fills the last row; more objects arrive at Step 8
 const CHEST_SCALE = 0.72; // chest widgets relative to their base size (UI units)
-const CHEST_GAP = 8; // UI units: header → first chest, chest → chest, column → shelves
+const CHEST_GAP = 8;
+const CHECK_SIZE = 46; // completion check on a level preview (UI units) // UI units: header → first chest, chest → chest, column → shelves
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -194,7 +195,9 @@ export class MenuScene extends Phaser.Scene {
 
   // ---- entries ------------------------------------------------------------------------------
   _levelEntry(level) {
-    const img = this.add.image(0, 0, level.thumbnail).setOrigin(0.5, 0.92);
+    // a completed level shows its restored (clean) object; the dirty one until then
+    const done = Boolean(this.services.save.get(`levels.${level.id}`)?.completed);
+    const img = this.add.image(0, 0, done && level.thumbnailClean ? level.thumbnailClean : level.thumbnail).setOrigin(0.5, 0.92);
     const name = makeText(this, 0, 0, level.title, { size: 17, color: TEXT.navy, weight: '900' });
     const entry = this.services.save.get(`levels.${level.id}`);
     const badge = entry?.completed ? this.add.image(0, 0, 'icon-check') : null;
@@ -214,10 +217,13 @@ export class MenuScene extends Phaser.Scene {
     return {
       objects,
       layout: (x, shelfY, size, u, labelY) => {
-        base = size / Math.max(img.width, img.height);
-        img.setScale(base).setPosition(x, shelfY + size * 0.08);
+        // optional per-level preview tweak (level.menuPreview: { scale, dy } as a share of the slot)
+        const mp = level.menuPreview ?? {};
+        base = (size * (mp.scale ?? 1)) / Math.max(img.width, img.height);
+        img.setScale(base).setPosition(x, shelfY + size * (0.08 + (mp.dy ?? 0)));
         name.setPosition(x, labelY).setScale(u);
-        if (badge) badge.setScale((30 * u) / badge.width).setPosition(x + size * 0.4, shelfY - size * 0.82);
+        // completion check: large and readable, on the preview's upper right
+        if (badge) badge.setScale((CHECK_SIZE * u) / badge.width).setPosition(x + size * 0.38, shelfY - size * 0.8);
         const hit = Math.max(size, UI.minTouch * u);
         zone.setPosition(x, shelfY - size * 0.42).setSize(hit, hit);
         geo = { x, y: shelfY - size * 0.42, w: hit, h: hit };
@@ -225,7 +231,7 @@ export class MenuScene extends Phaser.Scene {
       qa: () => {
         if (!geo) return;
         const y = geo.y - this.scrollY;
-        this.qaTargets.set(`menu-level-${level.id}`, { x: geo.x, y, w: geo.w, h: geo.h, visible: y - geo.h / 2 > this.headerH && y + geo.h / 2 < this.viewH });
+        this.qaTargets.set(`menu-level-${level.id}`, { x: geo.x, y, w: geo.w, h: geo.h, visible: y - geo.h / 2 > this.headerH && y + geo.h / 2 < this.viewH, thumb: img.texture.key, check: badge ? badge.displayWidth : 0 });
       },
     };
   }
@@ -269,11 +275,15 @@ export class MenuScene extends Phaser.Scene {
     if (this.chestOffer || this.settings || !this.services.rewards.progressChestState().full) return;
     this.chestOffer = new ChestOfferModal(this, {
       rewards: this.services.rewards,
-      onLater: () => this.closeChestOffer(),
+      // skipping after the "lost forever" warning forfeits the chest
+      onSkip: () => {
+        this.services.rewards.forfeitProgressChest();
+        this.closeChestOffer();
+      },
       onOpened: (r, from) => {
         this.flyToPill(this.coins, 'icon-coin', from, r.coinsBefore, r.coinsAfter, 7);
         this.flyToPill(this.diamonds, 'icon-diamond', from, r.diamondsBefore, r.diamondsAfter, 3, 150);
-        this.time.delayedCall(1500, () => this.closeChestOffer());
+        this.time.delayedCall(1700, () => this.closeChestOffer());
       },
     });
   }

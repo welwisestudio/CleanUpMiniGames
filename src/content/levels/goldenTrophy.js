@@ -11,6 +11,7 @@ export const goldenTrophy = {
   title: 'Golden Ball Trophy',
   backgrounds: { portrait: 'golden-trophy-bg-portrait', landscape: 'golden-trophy-bg-landscape' },
   thumbnail: 'golden-trophy-thumb',
+  thumbnailClean: 'golden-trophy-thumb-clean', // hub preview once completed
   resultPicture: 'golden-trophy-result-picture',
   object: {
     canvasSize: 1024,

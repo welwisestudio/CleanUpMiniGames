@@ -12,9 +12,11 @@ const COMPLETION_REWARDS = {
 };
 
 export const REWARDS = {
-  // Post-level x3 (rewarded ad): the ad claim pays 3 × the level reward in total. The base reward
-  // is credited when the level is completed; a successful ad adds the remaining 2 ×.
-  x3: { multiplier: 3, placement: 'reward-x3' },
+  // Post-level boost (rewarded ad), reference multiplier bar: zones x2 | x3 | x5 | x3 | x2 (equal
+  // widths); a marker sweeps across them at constant speed (`sweepMs` one way); the player locks it
+  // with a tap, then the ad plays. A watched ad pays base × multiplier in total (the base is credited
+  // on completion; the ad adds base × (multiplier − 1)). Time share: x2 40 %, x3 40 %, x5 20 %.
+  boost: { zones: [2, 3, 5, 3, 2], values: [2, 3, 5], sweepMs: 1100, placement: 'reward-boost' },
   // Small, frequent timed chest in the menu. The first chest opens soon after the first launch,
   // then one every `intervalSec`.
   timedChest: { firstDelaySec: 60, intervalSec: 300, coins: 15 },

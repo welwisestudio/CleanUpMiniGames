@@ -17,6 +17,8 @@ const STYLES = {
   orange: { key: 'ui-btn-orange', text: TEXT.white, stroke: '#A8361A', face: -0.081, label: -0.051 },
   // x3 rewarded offer on the completed screen
   purple: { key: 'ui-btn-purple', text: TEXT.white, stroke: '#4B1D7A', face: -0.069, label: -0.039 },
+  // post-level boost offer (rewarded ad): bright candy pink
+  pink: { key: 'ui-btn-pink', text: TEXT.white, stroke: '#9C1458', face: -0.071, label: -0.041 },
 };
 
 export class Button {

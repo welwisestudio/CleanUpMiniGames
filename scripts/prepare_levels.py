@@ -351,10 +351,10 @@ def run_rewards():
     watch-ad clapperboard icon. The logo emblem and the menu wallpaper of
     the first version were rejected by the game designer (reference/rejected/shared)."""
     C2 = C / 'shared'
-    for name in ('ui-btn-orange', 'ui-btn-purple'):
+    for name in ('ui-btn-orange', 'ui-btn-purple', 'ui-btn-pink'):
         btn = Image.open(C2 / f'{name}.png').convert('RGBA')
         a = np.array(btn)[:, :, 3] > 24
-        if name == 'ui-btn-purple':
+        if name in ('ui-btn-purple', 'ui-btn-pink'):
             # the purple render came with a grey slab attached under its lip: keep the saturated
             # (purple) shape only, with its highlights filled back in
             rgb = np.array(btn)[:, :, :3].astype(int)
@@ -370,16 +370,27 @@ def run_rewards():
         review('shared', name, img)
         w, h = img.size
         meta['ui'][name] = {'size': [w, h], 'slice': [round(h * 0.5), round(h * 0.5), round(h * 0.36), round(h * 0.44)]}
-    # watch-ad icon (clapperboard tile) for the x3 button
-    img = fit(crop_padded(Image.open(C2 / 'icon-ad-clapper.png').convert('RGBA'), 0.02), 192)
-    save_webp(img, PUB / 'ui' / 'icon-ad-clapper.webp')
-    review('shared', 'icon-ad-clapper', img)
-    meta['ui']['icon-ad-clapper'] = {'size': list(img.size)}
+    # icons: watch-ad clapperboard (boost button), replay, next, VIP mini-games reward card
+    for name, side in (('icon-ad-clapper', 192), ('icon-replay', 192), ('icon-next', 192), ('icon-vip', 256)):
+        img = fit(crop_padded(Image.open(C2 / f'{name}.png').convert('RGBA'), 0.02), side)
+        save_webp(img, PUB / 'ui' / f'{name}.webp')
+        review('shared', name, img)
+        meta['ui'][name] = {'size': list(img.size)}
     for name, side in (('ui-chest-timed', 384), ('ui-chest-progress', 512)):
         img = fit(crop_padded(Image.open(C2 / f'{name}.png').convert('RGBA'), 0.03), side)
         save_webp(img, PUB / 'ui' / f'{name}.webp')
         review('shared', name, img)
         meta['ui'][name] = {'size': list(img.size)}
+
+
+def run_thumbs():
+    """Hub previews of completed levels: the clean object, cut from its registered clean layer the
+    same way as the dirty thumbnails (Step 6 UI pass)."""
+    for level, src, out in (('soccer-ball', 'ball-clean.webp', 'thumb-clean-soccer-ball.webp'), ('rug', 'rug-clean.webp', 'thumb-clean.webp'),
+                            ('golden-trophy', 'trophy-clean.webp', 'thumb-clean.webp'), ('chair', 'chair-clean.webp', 'thumb-clean.webp'),
+                            ('sneaker', 'sneaker-clean.webp', 'thumb-clean.webp')):
+        img = Image.open(PUB / level / src).convert('RGBA')
+        save_webp(fit(crop_padded(img, 0.02), 512), PUB / level / out)
 
 
 def run_sneaker():
@@ -546,7 +557,7 @@ def run_soccer_masks():
 if __name__ == '__main__':
     import sys
     only = set(sys.argv[1:])
-    steps = {'soccer': run_soccer_masks, 'tools': run_tools, 'ui': run_ui, 'rug': run_rug, 'trophy': run_trophy, 'sneaker': run_sneaker, 'chair': run_chair, 'rewards': run_rewards}
+    steps = {'soccer': run_soccer_masks, 'tools': run_tools, 'ui': run_ui, 'rug': run_rug, 'trophy': run_trophy, 'sneaker': run_sneaker, 'chair': run_chair, 'rewards': run_rewards, 'thumbs': run_thumbs}
     old = {}
     if META_JS.exists():
         txt = META_JS.read_text(encoding='utf-8')

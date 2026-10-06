@@ -164,18 +164,24 @@ export class LevelScene extends Phaser.Scene {
     const obj = this.level.object;
     const key = stage?.focus ?? 'default';
     const bounds = stage?.focus ? obj.focus[stage.focus] : obj.radius ?? this.stack.bounds;
+    // finger room below the framed area: object units (tool offsets) + screen px (screen-scale jets)
     let reach = this.level.fitReach ?? 0;
-    if (!this.level.fitReach) {
-      for (const st of this.level.stages) {
-        if ((st.focus ?? 'default') !== key) continue;
-        const t = getTool(st.tool);
-        // finger distance below the work point: offset + vertical part of the jet
-        const g = t.scaleOffset ? st.toolScale ?? 1 : 1;
+    let jetReach = 0;
+    let jetPx = 0;
+    const u = this.layout?.u ?? 1;
+    for (const st of this.level.stages) {
+      if ((st.focus ?? 'default') !== key) continue;
+      const t = getTool(st.tool);
+      const g = t.scaleOffset ? st.toolScale ?? 1 : 1;
+      if (t.kind === 'jet' && t.jetUi) {
+        jetReach = Math.max(jetReach, -t.workOffset.y * g);
+        jetPx = Math.max(jetPx, t.jetUi * u);
+      } else if (!this.level.fitReach) {
         const jy = t.kind === 'jet' ? Math.sin(((t.jetAngle ?? -90) * Math.PI) / 180) * t.jetLength : 0;
         reach = Math.max(reach, t.kind === 'jet' ? -(t.workOffset.y + jy) * g : t.kind === 'target' ? 0 : 170);
       }
     }
-    return { key, bounds, reach };
+    return { key, bounds, reach, jetReach, jetPx };
   }
 
   applyFit(animated) {
@@ -185,8 +191,8 @@ export class LevelScene extends Phaser.Scene {
     // Soccer Ball keeps its approved framing; other objects may fill up to 78 % of the play height
     // (Step 6: the chair and the rug were framed too small), the reach constraint still keeps
     // room below for the finger / jet tools.
-    const share = this.level.fitReach ? null : 0.78;
-    const fit = fitObject(l, t.bounds, { reach: t.reach, canvasSize: this.level.object.canvasSize, share });
+    const share = 0.78; // same height share for every object (Soccer Ball included since the Step 6 UI pass)
+    const fit = fitObject(l, t.bounds, { reach: t.reach, jetReach: t.jetReach, jetPx: t.jetPx, canvasSize: this.level.object.canvasSize, share });
     const changed = this.fitKey !== null && this.fitKey !== t.key;
     this.fitKey = t.key;
     this.objFit = fit;
@@ -205,7 +211,7 @@ export class LevelScene extends Phaser.Scene {
     } else {
       this.stack.setLayout(fit.cx, fit.cy, fit.scale);
     }
-    this.tools.setLayout({ scale: fit.scale, restX: fit.restX, restY: fit.restY });
+    this.tools.setLayout({ scale: fit.scale, restX: fit.restX, restY: fit.restY, ui: l.u, jetCap: fit.jetCap });
   }
 
   // FX emitters (generated sprites + soft code-drawn dots), sized and sped up with the object.
@@ -596,9 +602,9 @@ export class LevelScene extends Phaser.Scene {
     this.result = new ResultCard(this, {
       reward: this.reward,
       picture: this.level.resultPicture,
-      x3: rw.x3Offer(this.reward.completionId),
+      boost: rw.boostOffer(this.reward.completionId),
       chest: { from: this.reward.chestStepsBefore / max },
-      onX3: () => this.claimX3(),
+      onBoost: () => this.claimBoost(),
       onOpenChest: () => this.openChestOffer(),
       onHome: () => this.goMenu(),
       onReplay: () => this.replay(),
@@ -659,25 +665,30 @@ export class LevelScene extends Phaser.Scene {
   }
 
   // ---- rewards on the result card ---------------------------------------------------------
-  // x3: rewarded ad → RewardService adds 2 × the base reward (once). Navigation is blocked while
-  // the ad runs; a cancelled / failed ad grants nothing and the offer stays.
-  async claimX3() {
+  // Boost: the tap locks the multiplier shown on the meter (x2…x5), then the rewarded ad plays;
+  // RewardService adds base × (multiplier − 1) once. Navigation is blocked while the ad runs; a
+  // cancelled / failed ad grants nothing and the meter runs again.
+  async claimBoost() {
     const card = this.result;
-    if (!card || card.x3State !== 'idle' || this.chestOffer) return;
+    if (!card || card.boostState !== 'idle' || this.chestOffer) return;
     this.services.audio.play('ui-tap');
+    const multiplier = card.lockBoost();
     card.setEnabled(false);
-    card.setX3State('busy');
-    const r = await this.services.rewards.claimX3(this.reward.completionId);
+    card.setBoostState('locked');
+    await this.wait(550);
+    if (!this.alive || this.result !== card) return;
+    card.setBoostState('busy');
+    const r = await this.services.rewards.claimBoost(this.reward.completionId, multiplier);
     if (!this.alive || this.result !== card) return;
     card.setEnabled(true);
     if (r.status !== 'granted') {
-      card.setX3State('idle');
-      card.flashX3(r.status === 'not-earned' ? 'Ad closed early' : 'Ad not available');
+      card.setBoostState('idle');
+      card.flashBoost(r.status === 'not-earned' ? 'Ad closed early' : 'Ad not available');
       return;
     }
-    card.setX3State('granted');
+    card.setBoostState('granted', r.multiplier);
     card.setRewardAmount(r.total);
-    this.flyToPill(this.coinsPill, 'icon-coin', worldOf(card.x3.container), r.coinsBefore, r.coinsAfter, 5);
+    this.flyToPill(this.coinsPill, 'icon-coin', worldOf(card.boostBtn.container), r.coinsBefore, r.coinsAfter, 5);
   }
 
   // Coins / diamonds fly into a HUD counter, which catches up to the already-saved value.
@@ -707,11 +718,17 @@ export class LevelScene extends Phaser.Scene {
     this.tweens.add({ targets: card.card, alpha: 0, duration: 160 });
     this.chestOffer = new ChestOfferModal(this, {
       rewards: this.services.rewards,
-      onLater: () => this.closeChestOffer(),
+      // skipping after the "lost forever" warning forfeits the chest
+      onSkip: () => {
+        this.services.rewards.forfeitProgressChest();
+        this.closeChestOffer();
+        card.setChestReady(false);
+        card.chestRow.set(0);
+      },
       onOpened: (r, from) => {
         this.flyToPill(this.coinsPill, 'icon-coin', from, r.coinsBefore, r.coinsAfter, 7);
         this.flyToPill(this.diamondsPill, 'icon-diamond', from, r.diamondsBefore, r.diamondsAfter, 3, 150);
-        this.time.delayedCall(1500, () => {
+        this.time.delayedCall(1700, () => {
           if (this.result !== card) return;
           this.closeChestOffer();
           card.setChestReady(false);

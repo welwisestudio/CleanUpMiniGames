@@ -64,7 +64,7 @@ function snapshot() {
     pause: s.pause.snapshot(),
     build: s.build,
     audio: { requested: s.audio.requested, played: s.audio.played },
-    // reward state (read-only): balances, x3 receipt, timed chest, level-progress chest
+    // reward state (read-only): balances, boost receipt, timed chest, level-progress chest
     rewards: s.save.loaded
       ? {
           diamonds: s.save.get('diamonds'),
@@ -73,8 +73,10 @@ function snapshot() {
           timedReadyAt: s.save.get('timedChest.readyAt'),
           progressChest: s.rewards.progressChestState(),
           opened: s.save.get('progressChest.opened'),
-          x3State: scene?.result?.x3State ?? null,
+          boostState: scene?.result?.boostState ?? null,
+          boostValue: scene?.result?.boostValue ?? null,
           chestOffer: Boolean(scene?.chestOffer),
+          chestOfferPhase: scene?.chestOffer?.phase ?? null,
           adDialog: typeof document !== 'undefined' && Boolean(document.getElementById('dev-ad-dialog')),
         }
       : null,
@@ -83,7 +85,7 @@ function snapshot() {
   const layout = scene.layout;
   const buttons = {};
   for (const [id, b] of scene.qaButtons ?? []) buttons[id] = rectToScreen(layout, b.worldRect());
-  for (const [id, r] of scene.qaTargets ?? []) buttons[id] = rectToScreen(layout, r);
+  for (const [id, r] of scene.qaTargets ?? []) buttons[id] = { ...rectToScreen(layout, r), ...(r.thumb ? { thumb: r.thumb, check: r.check / layout.dpr } : {}) };
   base.layout = { W: layout.cssW, H: layout.cssH, dpr: layout.dpr, u: layout.u / layout.dpr, compact: layout.compact, hudBottom: layout.hudBottom / layout.dpr };
   base.buttons = buttons;
   if (scene.scene.key === 'Level' && scene.stack) {

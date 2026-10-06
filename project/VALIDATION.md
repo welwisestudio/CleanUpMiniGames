@@ -178,3 +178,32 @@ Focused checks only (no historical suite). Ads: dev adapter, outcome set explici
 | Unit tests | `npm test` | **PASS** 34/34 | console |
 | Completed screen (mouse + touch) | `npx playwright test step6-ui-polish2 -g "hub column"`: real rug play → completed screen; x3 cancel → +0, claim → 45; hub / HUD checks unchanged | **PASS** 2/2 | `project/screenshots/step6/ui-polish2/<project>/04–07` |
 | Text alignment (rendered pixels) | `python scripts/check_result_alignment.py ui-polish2`: x3 "Claim" −0.1 / −0.5 % (purple label centre); all other completed-screen text unchanged and within tolerance | **PASS** 12/12 | console |
+
+## Step 6 — UI / reward pass 3 · build #47 (2026-10-06T19:49:49Z)
+
+Focused checks only. Base: commit `7705b74`.
+
+| Check | Command / steps | Result | Artifact | Limitations |
+|---|---|---|---|---|
+| Unit tests | `npm test`: boost x2…x5 (each value pays base × m once; invalid values; parallel / repeated claims; cancel / error / unavailable → nothing; reload-safe; old x3 saves migrate), chest forfeit (only at 100 %, no reward, once) | **PASS** 35/35 | console | — |
+| Hub, gameplay scale, completed screen, boost, chest (mouse + touch) | `npx playwright test step6-ui-pass3`: completed chair / sneaker show clean previews with checks > 40 px, others dirty; sneaker + rug larger, horizontally centred, no overlap with any HUD block; real rug play → chest 100 % → offer; cancelled ad keeps the chest; watched ad → reel → lands → +150 coins +2 diamonds once, 0 %; completed screen; meter showed x2, x3, x4, x5; cancelled boost → +0, meter runs again; watched → base × locked multiplier (x4 / x5 seen); menu offer + tap outside → forfeited, no reward | **PASS** 2/2 | `project/screenshots/step6/ui-pass3/<project>/` | Bot input |
+| Text alignment (rendered pixels) | `python scripts/check_result_alignment.py ui-pass3`: title, reward row, chest label, Replay (yellow), Next (green), boost (pink) labels | **PASS** 12/12 (all within 2.4 %) | console | Meter chips and icons checked visually |
+| Larger objects: tool usability | `npx playwright test levels5 -g "soccer-ball\|golden-trophy\|chair\|sneaker" --project=phone-touch`: all stages by real touch to the result | **PASS** 4/4 (rug covered by the pass-3 spec) | `project/screenshots/step5/` | Phone only; bot times longer (larger objects = longer sweeps) |
+| Object scale (layout maths) | probe of `fitObject` for all levels: phone ball / rug / sneaker +14 % (width limit), trophy +16 %, chair 0 %; desktop sneaker +30 %, rug +28 %, trophy +10 %, ball +7 %, chair 0 %; landscape phone +9…+34 % | measured | — | Chair is height-limited |
+| Screenshot boards | hub, completed screen, boost meter, chest offer, reel, object scale | DONE | `project/screenshots/step6/before-after/33–38` | — |
+
+## Step 6 — UI pass 4 (multiplier bar, hub Chair / Rug, reel clipping) · build #49 (2026-10-06T21:06:29Z)
+
+| Check | Command / steps | Result | Artifact |
+|---|---|---|---|
+| Unit tests | `npm test` (boost values x2 / x3 / x5, zones; x4 now invalid) | **PASS** 35/35 | console |
+| Multiplier bar, hub, reel (mouse + touch) | `npx playwright test step6-ui-pass4`: hub chest column clear of all slots; real rug play → chest offer → watched ad → reel; completed screen: values seen only 2 / 3 / 5, marker moved through 21–24 positions in 2.2 s, lock + watched ad → base × locked value (x2 / x3 seen) | **PASS** 2/2 | `project/screenshots/step6/ui-pass4/<project>/` |
+| Reel stays inside the card (rendered pixels) | `python scripts/check_reel_clip.py`: in the reel's rows, left and right of the card, 0 bright pixels on all 6 frames per project (5 scrolling + landed) | **PASS** 12/12 | console |
+| Screenshot boards | multiplier bar, hub Chair / Rug, clipped reel | DONE | `project/screenshots/step6/before-after/39–41` |
+
+## Step 6 — multiplier bar polish · build #50 (2026-10-06T21:20:19Z)
+
+| Check | Command / steps | Result | Artifact |
+|---|---|---|---|
+| Completed screen + bar (mouse + touch) | `npx playwright test step6-ui-pass4` (unchanged spec): values 2 / 3 / 5 only, marker moves, lock + watched ad → base × value; hub and reel checks as before | **PASS** 2/2 | `project/screenshots/step6/ui-pass4/<project>/02-*` |
+| Visual | close-up of the bar on phone and desktop: lane and x5 segment equal height, centred on the green face | DONE | `project/screenshots/step6/before-after/42-multiplier-bar-even.png` |

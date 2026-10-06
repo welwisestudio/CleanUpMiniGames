@@ -7,6 +7,8 @@ export const rug = {
   title: 'Rug',
   backgrounds: { portrait: 'rug-bg-portrait', landscape: 'rug-bg-landscape' },
   thumbnail: 'rug-thumb',
+  thumbnailClean: 'rug-thumb-clean', // hub preview once completed
+  menuPreview: { scale: 1.15 }, // hub: a bit bigger (designer review)
   resultPicture: 'rug-result-picture',
   object: {
     canvasSize: 1024,

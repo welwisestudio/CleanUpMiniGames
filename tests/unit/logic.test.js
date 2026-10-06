@@ -209,7 +209,7 @@ describe('RewardService', () => {
   });
 });
 
-describe('Rewards: x3, timed chest, level-progress chest (Step 6 reward pass)', () => {
+describe('Rewards: boost x2…x5, timed chest, level-progress chest (Step 6 reward pass)', () => {
   async function setup({ ad = 'earned', now = 1_000_000 } = {}) {
     const platform = createDevPlatform({ rewardedOutcome: ad, rewardedDelayMs: 1 });
     const save = new SaveService(platform);
@@ -220,46 +220,66 @@ describe('Rewards: x3, timed chest, level-progress chest (Step 6 reward pass)', 
     return { platform, save, rewards, clock, pause };
   }
 
-  it('x3: ad success pays 3 × in total exactly once; repeated / parallel clicks pay nothing more', async () => {
-    const { save, rewards, pause } = await setup();
-    const c = rewards.grantLevelCompletion('chair', 1); // +20
+  it('boost: the locked multiplier (x2 / x3 / x5) pays base × multiplier once; invalid values and repeated / parallel claims pay nothing', async () => {
+    for (const m of [2, 3, 5]) {
+      const { save, rewards, pause } = await setup();
+      const c = rewards.grantLevelCompletion('chair', 1); // +20
+      expect(rewards.boostOffer(c.completionId)).toMatchObject({ available: true, base: 20, values: [2, 3, 5], zones: [2, 3, 5, 3, 2] });
+      const pausedDuringAd = [];
+      pause.on('change', (sn) => pausedDuringAd.push(sn.reasons.includes('adBusy')));
+      const [a, b] = await Promise.all([rewards.claimBoost(c.completionId, m), rewards.claimBoost(c.completionId, m)]);
+      expect([a.status, b.status].sort()).toEqual(['granted', 'unavailable']);
+      expect(save.get('coins')).toBe(20 * m);
+      expect(pausedDuringAd).toContain(true);
+      expect(pause.has('adBusy')).toBe(false);
+      expect((await rewards.claimBoost(c.completionId, 5)).status).toBe('unavailable');
+      expect(save.get('coins')).toBe(20 * m);
+      expect(rewards.boostOffer(c.completionId)).toMatchObject({ available: false, claimed: true, boost: m });
+    }
+    const { save, rewards } = await setup();
+    const c = rewards.grantLevelCompletion('chair', 1);
+    for (const bad of [1, 4, 6, 3.5, 10]) expect((await rewards.claimBoost(c.completionId, bad)).status).toBe('invalid');
     expect(save.get('coins')).toBe(20);
-    expect(rewards.x3Offer(c.completionId)).toMatchObject({ available: true, base: 20, total: 60, bonus: 40 });
-    const pausedDuringAd = [];
-    pause.on('change', (sn) => pausedDuringAd.push(sn.reasons.includes('adBusy')));
-    const [a, b] = await Promise.all([rewards.claimX3(c.completionId), rewards.claimX3(c.completionId)]);
-    expect([a.status, b.status].sort()).toEqual(['granted', 'unavailable']);
-    expect(save.get('coins')).toBe(60);
-    expect(pausedDuringAd).toContain(true);
-    expect(pause.has('adBusy')).toBe(false);
-    expect((await rewards.claimX3(c.completionId)).status).toBe('unavailable');
-    expect(save.get('coins')).toBe(60);
-    // an older completion's x3 can never be claimed once a newer level is completed
+    // an older completion's boost can never be claimed once a newer level is completed
     const c2 = rewards.grantLevelCompletion('rug', 2);
-    expect(rewards.x3Offer(c.completionId).available).toBe(false);
-    expect(rewards.x3Offer(c2.completionId).available).toBe(true);
+    expect(rewards.boostOffer(c.completionId).available).toBe(false);
+    expect(rewards.boostOffer(c2.completionId).available).toBe(true);
   });
 
-  it('x3: cancelled, failed or unavailable ads grant nothing and keep the offer', async () => {
+  it('boost: cancelled, failed or unavailable ads grant nothing and keep the offer', async () => {
     for (const ad of ['not-earned', 'error', 'unavailable']) {
       const { save, rewards } = await setup({ ad });
       const c = rewards.grantLevelCompletion('chair', 1);
-      const r = await rewards.claimX3(c.completionId);
+      const r = await rewards.claimBoost(c.completionId, 5);
       expect(r.status).toBe(ad);
       expect(save.get('coins')).toBe(20);
-      expect(rewards.x3Offer(c.completionId).available).toBe(true);
+      expect(rewards.boostOffer(c.completionId).available).toBe(true);
     }
   });
 
-  it('x3 claim survives a reload: the flag is in the save', async () => {
+  it('boost claim survives a reload (multiplier stored in the save); old x3 saves migrate', async () => {
     const { platform, rewards } = await setup();
     const c = rewards.grantLevelCompletion('chair', 1);
-    await rewards.claimX3(c.completionId);
+    await rewards.claimBoost(c.completionId, 5);
     const save2 = new SaveService(platform);
     await save2.load();
     const r2 = new RewardService({ save: save2, economy, platform });
-    expect(r2.x3Offer(c.completionId)).toMatchObject({ available: false, claimed: true });
-    expect(save2.get('coins')).toBe(60);
+    expect(r2.boostOffer(c.completionId)).toMatchObject({ available: false, claimed: true, boost: 5 });
+    expect(save2.get('coins')).toBe(100);
+    const old = parseSave(JSON.stringify({ version: 2, lastCompletion: { id: 3, levelId: 'rug', amount: 15, x3: true } }));
+    expect(old.lastCompletion).toEqual({ id: 3, levelId: 'rug', amount: 15, boost: 3 });
+  });
+
+  it('progress chest: skipping a full chest after the warning forfeits it (no reward); not possible before 100 %', async () => {
+    const { save, rewards } = await setup();
+    rewards.grantLevelCompletion('chair', 1);
+    expect(rewards.forfeitProgressChest().status).toBe('unavailable');
+    for (let run = 2; run <= 5; run++) rewards.grantLevelCompletion('chair', run);
+    const coins = save.get('coins');
+    expect(rewards.forfeitProgressChest().status).toBe('forfeited');
+    expect(rewards.forfeitProgressChest().status).toBe('unavailable');
+    expect(save.get('progressChest')).toEqual({ steps: 0, opened: 0, forfeited: 1 });
+    expect(save.get('coins')).toBe(coins);
   });
 
   it('timed chest: countdown, claim once, reset, persistence, clock jump repair', async () => {
@@ -321,12 +341,12 @@ describe('Rewards: x3, timed chest, level-progress chest (Step 6 reward pass)', 
     // persisted
     const save2 = new SaveService(platform);
     await save2.load();
-    expect(save2.get('progressChest')).toEqual({ steps: 0, opened: 1 });
+    expect(save2.get('progressChest')).toEqual({ steps: 0, opened: 1, forfeited: 0 });
   });
 
   it('save v1 migrates to v2 with empty reward state', () => {
     const st = parseSave(JSON.stringify({ version: 1, coins: 40, levels: { rug: { completed: true, completions: 2 } } }));
-    expect(st).toMatchObject({ version: 2, coins: 40, completionSeq: 0, lastCompletion: null, timedChest: { readyAt: 0 }, progressChest: { steps: 0, opened: 0 } });
+    expect(st).toMatchObject({ version: 2, coins: 40, completionSeq: 0, lastCompletion: null, timedChest: { readyAt: 0 }, progressChest: { steps: 0, opened: 0, forfeited: 0 } });
   });
 });
 

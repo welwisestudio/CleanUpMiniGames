@@ -194,14 +194,27 @@ export class TimedChestWidget {
 }
 
 // ---- level-progress chest offer (full chest, rewarded ad) -------------------------------------
-// Same card surface and ribbon as the result card. "Open chest" plays a rewarded ad; "Later"
-// keeps the chest at 100 % (it is never silently reset).
+// Same card surface and ribbon as the result card. Green "Open chest" (ad) with a soft pulse and a
+// sheen; below the card a text action "Skip chest" + the warning that a skipped chest is lost
+// forever. Skipping (text or a tap outside the card) calls onSkip, which forfeits the chest.
+// After a watched ad a short reel of reward cards scrolls and lands on the granted reward
+// (deterministic: the reel's last card is always the configured reward; the other cards are decor).
+const REEL_FILLERS = [
+  ['coins', 40], ['vip'], ['diamonds', 1], ['coins', 80], ['diamonds', 3], ['coins', 25], ['vip'], ['coins', 60],
+  ['diamonds', 2], ['coins', 120], ['vip'], ['coins', 35], ['diamonds', 1], ['coins', 90], ['vip'], ['coins', 50],
+  ['diamonds', 4], ['coins', 70], ['vip'], ['coins', 30],
+];
+
 export class ChestOfferModal {
-  constructor(scene, { rewards, onOpened, onLater }) {
+  constructor(scene, { rewards, onOpened, onSkip }) {
     this.scene = scene;
     this.rewards = rewards;
+    this.onOpened = onOpened;
+    this.onSkip = onSkip;
+    this.phase = 'offer';
+    this.openedAt = scene.time.now;
     this.root = scene.add.container(0, 0).setDepth(760);
-    this.dim = scene.add.rectangle(0, 0, 10, 10, COLORS.dim, 0.6).setOrigin(0, 0);
+    this.dim = scene.add.rectangle(0, 0, 10, 10, COLORS.dim, 0.66).setOrigin(0, 0);
     this.root.add(this.dim);
     const [cw, ch] = ASSET_META.ui['ui-result-card'].size;
     this.cw = cw;
@@ -211,6 +224,8 @@ export class ChestOfferModal {
     card.add(scene.add.image(0, 0, 'ui-result-card'));
     const px = -0.011 * cw;
     const panelW = 0.627 * cw;
+    this.px = px;
+    this.panelW = panelW;
     card.add(
       makeText(scene, 0, ch * -0.346, 'Level Chest', {
         size: ch * 0.058,
@@ -222,8 +237,10 @@ export class ChestOfferModal {
         shadow: { y: ch * 0.004, color: 'rgba(90,50,30,0.45)' },
       }),
     );
-    // hero: chest over slowly turning light rays
-    const heroY = -ch * 0.14;
+    // offer: chest over slowly turning light rays
+    this.offer = scene.add.container(0, 0);
+    const heroY = -ch * 0.125;
+    this.heroY = heroY;
     this.rays = scene.add.graphics();
     const R = panelW * 0.46;
     for (let i = 0; i < 12; i++) {
@@ -233,33 +250,62 @@ export class ChestOfferModal {
     }
     this.rays.setPosition(px, heroY);
     this.raysTween = scene.tweens.add({ targets: this.rays, angle: 360, duration: 14000, repeat: -1 });
-    this.chest = fitImage(scene, 'ui-chest-progress', panelW * 0.56, px, heroY);
+    this.chest = fitImage(scene, 'ui-chest-progress', panelW * 0.58, px, heroY);
     this.chestBase = this.chest.scale;
     this.bob = scene.tweens.add({ targets: this.chest, y: heroY - ch * 0.012, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-    card.add([this.rays, this.chest]);
     const st = rewards.progressChestState();
-    const head = makeText(scene, px, ch * 0.05, `${st.max} levels completed!`, { size: ch * 0.042, color: '#B26A2E', weight: '900', family: FONT_DISPLAY });
-    fitText(head, panelW * 0.9);
-    // reward line: coin + amount · diamond + amount, as one centred row
-    const rowY = ch * 0.12;
-    const iconBox = ch * 0.058;
-    const coin = fitImage(scene, 'icon-coin', iconBox);
-    const coins = makeText(scene, 0, 0, `${st.coins}`, { size: ch * 0.044, color: TEXT.navy, weight: '900', family: FONT_UI });
-    const dia = fitImage(scene, 'icon-diamond', iconBox);
-    const dias = makeText(scene, 0, 0, `${st.diamonds}`, { size: ch * 0.044, color: TEXT.navy, weight: '900', family: FONT_UI });
-    const rowPill = nineSlice(scene, 'ui-pill', panelW * 0.7, ch * 0.075, px, rowY).setTint(COLORS.rewardPill);
-    card.add([head, rowPill, coin, coins, dia, dias]);
-    const gap = ch * 0.012;
-    centerRow([coin, coins, scene.add.zone(0, 0, ch * 0.03, 1), dia, dias], px, rowY, gap);
-    this.coinIcon = coin;
-    this.diamondIcon = dia;
-    this.open = new Button(scene, { id: 'chest-open', x: px, y: ch * 0.235, w: panelW * 0.84, h: ch * 0.105, label: 'Open chest', style: 'orange', icon: 'icon-ad', iconSize: 0.62, onClick: () => this.claim() });
-    this.later = new Button(scene, { id: 'chest-later', x: px, y: ch * 0.35, w: panelW * 0.5, h: ch * 0.075, label: 'Later', style: 'white', onClick: () => onLater?.() });
-    this.note = makeText(scene, px, ch * 0.405, 'The chest stays here until you open it', { size: ch * 0.024, color: '#8C7F78', weight: '800', family: FONT_UI });
-    fitText(this.note, panelW * 0.9);
-    card.add([this.open.container, this.later.container, this.note]);
-    this.buttons = [this.open, this.later];
-    this.onOpened = onOpened;
+    const head = makeText(scene, px, ch * 0.085, `${st.max} levels completed!`, { size: ch * 0.044, color: '#B26A2E', weight: '900', family: FONT_DISPLAY });
+    fitText(head, panelW * 0.92);
+    const teaser = makeText(scene, px, ch * 0.145, 'Coins, diamonds or a VIP surprise inside!', { size: ch * 0.028, color: '#7B6A62', weight: '800', family: FONT_UI });
+    fitText(teaser, panelW * 0.9);
+    this.offer.add([this.rays, this.chest, head, teaser]);
+    card.add(this.offer);
+    // green CTA: soft pulse + a sheen sweeping across its face
+    const bw = panelW * 0.86;
+    const bh = ch * 0.11;
+    this.open = new Button(scene, { id: 'chest-open', x: px, y: ch * 0.27, w: bw, h: bh, label: 'Open chest', style: 'green', icon: 'icon-ad-clapper', iconSize: 0.7, onClick: () => this.claim() });
+    this.sheen = scene.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+    const sw = bh * 0.55;
+    const sh = bh * 0.62;
+    this.sheen.fillStyle(0xffffff, 0.32).fillPoints([{ x: -sw / 2 + sh * 0.35, y: -sh / 2 }, { x: sw / 2 + sh * 0.35, y: -sh / 2 }, { x: sw / 2 - sh * 0.35, y: sh / 2 }, { x: -sw / 2 - sh * 0.35, y: sh / 2 }], true);
+    this.sheen.setY(this.open.faceY).setAlpha(0);
+    this.open.container.addAt(this.sheen, 1);
+    const travel = bw / 2 - bh * 0.6; // stays inside the rounded face
+    this.sheenTween = scene.tweens.addCounter({
+      from: 0,
+      to: 1,
+      duration: 900,
+      delay: 600,
+      repeat: -1,
+      repeatDelay: 1600,
+      onUpdate: (tw) => {
+        const k = tw.getValue();
+        this.sheen.setX(-travel + 2 * travel * k).setAlpha(Math.sin(Math.PI * k));
+      },
+    });
+    this.pulse = scene.tweens.add({ targets: this.open.container, scale: 1.045, duration: 520, yoyo: true, repeat: -1, repeatDelay: 700, ease: 'Sine.easeInOut' });
+    card.add(this.open.container);
+    // below the card: skip text action + warning (secondary to the CTA)
+    this.skip = makeText(scene, px, ch * 0.555, 'Skip chest', { size: ch * 0.036, color: '#FFFFFF', weight: '900', family: FONT_UI, stroke: '#3A2A22', strokeThickness: ch * 0.006 });
+    this.skipLine = scene.add.rectangle(px, ch * 0.555 + this.skip.height * 0.36, this.skip.width * 0.92, ch * 0.003, 0xffffff, 0.85);
+    this.warn = makeText(scene, px, ch * 0.605, 'You will lose this chest forever\nand never know what was inside!', { size: ch * 0.026, color: '#FFD9C2', weight: '800', family: FONT_UI, align: 'center' });
+    fitText(this.warn, cw * 0.95);
+    this.skipZone = scene.add.zone(px, ch * 0.555, Math.max(this.skip.width * 1.4, cw * 0.4), ch * 0.07).setInteractive({ useHandCursor: true });
+    this.skipZone.on('pointerup', () => this.doSkip());
+    card.add([this.skip, this.skipLine, this.warn, this.skipZone]);
+    this.buttons = [this.open];
+    const self = this;
+    scene.qaTargets?.set('chest-card', { get x() { return self.card.x; }, get y() { return self.card.y; }, get w() { return cw * self.card.scale; }, get h() { return ch * self.card.scale; }, visible: true });
+    scene.qaTargets?.set('chest-skip', { get x() { return self.skipZone.getWorldTransformMatrix().tx; }, get y() { return self.skipZone.getWorldTransformMatrix().ty; }, w: 10, h: 10, visible: true });
+    // a tap outside the card closes the offer (= skip); ignored right after opening and while busy
+    this.onOutside = (pointer) => {
+      if (this.phase !== 'offer' || this.busy || this.scene.time.now - this.openedAt < 350) return;
+      const s = this.card.scale;
+      const inside = Math.abs(pointer.x - this.card.x) <= (cw / 2) * s && Math.abs(pointer.y - this.card.y) <= (ch / 2) * s;
+      const onSkip = Math.abs(pointer.y - (this.card.y + ch * 0.58 * s)) <= ch * 0.08 * s;
+      if (!inside && !onSkip) this.doSkip();
+    };
+    scene.input.on('pointerup', this.onOutside);
     this.root.add(card);
     this.layout(scene.layout);
     const k = card.scale;
@@ -270,15 +316,21 @@ export class ChestOfferModal {
     refreshTextResolution(scene);
   }
 
+  doSkip() {
+    if (this.phase !== 'offer' || this.busy || this.scene.time.now - this.openedAt < 350) return;
+    this.phase = 'skipped';
+    this.onSkip?.();
+  }
+
   async claim() {
-    if (this.busy) return;
+    if (this.busy || this.phase !== 'offer') return;
     this.busy = true;
     this.setEnabled(false);
     this.open.setLabel('Loading ad…');
     const r = await this.rewards.claimProgressChest();
     if (this.destroyed) return;
     if (r.status !== 'granted') {
-      // cancelled / failed: nothing granted, the chest stays full — try again or later
+      // cancelled / failed: nothing granted, the chest stays — try again
       this.open.setLabel(r.status === 'not-earned' ? 'Watch to the end' : 'Ad not available');
       this.scene.time.delayedCall(1400, () => !this.destroyed && this.open.setLabel('Open chest'));
       this.busy = false;
@@ -286,18 +338,152 @@ export class ChestOfferModal {
       return;
     }
     this.result = r;
+    this.phase = 'reveal';
     this.bob.stop();
-    this.scene.tweens.add({ targets: this.chest, angle: { from: -10, to: 10 }, duration: 70, yoyo: true, repeat: 4, onComplete: () => {
-      this.scene.tweens.add({ targets: this.chest, scale: this.chestBase * 1.25, alpha: 0, duration: 260, ease: 'Quad.easeIn' });
-      this.onOpened?.(r, worldOf(this.chest), { coin: worldOf(this.coinIcon), diamond: worldOf(this.diamondIcon) });
-    } });
+    this.pulse.stop();
+    this.sheenTween.stop();
+    this.scene.tweens.add({ targets: this.chest, angle: { from: -10, to: 10 }, duration: 70, yoyo: true, repeat: 3, onComplete: () => this.reveal(r) });
+  }
+
+  // Reward reel: cards scroll under a centre marker, slow down and land on the granted reward.
+  // The cards are clipped to the panel's reel window by a geometry mask (no overflow outside the
+  // card at any time). Masks on containers nested in containers are ignored by Phaser, so the reel
+  // is a top-level container kept in sync with the card's on-screen transform (`_syncReel`).
+  reveal(r) {
+    const { scene, ch, px, panelW } = this;
+    this.scene.tweens.add({ targets: [this.offer, this.open.container, this.skip, this.skipLine, this.warn], alpha: 0, duration: 200 });
+    this.skipZone.disableInteractive();
+    const cardW = panelW * 0.36;
+    const gap = cardW * 0.1;
+    const step = cardW + gap;
+    const y = -ch * 0.03;
+    this.reelY = y;
+    this.reelWin = { w: panelW * 0.96, h: cardW * 1.45 }; // window inside the white panel (card units)
+    const half = this.reelWin.w / 2;
+    this.reelRoot = scene.add.container(0, 0).setDepth(this.root.depth + 1);
+    this.strip = scene.add.container(0, 0);
+    this.reelRoot.add(this.strip);
+    this.reelMaskG = scene.make.graphics({}, false);
+    this.reelRoot.setMask(this.reelMaskG.createGeometryMask());
+    const cards = [...REEL_FILLERS.map((f) => ({ kind: f[0], amount: f[1] })), { kind: 'final', coins: r.coins, diamonds: r.diamonds }, { kind: 'coins', amount: 45 }, { kind: 'vip' }];
+    const finalIndex = REEL_FILLERS.length;
+    this.reelCards = cards.map((c, i) => {
+      const g = this._rewardCard(c, cardW);
+      g.setPosition(i * step, 0);
+      this.strip.add(g);
+      return g;
+    });
+    // centre markers (yellow pointers above and below the window)
+    const mk = scene.add.graphics();
+    mk.fillStyle(0xffd729, 1).lineStyle(ch * 0.004, 0x9c7a12, 1);
+    const t = ch * 0.022;
+    const top = y - cardW * 0.62;
+    const bot = y + cardW * 0.62;
+    mk.fillTriangle(px - t, top - t * 1.1, px + t, top - t * 1.1, px, top + t * 0.4).strokeTriangle(px - t, top - t * 1.1, px + t, top - t * 1.1, px, top + t * 0.4);
+    mk.fillTriangle(px - t, bot + t * 1.1, px + t, bot + t * 1.1, px, bot - t * 0.4).strokeTriangle(px - t, bot + t * 1.1, px + t, bot + t * 1.1, px, bot - t * 0.4);
+    this.card.add(mk);
+    this.markers = mk;
+    const title = makeText(scene, px, -ch * 0.215, 'Opening…', { size: ch * 0.044, color: '#B26A2E', weight: '900', family: FONT_DISPLAY });
+    const won = makeText(scene, px, ch * 0.175, `${r.coins} coins + ${r.diamonds} diamonds`, { size: ch * 0.036, color: TEXT.navy, weight: '900', family: FONT_UI }).setAlpha(0);
+    fitText(won, panelW * 0.92);
+    this.card.add([title, won]);
+    const startX = half + cardW; // cards enter from the right edge of the window
+    const endX = -finalIndex * step;
+    const fade = () => {
+      // soft edges inside the window (the mask does the hard clip)
+      this.reelCards.forEach((g) => {
+        const dx = Math.abs(this.strip.x + g.x);
+        g.setAlpha(Phaser.Math.Clamp(1 - (dx - (half - cardW * 0.7)) / (cardW * 0.6), 0, 1));
+        g.setScale(1 + 0.12 * Phaser.Math.Clamp(1 - dx / step, 0, 1));
+      });
+    };
+    this.strip.setX(startX);
+    this._syncReel();
+    fade();
+    let lastTick = Math.round(startX / step);
+    scene.tweens.add({
+      targets: this.strip,
+      x: endX,
+      duration: 2900,
+      ease: 'Quart.easeOut',
+      onUpdate: () => {
+        this._syncReel();
+        fade();
+        const tick = Math.round(this.strip.x / step);
+        if (tick !== lastTick) {
+          lastTick = tick;
+          scene.registry.get('services')?.audio.play('ui-tap');
+        }
+      },
+      onComplete: () => {
+        this.phase = 'landed';
+        const win = this.reelCards[finalIndex];
+        title.setText('You got:');
+        scene.tweens.add({ targets: won, alpha: 1, duration: 250 });
+        scene.tweens.add({ targets: win, scale: 1.25, duration: 220, yoyo: true, hold: 260, ease: 'Back.easeOut' });
+        const glow = scene.add.image(px + this.strip.x + win.x, y, 'fx-sparkle').setAlpha(0);
+        glow.setScale((cardW * 1.9) / glow.width);
+        this.card.add(glow); // behind the reel (the reel is drawn above the card)
+        scene.tweens.add({ targets: glow, alpha: 0.9, angle: 90, duration: 500, yoyo: true, hold: 300 });
+        scene.time.delayedCall(700, () => {
+          if (this.destroyed) return;
+          this.phase = 'done';
+          this.onOpened?.(r, worldOf(win.list[0]), {});
+        });
+      },
+    });
+    refreshTextResolution(scene);
+  }
+
+  // Reel container + its mask follow the card (position / scale, also after a resize).
+  _syncReel() {
+    if (!this.reelRoot) return;
+    const s = this.card.scale;
+    const x = this.card.x + this.px * s;
+    const y = this.card.y + this.reelY * s;
+    this.reelRoot.setPosition(x, y).setScale(s);
+    const w = this.reelWin.w * s;
+    const h = this.reelWin.h * s;
+    this.reelMaskG.clear().fillStyle(0xffffff, 1).fillRect(x - w / 2, y - h / 2, w, h);
+    this.scene.qaTargets?.set('chest-reel-window', { x, y, w, h, visible: true });
+  }
+
+  // One reward card: generated tile surface + icon(s) + live amount text.
+  _rewardCard(c, w) {
+    const { scene } = this;
+    const g = scene.add.container(0, 0);
+    const tile = fitImage(scene, 'ui-tile-large', w);
+    g.add(tile);
+    const fs = w * 0.2;
+    const label = (str, yy, color = TEXT.navy) => makeText(scene, 0, yy, str, { size: fs, color, weight: '900', family: FONT_UI });
+    if (c.kind === 'coins' || c.kind === 'diamonds') {
+      g.add(fitImage(scene, c.kind === 'coins' ? 'icon-coin' : 'icon-diamond', w * 0.46, 0, -w * 0.1));
+      g.add(label(`${c.amount}`, w * 0.3));
+    } else if (c.kind === 'vip') {
+      g.add(fitImage(scene, 'icon-vip', w * 0.56, 0, -w * 0.09));
+      g.add(label('VIP games', w * 0.31, '#7A3DB8'));
+      fitText(g.list[g.list.length - 1], w * 0.84);
+    } else {
+      // the granted bundle: coins + diamonds, with a golden frame
+      const frame = scene.add.graphics();
+      frame.lineStyle(w * 0.05, 0xffd729, 1).strokeRoundedRect(-w * 0.47, -w * 0.47, w * 0.94, w * 0.94, w * 0.2);
+      g.add(frame);
+      g.add(fitImage(scene, 'icon-coin', w * 0.32, -w * 0.18, -w * 0.13));
+      g.add(fitImage(scene, 'icon-diamond', w * 0.32, w * 0.2, -w * 0.13));
+      const t = label(`${c.coins} + ${c.diamonds}`, w * 0.27);
+      fitText(t, w * 0.84);
+      g.add(t);
+    }
+    return g;
   }
 
   layout(l) {
     this.dim.setSize(l.W, l.H);
-    const s = Math.min(Math.min(l.W * 0.9, 400 * l.u) / this.cw, (l.H * 0.86) / this.ch);
+    // the card leaves room below it for the skip action + warning
+    const s = Math.min(Math.min(l.W * 0.9, 400 * l.u) / this.cw, (l.H * 0.78) / this.ch);
     this.fitScale = s;
-    this.card.setPosition(l.W / 2, l.H * 0.53).setScale(s);
+    this.card.setPosition(l.W / 2, l.H * 0.45).setScale(s);
+    this._syncReel();
   }
 
   setEnabled(v) {
@@ -306,8 +492,16 @@ export class ChestOfferModal {
 
   destroy() {
     this.destroyed = true;
+    this.scene.input.off('pointerup', this.onOutside);
+    this.scene.qaTargets?.delete('chest-skip');
+    this.scene.qaTargets?.delete('chest-reel-window');
+    this.scene.qaTargets?.delete('chest-card');
+    this.reelRoot?.destroy();
+    this.reelMaskG?.destroy();
     this.raysTween?.stop();
     this.bob?.stop();
+    this.pulse?.stop();
+    this.sheenTween?.stop();
     this.buttons.forEach((b) => b.destroy());
     this.root.destroy();
   }

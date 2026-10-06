@@ -15,6 +15,8 @@ export const chair = {
   title: 'Chair',
   backgrounds: { portrait: 'chair-bg-portrait', landscape: 'chair-bg-landscape' },
   thumbnail: 'chair-thumb',
+  thumbnailClean: 'chair-thumb-clean', // hub preview once completed
+  menuPreview: { scale: 1.18, dy: -0.06 }, // hub: a bit bigger and higher (designer review)
   resultPicture: 'chair-result-picture',
   object: {
     canvasSize: 1024,

@@ -19,8 +19,10 @@ export class ToolController {
     this.rest = { x: 0, y: 0 };
   }
 
-  setLayout({ scale, restX, restY }) {
+  setLayout({ scale, restX, restY, ui = this.uiScale ?? 1, jetCap = this.jetCap }) {
     this.objScale = scale;
+    this.jetCap = jetCap; // max jet length in device px (30 % of the play height)
+    this.uiScale = ui; // device px per UI unit (screen-scale jets)
     this.rest = { x: restX, y: restY };
     if (this.sprite) {
       this.scene.tweens.killTweensOf(this.sprite);
@@ -106,7 +108,7 @@ export class ToolController {
   jetVector() {
     if (this.tool.kind !== 'jet') return { x: 0, y: 0 };
     const a = ((this.tool.jetAngle ?? -90) * Math.PI) / 180;
-    const len = (this.tool.jetLength ?? 0) * this._geomScale();
+    const len = this.tool.jetUi ? Math.min(this.tool.jetUi * (this.uiScale ?? 1), this.jetCap ?? Infinity) : (this.tool.jetLength ?? 0) * this._geomScale();
     return { x: Math.cos(a) * len, y: Math.sin(a) * len };
   }
 

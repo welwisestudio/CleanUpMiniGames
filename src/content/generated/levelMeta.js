@@ -514,6 +514,36 @@ export const LEVEL_META = {
     191,
     192
    ]
+  },
+  "ui-btn-pink": {
+   "size": [
+    400,
+    126
+   ],
+   "slice": [
+    63,
+    63,
+    45,
+    55
+   ]
+  },
+  "icon-replay": {
+   "size": [
+    190,
+    192
+   ]
+  },
+  "icon-next": {
+   "size": [
+    192,
+    186
+   ]
+  },
+  "icon-vip": {
+   "size": [
+    256,
+    243
+   ]
   }
  },
  "sprites": {

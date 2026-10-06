@@ -3273,8 +3273,8 @@
       "updated": "2026-10-06",
       "reason": "Step 6 UI / reward pass: menu polish (logo emblem without text, wallpaper), timed chest, level-progress chest, x3 rewarded-ad button",
       "credits": {
-        "generations": 7,
-        "backgroundRemovals": 6
+        "generations": 11,
+        "backgroundRemovals": 10
       },
       "export": "python scripts/prepare_levels.py rewards",
       "reused": "icon-ad (Step 3 icon sheet), ui-tile-large (level cards), ui-pill, ui-progress-fill, ui-result-card",
@@ -3481,6 +3481,134 @@
               "file": "clapperboard ad icon screenshot attached on 2026-10-06"
             }
           ]
+        },
+        {
+          "id": "shared/ui-btn-pink",
+          "status": "completed",
+          "prompt": "Using the attached button sheet only as the style reference (same glossy chunky shape, same rounded-rectangle proportions, same darker bottom edge, same top highlight band and same rendering), create ONE new empty horizontal button in a bright candy pink-magenta: a hot pink to magenta gradient face (light bubblegum pink at the top, vivid magenta at the bottom), a darker raspberry-magenta bottom edge and a soft bright glossy highlight band across its top, sweet and attention-grabbing. Front view, centered, wide horizontal rounded rectangle about 3.2 times wider than tall, fully visible with 12% clear padding on every side. Plain uniform flat medium gray background, no gradient, no cast shadow, no reflection, nothing underneath the button. Completely empty: no text, no icons, no symbols.",
+          "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+          "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+          "requestedModel": "nano_banana_2",
+          "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+          "parameters": {
+            "resolution": "2k",
+            "aspect_ratio": "16:9"
+          },
+          "jobId": "57fa2b2d-f4bd-4d4d-9753-7bea80073f60",
+          "generatedAt": "2026-10-06",
+          "masterPath": "reference/masters/shared/ui-btn-pink.png",
+          "masterSha256": "f766e6c245c009e69c0d5537c65d5595a5079267ef8b69c65c0696447819c2d3",
+          "exportCommand": "python scripts/prepare_levels.py",
+          "backgroundRemoval": {
+            "toolName": "remove_background",
+            "model": "image_background_remover",
+            "status": "completed",
+            "inputJobId": "57fa2b2d-f4bd-4d4d-9753-7bea80073f60",
+            "operationJobId": "a59e30bf-47c3-42e6-9cc9-3cb881824d14",
+            "cutoutPath": "reference/cutouts/shared/ui-btn-pink.png",
+            "outputSha256": "cf2a390aadd6f674d42db4ec46f2c9c82a6be81bf343379ed3514536a0dfb5fc",
+            "alphaReview": {
+              "status": "PASS"
+            }
+          },
+          "references": [
+            {
+              "role": "image_references (style only)",
+              "jobId": "80b72ba7-3072-472d-8b30-9bcc99a0a197",
+              "asset": "soccer-ball/ui-buttons-sheet"
+            }
+          ],
+          "crop": "saturated (pink) shape only, holes filled, largest component; nine-slice like ui-btn-orange; face centre -0.071 h"
+        },
+        {
+          "id": "shared/icon-replay",
+          "status": "completed",
+          "prompt": "Create a production 2D game icon for a casual mobile game: a replay / play again icon. One bold chunky circular arrow (almost a full circle, about 300 degrees, with a big rounded arrowhead at its end pointing clockwise), glossy white with a soft light-gray underside and a thin dark warm-brown outline so it reads on a yellow button. Centered, the entire icon fits in the frame with 14% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlight. Background: plain uniform flat medium gray background, no gradient, no cast shadow. No text, no letters, no extra objects.",
+          "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+          "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+          "requestedModel": "nano_banana_2",
+          "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+          "parameters": {
+            "resolution": "2k",
+            "aspect_ratio": "1:1"
+          },
+          "jobId": "27411073-69b6-41df-9588-3da1684c3380",
+          "generatedAt": "2026-10-06",
+          "masterPath": "reference/masters/shared/icon-replay.png",
+          "masterSha256": "4a9fe6e751632fd5fe9f7733a6f2ea438514890f740518176239a1d1938bd0ce",
+          "exportCommand": "python scripts/prepare_levels.py",
+          "backgroundRemoval": {
+            "toolName": "remove_background",
+            "model": "image_background_remover",
+            "status": "completed",
+            "inputJobId": "27411073-69b6-41df-9588-3da1684c3380",
+            "operationJobId": "b107bdd5-e9bf-43b1-a3c7-e6c50fb12525",
+            "cutoutPath": "reference/cutouts/shared/icon-replay.png",
+            "outputSha256": "8cac6d3c4ccc6b42c8880a2013ae84a6d146564379b8f75d001d4ace314e3522",
+            "alphaReview": {
+              "status": "PASS"
+            }
+          }
+        },
+        {
+          "id": "shared/icon-next",
+          "status": "completed",
+          "prompt": "Create a production 2D game icon for a casual mobile game: a next / continue arrow icon. One bold chunky right-pointing arrow made of a short thick rounded shaft and a big rounded triangular arrowhead, glossy white with a soft light-gray underside and a thin dark green outline so it reads on a green button. Centered, the entire icon fits in the frame with 14% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlight. Background: plain uniform flat medium gray background, no gradient, no cast shadow. No text, no letters, no extra objects.",
+          "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+          "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+          "requestedModel": "nano_banana_2",
+          "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+          "parameters": {
+            "resolution": "2k",
+            "aspect_ratio": "1:1"
+          },
+          "jobId": "7c21b2bd-6d03-4ef0-8b0d-00649add9891",
+          "generatedAt": "2026-10-06",
+          "masterPath": "reference/masters/shared/icon-next.png",
+          "masterSha256": "a0e9e53da9fa3565dd12b9b82099cd545483a6fb23a6ac9f9cf896bb5db80d13",
+          "exportCommand": "python scripts/prepare_levels.py",
+          "backgroundRemoval": {
+            "toolName": "remove_background",
+            "model": "image_background_remover",
+            "status": "completed",
+            "inputJobId": "7c21b2bd-6d03-4ef0-8b0d-00649add9891",
+            "operationJobId": "430b76a7-577b-43e9-8c2e-cda9f91fc015",
+            "cutoutPath": "reference/cutouts/shared/icon-next.png",
+            "outputSha256": "4904cc480e17cc80706d9bc37e422a4732f1c315a369ab492a4d182000bbca6e",
+            "alphaReview": {
+              "status": "PASS"
+            }
+          }
+        },
+        {
+          "id": "shared/icon-vip",
+          "status": "completed",
+          "prompt": "Create a production 2D game icon for a casual cleaning mobile game: a VIP bonus mini-games reward symbol. A shiny golden royal crown with rounded points and three sparkling gemstones (magenta, turquoise, purple), sitting on top of a small glossy purple game ticket with a gold star in its middle. Rich premium look, bold readable shapes for small sizes. Centered, the entire icon fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no letters, no numbers, no extra objects.",
+          "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+          "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+          "requestedModel": "nano_banana_2",
+          "actualModel": "nano_banana_flash (backend reported by the service for nano_banana_2 jobs)",
+          "parameters": {
+            "resolution": "2k",
+            "aspect_ratio": "1:1"
+          },
+          "jobId": "c86a58bc-b4d7-41c9-88c0-019caf219c10",
+          "generatedAt": "2026-10-06",
+          "masterPath": "reference/masters/shared/icon-vip.png",
+          "masterSha256": "48ef7cb88bb6ed54a715da78596050f9178a7e4bc3e5cd895cde80e3e2e11a4e",
+          "exportCommand": "python scripts/prepare_levels.py",
+          "backgroundRemoval": {
+            "toolName": "remove_background",
+            "model": "image_background_remover",
+            "status": "completed",
+            "inputJobId": "c86a58bc-b4d7-41c9-88c0-019caf219c10",
+            "operationJobId": "60132c39-3c4e-4576-8043-7af201ede788",
+            "cutoutPath": "reference/cutouts/shared/icon-vip.png",
+            "outputSha256": "4f8b6a56409d0d9c91bc0b715d151576ba02f50079bf3a52274e3605ff67172b",
+            "alphaReview": {
+              "status": "PASS"
+            }
+          }
         },
         {
           "id": "shared/bg-menu-portrait",

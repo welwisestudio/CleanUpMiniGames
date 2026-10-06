@@ -9,9 +9,10 @@ export const soccerBall = {
   title: 'Soccer Ball',
   backgrounds: { portrait: 'bg-pitch-portrait', landscape: 'bg-pitch-landscape' },
   thumbnail: 'thumb-soccer-ball',
+  thumbnailClean: 'thumb-clean-soccer-ball', // hub preview once completed
   resultPicture: 'result-picture-soccer-ball',
   // Framing reach used since the approved Step 3 layout (keeps the ball size unchanged).
-  fitReach: 540,
+  fitReach: 170, // finger room below the ball in object units (contact tools); jets add screen-scale room
   object: {
     shape: 'circle',
     canvasSize: 1024,

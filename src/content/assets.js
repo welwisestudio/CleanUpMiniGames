@@ -19,6 +19,7 @@ export const IMAGE_ASSETS = {
   'stamp-foam': `${L}stamp-foam.webp`,
   'mask-outside': `${L}mask-outside.png`,
   'thumb-soccer-ball': `${L}thumb-soccer-ball.webp`,
+  'thumb-clean-soccer-ball': `${L}thumb-clean-soccer-ball.webp`,
   'result-picture-soccer-ball': `${L}result-picture-soccer-ball.webp`,
   'tool-chisel': `${L}tool-chisel.webp`,
   'tool-dry-brush': `${L}tool-dry-brush.webp`,
@@ -55,13 +56,17 @@ export const IMAGE_ASSETS = {
   'ui-btn-orange': `${U}ui-btn-orange.webp`,
   'ui-btn-purple': `${U}ui-btn-purple.webp`,
   'icon-ad-clapper': `${U}icon-ad-clapper.webp`,
+  'ui-btn-pink': `${U}ui-btn-pink.webp`,
+  'icon-replay': `${U}icon-replay.webp`,
+  'icon-next': `${U}icon-next.webp`,
+  'icon-vip': `${U}icon-vip.webp`,
   'ui-chest-timed': `${U}ui-chest-timed.webp`,
   'ui-chest-progress': `${U}ui-chest-progress.webp`,
 };
 
 // ---- Step 5: levels 2–5, shared tools and UI (scripts/prepare_levels.py) ----
 const level = (id, files) => Object.fromEntries(Object.entries(files).map(([k, f]) => [`${id}-${k}`, `assets/${id}/${f}`]));
-const common = { 'bg-portrait': 'bg-portrait.webp', 'bg-landscape': 'bg-landscape.webp', thumb: 'thumb.webp', 'result-picture': 'result-picture.webp', mask: 'mask.png', 'mask-outside': 'mask-outside.png', foam: 'tex-foam-full.webp', 'foam-scrubbed': 'tex-foam-scrubbed-full.webp' };
+const common = { 'bg-portrait': 'bg-portrait.webp', 'bg-landscape': 'bg-landscape.webp', thumb: 'thumb.webp', 'thumb-clean': 'thumb-clean.webp', 'result-picture': 'result-picture.webp', mask: 'mask.png', 'mask-outside': 'mask-outside.png', foam: 'tex-foam-full.webp', 'foam-scrubbed': 'tex-foam-scrubbed-full.webp' };
 Object.assign(
   IMAGE_ASSETS,
   level('rug', { ...common, clean: 'rug-clean.webp', wet: 'rug-wet.webp', stained: 'rug-stained.webp', muddy: 'rug-muddy.webp', sandy: 'rug-sandy.webp' }),

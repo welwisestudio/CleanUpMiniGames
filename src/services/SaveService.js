@@ -18,9 +18,9 @@ export function createDefaultState() {
     // Reward receipts (one per accepted level completion). `lastCompletion` lets the x3 offer of
     // that completion be paid exactly once, even after a reload.
     completionSeq: 0,
-    lastCompletion: null, // { id, levelId, amount, x3: boolean }
+    lastCompletion: null, // { id, levelId, amount, boost: 0 | locked multiplier once claimed }
     timedChest: { readyAt: 0 }, // epoch ms when the next timed chest opens (0 = not started)
-    progressChest: { steps: 0, opened: 0 }, // steps 0..max; opened = chests claimed so far
+    progressChest: { steps: 0, opened: 0, forfeited: 0 }, // steps 0..max; chests claimed / skipped
   };
 }
 
@@ -52,9 +52,10 @@ export function parseSave(serialized) {
   for (const [k, v] of Object.entries(raw.tutorial ?? {})) if (v) state.tutorial[k] = true;
   state.completionSeq = toNonNegativeInt(raw.completionSeq);
   const lc = raw.lastCompletion;
-  state.lastCompletion = lc && typeof lc === 'object' && typeof lc.levelId === 'string' ? { id: toNonNegativeInt(lc.id), levelId: lc.levelId, amount: toNonNegativeInt(lc.amount), x3: Boolean(lc.x3) } : null;
+  // `boost` = multiplier claimed for that completion (0 = not yet); older saves stored `x3: true`
+  state.lastCompletion = lc && typeof lc === 'object' && typeof lc.levelId === 'string' ? { id: toNonNegativeInt(lc.id), levelId: lc.levelId, amount: toNonNegativeInt(lc.amount), boost: toNonNegativeInt(lc.boost ?? (lc.x3 ? 3 : 0)) } : null;
   state.timedChest = { readyAt: toNonNegativeInt(raw.timedChest?.readyAt) };
-  state.progressChest = { steps: toNonNegativeInt(raw.progressChest?.steps), opened: toNonNegativeInt(raw.progressChest?.opened) };
+  state.progressChest = { steps: toNonNegativeInt(raw.progressChest?.steps), opened: toNonNegativeInt(raw.progressChest?.opened), forfeited: toNonNegativeInt(raw.progressChest?.forfeited) };
   for (const [id, entry] of Object.entries(raw.levels ?? {})) {
     state.levels[id] = {
       completed: Boolean(entry?.completed),

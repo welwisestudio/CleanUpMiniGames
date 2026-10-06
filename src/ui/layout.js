@@ -46,7 +46,10 @@ export function computeLayout(W, H, dpr = 1) {
 // `reach` = how far below the framed bounds the finger must be able to go, in object-local units
 // (jet tools hit ~jetLength above the nozzle; contact tools sit ~120 above the finger).
 // Returns the world centre of the object CANVAS, the scale and the tool rest position.
-export function fitObject(layout, target, { reach = 540, canvasSize = 1024, share = null } = {}) {
+// Screen-scale jets: `jetReach` (object units: nozzle offset) + `jetPx` (device px: the jet) is a
+// second, separate finger-room requirement; the tighter of the two limits the scale. The jet is
+// capped at 30 % of the play height (short landscape screens).
+export function fitObject(layout, target, { reach = 540, jetReach = 0, jetPx = 0, canvasSize = 1024, share = null } = {}) {
   const b = typeof target === 'number' ? [canvasSize / 2 - target, canvasSize / 2 - target, canvasSize / 2 + target, canvasSize / 2 + target] : target;
   const objW = b[2] - b[0];
   const objH = b[3] - b[1];
@@ -56,13 +59,18 @@ export function fitObject(layout, target, { reach = 540, canvasSize = 1024, shar
   const playW = layout.W - 2 * layout.margin;
   const hShare = share ?? (layout.portrait ? 0.58 : 0.61);
   const minScale = (80 * layout.dpr) / Math.max(objW, objH);
-  const scale = Math.max(minScale, Math.min((playW * 0.84) / objW, (playH * hShare) / objH, (playH * 0.97) / (objH + reach)));
-  const boundsTop = top + playH * 0.05;
+  // Step 6 UI pass: objects may use up to 96 % of the play width (was 84 %) and are centred
+  // vertically in the space left after the finger room they need below them (was top-aligned).
+  const jp = Math.min(jetPx, playH * 0.3);
+  const jetLimit = jp > 0 ? (playH * 0.97 - jp) / (objH + jetReach) : Infinity;
+  const scale = Math.max(minScale, Math.min((playW * 0.96) / objW, (playH * hShare) / objH, (playH * 0.97) / (objH + reach), jetLimit));
+  const spare = playH - objH * scale - Math.max(reach * scale, jp > 0 ? jetReach * scale + jp : 0);
+  const boundsTop = top + Math.max(playH * 0.05, spare / 2);
   const cx = layout.W / 2 - ((b[0] + b[2]) / 2 - canvasSize / 2) * scale;
   const cy = boundsTop - (b[1] - canvasSize / 2) * scale;
   const boundsBottom = boundsTop + objH * scale;
   const R = (Math.min(objW, objH) / 2) * scale;
-  return { cx, cy, scale, R, boundsTop, boundsBottom, restX: layout.W / 2, restY: Math.min(bottom - objH * scale * 0.1, boundsBottom + (bottom - boundsBottom) * 0.45) };
+  return { cx, cy, scale, R, boundsTop, boundsBottom, jetCap: playH * 0.3, restX: layout.W / 2, restY: Math.min(bottom - objH * scale * 0.1, boundsBottom + (bottom - boundsBottom) * 0.45) };
 }
 
 // Background "cover" fit: scale uniformly so the image fills the screen; centred.

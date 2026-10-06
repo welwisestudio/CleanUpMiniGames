@@ -22,6 +22,8 @@ import { LEVEL_META } from './generated/levelMeta.js';
 //                 is held tilted 55° so its nozzle tube and the foam point up-right at the object.
 //   scaleOffset – finger offset and jet length scale with the stage's toolScale (side-held tools
 //                 whose body sits beside the finger: drill, foam can).
+//   jetUi       – jet length in UI units (screen scale) instead of object units: a larger object
+//                 then needs no extra finger room below it (Step 6 UI pass: objects framed larger).
 
 function wp(id) {
   const m = ASSET_META.tools[id] ?? LEVEL_META.tools[`tool-${id}`];
@@ -63,6 +65,7 @@ export const TOOLS = {
     displayLength: 440,
     workOffset: { x: 0, y: -60 },
     jetLength: 480,
+    jetUi: 140, // jet length in UI units (screen scale, Step 6 UI pass), used instead of jetLength
     jetStyle: 'foam',
   },
   'scrub-brush': {
@@ -84,6 +87,7 @@ export const TOOLS = {
     displayLength: 760,
     workOffset: { x: 0, y: -60 },
     jetLength: 520,
+    jetUi: 150, // jet length in UI units (screen scale)
     jetStyle: 'water',
   },
   cloth: {
@@ -100,7 +104,7 @@ export const TOOLS = {
   // ---- Step 5 tools (levels 2–5) ----
   squeegee: { id: 'squeegee', name: 'Squeegee', kind: 'contact', texture: 'tool-squeegee', workingPoint: wp('squeegee'), displayLength: 560, workOffset: { x: 0, y: -110 }, tiltWithMotion: 3 },
   'detail-brush': { id: 'detail-brush', name: 'Detail brush', kind: 'contact', texture: 'tool-detail-brush', workingPoint: wp('detail-brush'), displayLength: 520, workOffset: { x: 0, y: -110 }, tiltWithMotion: 8 },
-  'mist-nozzle': { id: 'mist-nozzle', name: 'Water mist', kind: 'jet', texture: 'tool-mist-nozzle', workingPoint: wp('mist-nozzle'), displayLength: 400, workOffset: { x: 0, y: -60 }, jetLength: 440, jetStyle: 'mist' },
+  'mist-nozzle': { id: 'mist-nozzle', name: 'Water mist', kind: 'jet', texture: 'tool-mist-nozzle', workingPoint: wp('mist-nozzle'), displayLength: 400, workOffset: { x: 0, y: -60 }, jetLength: 440, jetUi: 140, jetStyle: 'mist' },
   // working point = centre of the fluffy head; the finger holds the handle below it
   duster: { id: 'duster', name: 'Duster', kind: 'contact', texture: 'tool-duster', workingPoint: wp('duster'), head: head('duster'), displayLength: 520, workOffset: { x: 0, y: -190 }, tiltWithMotion: 4 },
   // upright can with a side nozzle tube, held tilted 55°: the finger is on the can body, the foam

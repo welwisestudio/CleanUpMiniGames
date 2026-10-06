@@ -30,7 +30,7 @@ def box_of(mask):
 
 for proj in ('desktop-mouse', 'phone-touch'):
     j = json.loads((D / proj / 'rects.json').read_text())
-    shot = next(p for p in (D / proj / '04-completed.png', D / proj / '02-completed.png') if p.exists())
+    shot = next(p for p in (D / proj / '03-completed.png', D / proj / '04-completed.png', D / proj / '02-completed.png') if p.exists())
     img = np.array(Image.open(shot).convert('RGB')).astype(int)
     k = img.shape[1] / j['css']['W']  # screenshot px per CSS px
     B = j['buttons']
@@ -101,21 +101,21 @@ for proj in ('desktop-mouse', 'phone-touch'):
     dy = (ty - ay) / (r['h'] * k)
     results.append(('Level chest label (bar face)', abs(dy) <= 0.025, f'text dy {dy * 100:+.1f} % of height (horizontal: centred by construction on the bar)'))
 
-    # green buttons: white label pixels
-    for bid in ('result-replay', 'result-next'):
-        r = B[bid]
-        x0, x1, y0, y1 = region(r, 0.42, 0.36)
-        sub = img[y0:y1, x0:x1]
-        check(f'{bid} label (button label centre)', (sub > 240).all(2), x0, y0, r['x'] * k, (r['y'] + r['h'] * GREEN_LABEL) * k, r['w'] * k, r['h'] * k)
-
-    # x3 button (purple): the white "Claim" text, right of the icon (vertical check)
-    r = B['result-x3']
-    cx, cy, w, h = r['x'] * k, r['y'] * k, r['w'] * k, r['h'] * k
-    x0, x1, y0, y1 = int(cx - 0.06 * w), int(cx + 0.44 * w), int(cy - 0.34 * h), int(cy + 0.34 * h)
-    t = box_of((img[y0:y1, x0:x1] > 240).all(2))
-    ty = y0 + (t[2] + t[3]) / 2
-    dy = (ty - (r['y'] + r['h'] * PURPLE_LABEL) * k) / h
-    results.append(('x3 "Claim x3" text (button label centre)', abs(dy) <= 0.025, f'text dy {dy * 100:+.1f} % of height'))
+    # buttons with a left icon (Replay yellow, Next green, boost pink): the white label text,
+    # measured right of the icon, against each surface's optical label centre (vertical)
+    for bid, lab in (('result-replay', -0.046), ('result-next', -0.045), ('result-boost', -0.041)):
+        r = B.get(bid)
+        if not r:
+            continue
+        cx, cy, w, h = r['x'] * k, r['y'] * k, r['w'] * k, r['h'] * k
+        x0, x1, y0, y1 = int(cx - 0.05 * w), int(cx + 0.44 * w), int(cy - 0.34 * h), int(cy + 0.34 * h)
+        t = box_of((img[y0:y1, x0:x1] > 240).all(2))
+        if t is None:
+            results.append((f'{bid} label', False, 'no text found'))
+            continue
+        ty = y0 + (t[2] + t[3]) / 2
+        dy = (ty - (r['y'] + r['h'] * lab) * k) / h
+        results.append((f'{bid} label (label centre)', abs(dy) <= 0.025, f'text dy {dy * 100:+.1f} % of height'))
 
     print(proj)
     for name, good, msg in results:

@@ -1,10 +1,13 @@
 # Current project status
 
-Updated: 2026-10-06 (rev. 16) · Build **#43** (2026-10-05T22:09:17Z UTC) · Commit: `2229c2d` + uncommitted Step 6 work
+Updated: 2026-10-07 (rev. 19) · Build **#50** (2026-10-06T21:20:19Z UTC) · Commit: `7705b74` ("5 lvls build") + uncommitted UI / reward pass 3
 
 - **Current stage goal:** Step 6 — UI / reward polish before designer review (gameplay approved). Step 7 not started. Nothing committed.
 - **Step 6 gameplay approved** (2026-10-06).
-- **x3 button v4 (build #43), waiting for approval:** purple button with the clapperboard watch-ad icon, "Claim" + large yellow "x3".
+- **Multiplier bar polish (build #50), waiting for approval:** inner segments equal height and evenly centred.
+- **UI pass 4 (build #49):** multiplier bar after the reference (x2 | x3 | x5 | x3 | x2, purple marker), Chair / Rug hub previews larger, chest reel clipped to the card.
+- **UI / reward pass 3 (build #47, approved):** hub clean previews + 46-unit checks; completed screen (Home + wide yellow Replay, full-width Next; boost meter x2…x5 + pink button: tap locks, ad pays base × multiplier); larger, vertically centred objects (screen-scale jets); Level Chest offer (green Open chest with pulse + sheen, "Skip chest" text + lost-forever warning — skipping forfeits the chest) and a reward reel. Backgrounds unchanged; ad-based tool / colour choice is backlog only.
+- **x3 button v4 (build #43):** purple button with the clapperboard watch-ad icon, "Claim" + large yellow "x3".
 - **UI polish 2 (build #42):** chests always visible in the gameplay HUD; hub chests in one left column under the counters with the approved compact header; Replay / Next labels optically centred; green x3 button after the reference composition.
 - **UI corrections (build #41):** hub background and shelves reverted to the approved version, emblem removed, chests under the coin / diamond counters, x3 button redesigned, completed-screen text alignment fixed and verified on rendered pixels.
 - **Step 6 UI / reward pass (build #36):** global text-layout rules, x3 post-level reward (rewarded ad, dev adapter), timed chest (menu), level-progress chest (result card, offer window, menu). Values in `src/content/economy.js` (provisional). No real ads / SDK.
@@ -70,6 +73,12 @@ Updated: 2026-10-06 (rev. 16) · Build **#43** (2026-10-05T22:09:17Z UTC) · Com
 | # | Question |
 |---|---|
 | Q1 | **Next after Level 5 (Sneaker):** not defined in the approved decisions. Currently the Sneaker result shows Home and Replay only. Options: no Next (as now); Next → back to the menu; Next → Level 1 (loop). |
+
+## Backlog (recorded, not implemented)
+
+- Regular levels after the first five: one reusable standard background family; VIP levels: a separate premium background family.
+- Choosing tool skins / colours by watching an ad (future monetization).
+- VIP mini-games: the reward reel shows a VIP card as decoration only.
 
 ## Open items (not blocking)
 
