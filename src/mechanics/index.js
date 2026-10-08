@@ -3,6 +3,7 @@ import { ChunkBreakMechanic } from './ChunkBreakMechanic.js';
 import { DragToTargetMechanic } from './DragToTargetMechanic.js';
 import { SpotsMechanic } from './SpotsMechanic.js';
 import { PointTargetsMechanic } from './PointTargetsMechanic.js';
+import { FillLevelMechanic } from './FillLevelMechanic.js';
 
 // Creates the mechanic for one stage from content data. A stage-level `region` restricts the
 // stage to part of the object (e.g. the chair seat).
@@ -21,17 +22,23 @@ export function createMechanic(stage, { stack, tool, scene, radiusMul = 1 }) {
       return new SpotsMechanic({ stack, params, scene });
     case 'points':
       return new PointTargetsMechanic({ stack, params, scene });
+    case 'fill':
+      return new FillLevelMechanic({ stack, params, scene });
     default:
       throw new Error(`Unknown mechanic: ${stage.mechanic}`);
   }
 }
+
+// Point-target mode aliases (configurable names from the Step 8 brief).
+export const POINT_ALIAS = { screw: 'hold', place: 'hold', repeatedTap: 'tap' };
 
 // Gesture family of a stage (hint selection and "first time" tracking).
 export function gestureFamily(stage, tool) {
   if (stage.mechanic === 'dragToTarget') return 'drag-item';
   if (stage.mechanic === 'spots') return 'spot';
   if (stage.mechanic === 'chunkBreak') return 'chisel';
-  if (stage.mechanic === 'points') return `point-${stage.params.mode}`;
+  if (stage.mechanic === 'points') return `point-${POINT_ALIAS[stage.params.mode] ?? stage.params.mode}`;
+  if (stage.mechanic === 'fill') return 'point-hold';
   if (stage.params?.source) return 'rub-load';
   if (tool.kind === 'jet') return 'jet';
   return 'rub';

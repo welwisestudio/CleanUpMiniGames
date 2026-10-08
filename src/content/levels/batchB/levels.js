@@ -1,0 +1,401 @@
+import { makeLevel, S, TINT } from './kit.js';
+
+// Levels 16–50 (Step 8 Batch B). Stage counts: 16–25 → 7–9, 26–40 → 8–10, 41–50 → 9–12.
+// Layer names = scripts/prepare_batch_b.py stack ids (clean is always the bottom, static).
+
+const F = ['foam', 'scrubbed'];
+
+export const BATCH_B_LEVELS = [
+  // 16 · Swimming pool — skim the leaves, pump it dry, scrub the tiles, refill with the hose
+  makeLevel('swimming-pool', 'Swimming Pool', [
+    S.trash('leaves', { leaves: true, target: 'skimmer-net', id: 'skim' }),
+    S.drain('murky', 'water'),
+    S.mop(['deck-dirty'], 'deck'),
+    S.foam('water'),
+    S.scrub(['empty-dirty'], 'water'),
+    S.rinse([...F, 'empty-dirty'], 'water'),
+    S.fill('empty-clean', 'water'),
+  ]),
+  // 17 · Leather jacket — empty the pockets, dust, foam, scrub, wipe, condition, buff
+  makeLevel('leather-jacket', 'Leather Jacket', [
+    S.trash('junk'),
+    S.dust(),
+    S.foam(),
+    S.scrub(['dirty']),
+    S.wipe([...F, 'dirty']),
+    S.mist(['dry'], null, 'condition'),
+    S.polish(['dull']),
+  ]),
+  // 18 · Rusty cleaver — laser the rust off the blade, sand the handle, polish, sharpen, varnish
+  makeLevel('rusty-cleaver', 'Rusty Cleaver', [
+    S.dust(),
+    S.laser(['rusty'], 'blade'),
+    S.sand(['rusty'], 'handle'),
+    S.polish(['bare'], 'blade'),
+    S.sharpen(['edge-dull'], 'edge'),
+    S.stain(['bare'], 'handle'),
+    S.wipe(['smudge']),
+  ]),
+  // 19 · Toaster — dust, knock the dents out, degrease, mist-rinse, dry, polish the chrome
+  makeLevel('toaster', 'Toaster', [
+    S.dust(),
+    S.hammer('dents'),
+    S.foam(),
+    S.scrub(['greasy']),
+    S.mist([...F, 'greasy'], null, 'mist-rinse'),
+    S.dry(),
+    S.polish(['smudge']),
+  ]),
+  // 20 · Coir doormat — leaves off, beat the dust out, scrape the caked mud, wash, blow dry
+  makeLevel('coir-doormat', 'Doormat', [
+    S.trash('leaves', { leaves: true }),
+    S.beat('beat', 'dusty'),
+    S.chunks('crust', { seed: 2001 }),
+    S.foam(),
+    S.scrub(['dirty']),
+    S.rinse([...F, 'dirty']),
+    S.blow(['wet']),
+  ]),
+  // 21 · Garden grill — junk out, scrape the carbon, wire-brush the grate, laser the body, wash
+  makeLevel('garden-grill', 'Garden Grill', [
+    S.trash('junk'),
+    S.chunks('crust', { seed: 2101, count: 8, tip: 80 }),
+    S.wire(['rusty'], 'grate'),
+    S.laser(['rusty'], 'body'),
+    S.foam(),
+    S.scrub(['grime']),
+    S.rinse([...F, 'grime']),
+    S.dry(),
+  ]),
+  // 22 · Bathtub — toys out, drain, scrub, rinse, dry, polish the chrome, run a fresh bath
+  makeLevel('bathtub', 'Bathtub', [
+    S.trash('junk'),
+    S.drain('murky', 'water'),
+    S.foam(),
+    S.scrub(['empty-dirty']),
+    S.rinse([...F, 'empty-dirty']),
+    S.squeegee(['wet']),
+    S.polish(['chrome-dull'], 'chrome'),
+    S.fill('empty-clean', 'water'),
+  ]),
+  // 23 · Retro radio — dust, open the grille screws, blow + steam the grille, sponge the case
+  makeLevel('retro-radio', 'Retro Radio', [
+    S.dust(),
+    S.screws('screws', 'remove'),
+    S.blow(['lint'], 'grille'),
+    S.steam(['dirty'], 'grille'),
+    S.stain(['dirty'], 'body', 'sponge'),
+    S.polish(['dull']),
+    S.screws('screws', 'install'),
+  ]),
+  // 24 · Stone lion — leaves, chisel the lime crust, brush the moss, wash, blow dry
+  makeLevel('stone-lion', 'Stone Lion', [
+    S.trash('leaves', { leaves: true }),
+    S.chunks('crust', { tool: 'chisel', family: null, seed: 2401, count: 10 }),
+    S.detail(['moss'], 'moss', 'moss-brush'),
+    S.foam(),
+    S.scrub(['dirty']),
+    S.rinse([...F, 'dirty']),
+    S.blow(['wet']),
+  ]),
+  // 25 · Wooden dresser — clear the top, dust, sand, wipe, clean the knobs, stain, polish
+  makeLevel('wooden-dresser', 'Wooden Dresser', [
+    S.trash('junk'),
+    S.dust(),
+    S.sand(['old'], 'body'),
+    S.wipe(['sawdust'], 'body'),
+    S.swab(['old'], 'knobs'),
+    S.paint(['sanded'], 'body', TINT.walnut, 'stain'),
+    S.polish(['dull']),
+  ]),
+  // 26 · Aquarium — skim, drain, scrub the decor, scrape the glass, rinse, glass cleaner, dust, refill
+  makeLevel('aquarium', 'Aquarium', [
+    S.trash('leaves', { leaves: true, target: 'skimmer-net', id: 'skim' }),
+    S.drain('murky', 'tank'),
+    S.detail(['empty-dirty'], 'decor', 'decor-brush'),
+    S.scrape(['empty-dirty'], 'glass', 'algae-scrape'),
+    S.rinse(['silt'], 'tank'),
+    S.mist(['smudge'], 'tank', 'glass-cleaner'),
+    S.dust(['dusty'], 'stand'),
+    S.fill('empty-clean', 'tank'),
+  ]),
+  // 27 · Backpack — empty it, beat it, steam the stains, wash, rinse, blow dry, protect
+  makeLevel('backpack', 'Backpack', [
+    S.trash('junk'),
+    S.beat('beat', 'dusty'),
+    S.steam(['stains']),
+    S.foam(),
+    S.scrub(['dirty']),
+    S.rinse([...F, 'dirty']),
+    S.blow(['wet']),
+    S.mist(['dull'], null, 'protect'),
+  ]),
+  // 28 · Kitchen stove — clear it, scrape the burnt crust, steam the cooktop, degrease, wipe, dry, polish
+  makeLevel('kitchen-stove', 'Kitchen Stove', [
+    S.trash('junk'),
+    S.chunks('crust', { seed: 2801, count: 10, tip: 60 }),
+    S.steam(['greasy'], 'cooktop'),
+    S.foam(),
+    S.scrub(['greasy']),
+    S.stain([...F, 'greasy'], null, 'sponge'),
+    S.dry(),
+    S.polish(['dull']),
+  ]),
+  // 29 · Lawn mower — clippings, scrape the mud, hammer the deck, laser the rust, wash, polish
+  makeLevel('lawn-mower', 'Lawn Mower', [
+    S.trash('leaves', { leaves: true }),
+    S.chunks('mud', { seed: 2901 }),
+    S.hammer('dents'),
+    S.laser(['rusty']),
+    S.foam(),
+    S.scrub(['grime']),
+    S.rinse([...F, 'grime']),
+    S.polish(['dull']),
+  ]),
+  // 30 · Street sign — flyers off, dust, laser the plate, grind the post, repaint, polish, bolts
+  makeLevel('street-sign', 'Street Sign', [
+    S.trash('junk'),
+    S.dust(),
+    S.laser(['rusty'], 'plate'),
+    S.grind(['rusty'], 'post'),
+    S.spray(['bare'], 'plate', TINT.yellow),
+    S.polish(['bare'], 'post'),
+    S.screws('bolts', 'install'),
+    S.wipe(['dull'], 'plate'),
+  ]),
+  // 31 · Table lamp — clear, dust, blow + steam the shade, foam / scrub / wipe the brass, polish
+  makeLevel('table-lamp', 'Table Lamp', [
+    S.trash('junk'),
+    S.dust(),
+    S.blow(['lint'], 'shade'),
+    S.steam(['tarnished'], 'shade'),
+    S.foam('base'),
+    S.scrub(['tarnished'], 'base'),
+    S.wipe([...F, 'tarnished'], 'base'),
+    S.polish(['dull'], 'base'),
+  ]),
+  // 32 · Rowboat — leaves, scrape barnacles, rinse, dry, sand, wipe, roll fresh paint, varnish
+  makeLevel('rowboat', 'Rowboat', [
+    S.trash('leaves', { leaves: true }),
+    S.chunks('barnacles', { seed: 3201 }),
+    S.rinse(['grime']),
+    S.blow(['wet-dirty']),
+    S.sand(['dirty']),
+    S.wipe(['sawdust']),
+    S.roll(['bare'], null, TINT.white),
+    S.stain(['dull']),
+  ]),
+  // 33 · Game controller — crumbs, blow, detail brush, swab, magic eraser, cleaner, dry, buff
+  makeLevel('game-controller', 'Game Controller', [
+    S.trash('junk'),
+    S.blow(['dusty']),
+    S.detail(['lint'], 'detail'),
+    S.swab(['gunk'], 'detail'),
+    S.eraser(['scuff'], 'grips'),
+    S.mist(['dirty']),
+    S.dry(),
+    S.polish(['dull']),
+  ]),
+  // 34 · Iron gate — leaves, dust, laser the bars, wire-brush the tips, wipe, paint black, gild, polish
+  makeLevel('iron-gate', 'Iron Gate', [
+    S.trash('leaves', { leaves: true }),
+    S.dust(),
+    S.laser(['rusty'], 'bars'),
+    S.wire(['rusty'], 'tips'),
+    S.wipe(['grit']),
+    S.paint(['bare'], 'bars', TINT.black),
+    S.spray(['bare'], 'tips', TINT.gold),
+    S.polish(['dull']),
+  ]),
+  // 35 · Sofa — clear the cushions, beat, steam the stains, foam, scrub, mist-rinse, blow dry, freshen
+  makeLevel('sofa', 'Sofa', [
+    S.trash('junk'),
+    S.beat('beat', 'dusty'),
+    S.steam(['stains']),
+    S.foam(),
+    S.scrub(['stained']),
+    S.mist([...F, 'stained'], null, 'mist-rinse'),
+    S.blow(['wet']),
+    S.stain(['dull'], null, 'freshen'),
+  ]),
+  // 36 · Stone fountain — skim, drain, scrape moss, foam, scrub, rinse, dry, polish the spout, refill
+  makeLevel('stone-fountain', 'Stone Fountain', [
+    S.trash('leaves', { leaves: true, target: 'skimmer-net', id: 'skim' }),
+    S.drain('murky', 'water'),
+    S.detail(['moss'], 'moss', 'moss-brush'),
+    S.foam(),
+    S.scrub(['empty-dirty']),
+    S.rinse([...F, 'empty-dirty']),
+    S.blow(['wet']),
+    S.polish(['spout-dull'], 'spout'),
+    S.fill('empty-clean', 'water'),
+  ]),
+  // 37 · Vintage motorcycle — rags off, rinse the mud, laser the chrome, sand the paint, wash, dry, polish
+  makeLevel('vintage-motorcycle', 'Vintage Motorcycle', [
+    S.trash('junk'),
+    S.rinse(['dirty']),
+    S.laser(['rusty'], 'chrome'),
+    S.sand(['rusty'], 'paint'),
+    S.foam(),
+    S.scrub(['grime']),
+    S.rinse([...F, 'grime']),
+    S.dry(),
+    S.polish(['dull']),
+  ]),
+  // 38 · Pocket watch — blow, glass cleaner, polish compound, foam, scrub, wipe, swab the chain, buff
+  makeLevel('pocket-watch', 'Pocket Watch', [
+    S.blow(['dusty']),
+    S.mist(['tarnished'], 'glass', 'glass-cleaner'),
+    S.stain(['scratch'], 'glass', 'compound'),
+    S.foam('case'),
+    S.scrub(['tarnished'], 'case'),
+    S.wipe([...F, 'tarnished'], 'case'),
+    S.swab(['chain-grime'], 'chain'),
+    S.polish(['dull'], 'case'),
+  ]),
+  // 39 · Upright piano — clear the lid, dust, blow + swab the keys, magic eraser, cleaner, dry, polish
+  makeLevel('upright-piano', 'Upright Piano', [
+    S.trash('junk'),
+    S.dust(),
+    S.blow(['lint'], 'keys'),
+    S.swab(['grime'], 'keys'),
+    S.eraser(['old'], 'keys'),
+    S.mist(['old'], 'body'),
+    S.dry(['wet'], 'body'),
+    S.polish(['dull'], 'body'),
+  ]),
+  // 40 · Knight armor — dust, hammer the dents, laser the rust, wash, dry, polish, condition the straps
+  makeLevel('knight-armor', 'Knight Armor', [
+    S.dust(),
+    S.hammer('dents'),
+    S.laser(['rusty']),
+    S.foam(),
+    S.scrub(['grime']),
+    S.rinse([...F, 'grime']),
+    S.dry(),
+    S.polish(['dull'], 'steel'),
+    S.mist(['straps-dry'], 'straps', 'condition'),
+  ]),
+  // 41 · Cannon — clear, dust, laser the barrel, grind the rims, sand + wipe the wood, paint, varnish, polish
+  makeLevel('cannon', 'Antique Cannon', [
+    S.trash('leaves', { leaves: true }),
+    S.dust(),
+    S.laser(['rusty'], 'barrel'),
+    S.grind(['rusty'], 'rims'),
+    S.sand(['rusty'], 'wood'),
+    S.wipe(['sawdust'], 'wood'),
+    S.spray(['bare'], 'iron', TINT.black),
+    S.paint(['bare'], 'wood', TINT.brown, 'varnish'),
+    S.polish(['dull']),
+  ]),
+  // 42 · Shower cabin — clear, steam the mould, swab the fixtures, foam, scrub, rinse, squeegee, mop, polish
+  makeLevel('shower-cabin', 'Shower Cabin', [
+    S.trash('junk'),
+    S.steam(['mold']),
+    S.swab(['lime'], 'fixtures'),
+    S.foam(),
+    S.scrub(['dirty']),
+    S.rinse([...F, 'dirty']),
+    S.squeegee(['wet'], 'glass'),
+    S.mop(['wet'], 'tray'),
+    S.polish(['dull'], 'fixtures'),
+  ]),
+  // 43 · Bicycle — basket leaves, rinse the mud, wire-brush the rust, wash, dry, polish, tighten bolts
+  makeLevel('bicycle', 'Bicycle', [
+    S.trash('leaves', { leaves: true }),
+    S.rinse(['muddy']),
+    S.wire(['rust'], 'metal'),
+    S.foam(),
+    S.scrub(['grime']),
+    S.rinse([...F, 'grime']),
+    S.dry(),
+    S.polish(['dull']),
+    S.screws('bolts', 'install'),
+  ]),
+  // 44 · Rider statue — leaves, moss, laser the patina, wash the plinth, dry, polish, buff
+  makeLevel('rider-statue', 'Rider Statue', [
+    S.trash('leaves', { leaves: true }),
+    S.detail(['moss'], 'moss', 'moss-brush'),
+    S.laser(['patina'], 'bronze'),
+    S.foam('plinth'),
+    S.scrub(['patina'], 'plinth'),
+    S.rinse([...F, 'patina'], 'plinth'),
+    S.blow(['wet']),
+    S.polish(['dull'], 'bronze'),
+    S.wipe(['haze'], 'bronze', 'buff'),
+  ]),
+  // 45 · Chandelier — cobwebs, dust, steam + mist the crystals, foam / scrub / wipe / swab the brass, polish
+  makeLevel('chandelier', 'Chandelier', [
+    S.blow(['cobweb'], 'top'),
+    S.dust(['dust']),
+    S.steam(['old'], 'crystals'),
+    S.mist(['smudge'], 'crystals', 'crystal-shine'),
+    S.foam('brass'),
+    S.scrub(['old'], 'brass'),
+    S.wipe([...F, 'old'], 'brass'),
+    S.swab(['grime'], 'brass'),
+    S.polish(['dull'], 'brass'),
+  ]),
+  // 46 · Royal throne — clear, dust, beat + steam the velvet, sand, regild, polish, set the gems
+  makeLevel('royal-throne', 'Royal Throne', [
+    S.trash('junk'),
+    S.dust(),
+    S.beat('beat', 'velvet-dust', 'velvet'),
+    S.steam(['old'], 'velvet'),
+    S.sand(['grime'], 'frame'),
+    S.paint(['old'], 'frame', TINT.gold, 'gild'),
+    S.polish(['dull'], 'frame'),
+    S.gems(),
+    S.stain(['velvet-haze'], 'velvet', 'freshen'),
+  ]),
+  // 47 · Stone patio — leaves, moss, foam, scrub, rinse, mop, seal, wire-brush + repaint the bistro set
+  makeLevel('stone-patio', 'Stone Patio', [
+    S.trash('leaves', { leaves: true }),
+    S.detail(['moss'], 'moss', 'moss-brush'),
+    S.foam('slabs'),
+    S.scrub(['dirty'], 'slabs'),
+    S.rinse([...F, 'dirty'], 'slabs'),
+    S.mop(['wet'], 'slabs'),
+    S.roll(['unsealed'], 'slabs', TINT.gray),
+    S.wire(['dirty'], 'furniture'),
+    S.spray(['primer'], 'furniture', TINT.white),
+  ]),
+  // 48 · Carousel horse — clear, dust, wash, scrape the old paint, wipe, paint, gild, polish
+  makeLevel('carousel-horse', 'Carousel Horse', [
+    S.trash('junk'),
+    S.dust(),
+    S.foam(),
+    S.scrub(['grime']),
+    S.wipe([...F, 'grime']),
+    S.chunks('old', { seed: 4801, count: 22 }),
+    S.wipe(['sawdust'], null, 'dust-off'),
+    S.paint(['primer'], 'body', TINT.white, 'paint'),
+    S.paint(['primer'], 'gold', TINT.gold, 'gild'),
+    S.polish(['dull']),
+  ]),
+  // 49 · Vintage tractor — straw, hammer, rinse the tyres, laser the body, repaint, wash the tyres, polish
+  makeLevel('vintage-tractor', 'Vintage Tractor', [
+    S.trash('leaves', { leaves: true }),
+    S.rinse(['muddy'], 'tires'),
+    S.laser(['muddy'], 'body'),
+    S.hammer('dents'),
+    S.spray(['bare'], 'body', TINT.red),
+    S.foam('tires'),
+    S.scrub(['grime'], 'tires'),
+    S.rinse([...F, 'grime'], 'tires'),
+    S.stain(['dull'], 'tires', 'tyre-shine'),
+    S.polish(['dull'], 'body'),
+  ]),
+  // 50 · Vintage car (finale) — clear, dust, dents, sand, laser the chrome, wipe, paint, polish, shine
+  makeLevel('vintage-car', 'Vintage Car', [
+    S.trash('junk'),
+    S.dust(),
+    S.hammer('dents'),
+    S.sand(['dirty'], 'body'),
+    S.laser(['dirty'], 'chrome'),
+    S.wipe(['sawdust'], 'body'),
+    S.spray(['primer'], 'body', TINT.turquoise),
+    S.polish(['dull'], 'body'),
+    S.wipe(['primer'], 'chrome', 'chrome-shine'),
+  ]),
+];

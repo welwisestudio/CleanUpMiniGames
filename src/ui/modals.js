@@ -11,14 +11,14 @@ import { ASSET_META } from '../content/generated/assetMeta.js';
 // Modals are built in the card texture's own pixel space inside one container, which is
 // scaled to fit the screen on every layout change (aspect preserved, never stretched).
 
-function dimLayer(scene) {
+export function dimLayer(scene) {
   // Deliberately NOT interactive: Phaser sorts hits by render order and invisible button zones
   // are not in the render list, so an interactive dim would swallow modal button presses.
   // Gameplay input under a modal is blocked by the scene state / pause reasons instead.
   return scene.add.rectangle(0, 0, 10, 10, COLORS.dim, 0.72).setOrigin(0, 0);
 }
 
-function cardBase(scene) {
+export function cardBase(scene) {
   const [cw, ch] = ASSET_META.ui['ui-result-card'].size;
   const card = scene.add.container(0, 0);
   card.add(scene.add.image(0, 0, 'ui-result-card'));
@@ -32,13 +32,13 @@ export const RIBBON_Y = -0.346;
 // Vertical centre of a pill's flat face (above its darker lower lip), share of the pill height.
 const PILL_FACE = -0.06;
 // Inner white panel of the card (fractions of card width / height from the centre).
-const PANEL = { cx: -0.011, w: 0.627 };
+export const PANEL = { cx: -0.011, w: 0.627 };
 // Result card rows (fractions of the card height from its centre), top to bottom: picture ·
 // reward pill · level-chest bar · boost meter · boost button · Home + Replay · Next (rowW = share
 // of the panel width used by the meter, the boost button and both button rows).
 const RESULT = { picY: -0.18, picW: 0.46, rewardY: -0.055, rewardH: 0.062, chestY: 0.016, meterY: 0.078, meterH: 0.052, markerH: 0.024, boostY: 0.178, boostH: 0.098, row1Y: 0.28, row2Y: 0.374, rowH: 0.086, rowW: 0.86 };
 
-function titleText(scene, cw, ch, str) {
+export function titleText(scene, cw, ch, str) {
   return makeText(scene, 0, ch * RIBBON_Y, str, {
     size: ch * 0.058,
     color: TEXT.white,

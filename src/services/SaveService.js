@@ -23,7 +23,7 @@ export function createDefaultState() {
     progressChest: { steps: 0, opened: 0, forfeited: 0 }, // steps 0..max; chests claimed / skipped
     // Step 7 alternative tools: permanently owned tool ids (base tools are implicit), the equipped
     // tool per family, and a purchase / unlock counter (audit)
-    tools: { owned: [], equipped: {}, purchases: 0 },
+    tools: { owned: [], equipped: {}, purchases: 0, skins: { owned: [], equipped: {} } },
   };
 }
 
@@ -63,6 +63,11 @@ export function parseSave(serialized) {
     owned: [...new Set((Array.isArray(tl.owned) ? tl.owned : []).filter((x) => typeof x === 'string'))],
     equipped: Object.fromEntries(Object.entries(tl.equipped && typeof tl.equipped === 'object' ? tl.equipped : {}).filter(([, v]) => typeof v === 'string')),
     purchases: toNonNegativeInt(tl.purchases),
+    // Step 8 cosmetic skins: owned skin ids and the equipped skin per tool family
+    skins: {
+      owned: [...new Set((Array.isArray(tl.skins?.owned) ? tl.skins.owned : []).filter((x) => typeof x === 'string'))],
+      equipped: Object.fromEntries(Object.entries(tl.skins?.equipped && typeof tl.skins.equipped === 'object' ? tl.skins.equipped : {}).filter(([, v]) => typeof v === 'string')),
+    },
   };
   state.progressChest = { steps: toNonNegativeInt(raw.progressChest?.steps), opened: toNonNegativeInt(raw.progressChest?.opened), forfeited: toNonNegativeInt(raw.progressChest?.forfeited) };
   for (const [id, entry] of Object.entries(raw.levels ?? {})) {

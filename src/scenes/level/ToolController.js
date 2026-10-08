@@ -187,8 +187,12 @@ export class ToolController {
     const nozzle = this.workPointFor(this.pointerWorld);
     const impact = this.impactFor(nozzle);
     const foam = this.tool.jetStyle === 'foam';
-    if (this.tool.jetStyle === 'paint' || this.tool.jetStyle === 'air') {
+    if (this.tool.jetStyle === 'paint' || this.tool.jetStyle === 'air' || this.tool.jetStyle === 'steam') {
       this._fineJet(nozzle, impact);
+      return;
+    }
+    if (this.tool.jetStyle === 'laser') {
+      this._laser(nozzle, impact);
       return;
     }
     const k = this.objScale;
@@ -236,14 +240,15 @@ export class ToolController {
     const nx = -dy / len;
     const ny = dx / len;
     const paint = this.tool.jetStyle === 'paint';
-    const col = paint ? this.paintTint ?? 0xffffff : 0xe8f6ff;
+    const steam = this.tool.jetStyle === 'steam';
+    const col = paint ? this.paintTint ?? 0xffffff : steam ? 0xffffff : 0xe8f6ff;
     const phase = (this.scene.time.now / 300) % 1;
     for (let i = 0; i < 16; i++) {
       const t = (phase + i / 16) % 1;
-      const w = (paint ? 6 + 46 * t : 3 + 20 * t) * k * spread;
+      const w = (paint ? 6 + 46 * t : steam ? 4 + 34 * t : 3 + 20 * t) * k * spread;
       const side = Math.sin(i * 2.399) * w;
-      g.fillStyle(col, (paint ? 0.55 : 0.35) * (1 - t * 0.5));
-      g.fillCircle(nozzle.x + dx * t + nx * side, nozzle.y + dy * t + ny * side, (paint ? 3 + 7 * t : 2 + 3 * t) * k);
+      g.fillStyle(col, (paint ? 0.55 : steam ? 0.3 : 0.35) * (1 - t * 0.5));
+      g.fillCircle(nozzle.x + dx * t + nx * side, nozzle.y + dy * t + ny * side, (paint ? 3 + 7 * t : steam ? 4 + 12 * t : 2 + 3 * t) * k);
     }
     if (!paint) {
       g.lineStyle(4 * k, 0xffffff, 0.25);
@@ -251,6 +256,22 @@ export class ToolController {
     }
     g.fillStyle(col, paint ? 0.35 : 0.2);
     for (let i = 0; i < 6; i++) g.fillCircle(impact.x + Phaser.Math.Between(-40, 40) * k * spread, impact.y + Phaser.Math.Between(-40, 40) * k * spread, (paint ? 14 : 9) * k * spread);
+  }
+
+  // Step 8 laser cleaner: a thin bright beam from the emitter to the contact point with a soft
+  // glow and a hot spot where it burns the rust off (code-drawn, flickers slightly).
+  _laser(nozzle, impact) {
+    const g = this.jetGfx;
+    const k = this.objScale;
+    const col = this.tool.beamTint ?? 0xff3b30;
+    const f = 0.85 + Math.random() * 0.15;
+    g.lineStyle(16 * k, col, 0.18 * f).lineBetween(nozzle.x, nozzle.y, impact.x, impact.y);
+    g.lineStyle(7 * k, col, 0.55 * f).lineBetween(nozzle.x, nozzle.y, impact.x, impact.y);
+    g.lineStyle(2.5 * k, 0xffffff, 0.95).lineBetween(nozzle.x, nozzle.y, impact.x, impact.y);
+    const r = (this.sprayRadius ?? 60) * k;
+    g.fillStyle(col, 0.22 * f).fillCircle(impact.x, impact.y, r * 0.9);
+    g.fillStyle(0xffe9a8, 0.7 * f).fillCircle(impact.x, impact.y, r * 0.35);
+    g.fillStyle(0xffffff, 0.95).fillCircle(impact.x, impact.y, r * 0.15);
   }
 
   destroy() {

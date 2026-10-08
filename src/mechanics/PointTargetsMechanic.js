@@ -21,8 +21,10 @@ export class PointTargetsMechanic {
     this.stack = stack;
     this.params = params;
     this.scene = scene;
-    this.mode = params.mode; // 'hold' | 'tap' | 'pull'
-    this.action = params.action ?? 'remove';
+    // 'hold' | 'tap' | 'pull'; aliases from the Step 8 brief: screw = hold, place = hold + install,
+    // repeatedTap = tap
+    this.mode = { screw: 'hold', place: 'hold', repeatedTap: 'tap' }[params.mode] ?? params.mode;
+    this.action = params.action ?? (params.mode === 'place' ? 'install' : 'remove');
     this.completed = false;
     this.validContacts = 0;
     this.holdMs = params.holdMs ?? 700;
@@ -76,6 +78,8 @@ export class PointTargetsMechanic {
     if (!t) return;
     t.hits += 1;
     this.validContacts += 1;
+    // a beating / knocking target can clear a patch of a layer around itself with every hit
+    if (t.eraseOnHit) this.stack.erase(t.eraseOnHit.layer, { x: t.x, y: t.y }, t.eraseOnHit.r * (0.6 + 0.4 * (t.hits / this.taps)));
     this._tapFx(t);
     this._showStep(t, t.hits / this.taps);
     if (t.hits >= this.taps) this._finishTarget(t);
@@ -220,8 +224,13 @@ export class PointTargetsMechanic {
     return this.targets.filter((t) => !t.done).map((t) => ({ x: t.x, y: t.y, r: t.r }));
   }
 
+  // `clearOnFinish`: layers the targets worked on as a whole (a carpet beater knocks the dust out
+  // of the entire mat, not only around the beaten points) fade out when the last target is done.
   finish() {
-    return Promise.resolve();
+    const ids = this.params.clearOnFinish;
+    if (!ids?.length) return Promise.resolve();
+    if (this.params.region && this.stack.fadeOutRegion) return this.stack.fadeOutRegion(ids, this.params.region, 450);
+    return this.stack.fadeOutLayers(ids, 450);
   }
 
   forceComplete() {

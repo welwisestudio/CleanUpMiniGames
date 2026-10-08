@@ -170,6 +170,24 @@ export const TOOLS = {
   'foam-roller': { id: 'foam-roller', name: 'Foam roller', kind: 'contact', texture: 'tool-foam-roller', workingPoint: wp('foam-roller'), displayLength: 400, workOffset: { x: 0, y: -150 }, tiltWithMotion: 3 },
   mallet: { id: 'mallet', name: 'Rubber mallet', kind: 'contact', texture: 'tool-mallet', workingPoint: wp('mallet'), displayLength: 360, workOffset: { x: -70, y: -150 }, tiltWithMotion: 2 },
   'gold-hammer': { id: 'gold-hammer', name: 'Gold hammer', kind: 'contact', texture: 'tool-gold-hammer', workingPoint: wp('gold-hammer'), displayLength: 360, workOffset: { x: -70, y: -150 }, tiltWithMotion: 2 },
+
+  // ---- Step 8 Batch B (levels 16–50): new base tools, each with one clear physical job ----
+  // laser cleaner: a short hot beam strips rust / patina / old paint (jetStyle + fx 'laser')
+  laser: { id: 'laser', name: 'Laser cleaner', kind: 'jet', texture: 'tool-laser', workingPoint: wp('laser'), displayLength: 400, workOffset: { x: 0, y: -60 }, jetLength: 300, jetUi: 105, jetStyle: 'laser', fx: 'laser', beamTint: 0xff5a3c },
+  // spray bottle: a fine mist of cleaner / conditioner / glass cleaner
+  'spray-bottle': { id: 'spray-bottle', name: 'Spray bottle', kind: 'jet', texture: 'tool-spray-bottle', workingPoint: wp('spray-bottle'), displayLength: 380, workOffset: { x: 0, y: -60 }, jetLength: 360, jetUi: 115, jetStyle: 'mist' },
+  // steam cleaner: hot steam lifts stains, grease and mould
+  'steam-cleaner': { id: 'steam-cleaner', name: 'Steam cleaner', kind: 'jet', texture: 'tool-steam-cleaner', workingPoint: wp('steam-cleaner'), displayLength: 420, workOffset: { x: 0, y: -60 }, jetLength: 340, jetUi: 110, jetStyle: 'steam', fx: 'steam' },
+  // pump: hold its intake in the water to drain a basin (fill mechanic, mode drain)
+  pump: { id: 'pump', name: 'Water pump', kind: 'contact', texture: 'tool-pump', workingPoint: wp('pump'), displayLength: 340, workOffset: { x: 0, y: -120 } },
+  // garden hose: hold the jet in the basin to fill it (fill mechanic, mode fill)
+  hose: { id: 'hose', name: 'Garden hose', kind: 'jet', texture: 'tool-hose', workingPoint: wp('hose'), displayLength: 360, workOffset: { x: 0, y: -60 }, jetLength: 380, jetUi: 120, jetStyle: 'water' },
+  whetstone: { id: 'whetstone', name: 'Whetstone', kind: 'contact', texture: 'tool-whetstone', workingPoint: wp('whetstone'), displayLength: 300, workOffset: { x: 0, y: -120 }, tiltWithMotion: 6, fx: 'sparks' },
+  'carpet-beater': { id: 'carpet-beater', name: 'Carpet beater', kind: 'contact', texture: 'tool-carpet-beater', workingPoint: wp('carpet-beater'), displayLength: 460, workOffset: { x: 0, y: -170 }, tiltWithMotion: 3 },
+  mop: { id: 'mop', name: 'Mop', kind: 'contact', texture: 'tool-mop', workingPoint: wp('mop'), displayLength: 520, workOffset: { x: 0, y: -200 }, tiltWithMotion: 3 },
+  // drop targets
+  'skimmer-net': { id: 'skimmer-net', name: 'Skimmer net', kind: 'target', texture: 'tool-skimmer-net', displayLength: 300 },
+  'gem-set': { id: 'gem-set', name: 'Gems', kind: 'target', texture: 'royal-throne-gem-1', displayLength: 200 },
 };
 
 export function getTool(id) {

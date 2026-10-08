@@ -22,6 +22,13 @@ const COMPLETION_REWARDS = {
   'watering-can': 25,
   'porcelain-vase': 25,
 };
+// Step 8 Batch B — provisional (Step 10): 16–25 → 25, 26–40 → 30, 41–50 → 35 (more stages)
+for (const id of ['swimming-pool', 'leather-jacket', 'rusty-cleaver', 'toaster', 'coir-doormat', 'garden-grill', 'bathtub', 'retro-radio', 'stone-lion', 'wooden-dresser']) COMPLETION_REWARDS[id] = 25;
+for (const id of [
+  'aquarium', 'backpack', 'kitchen-stove', 'lawn-mower', 'street-sign', 'table-lamp', 'rowboat', 'game-controller', 'iron-gate', 'sofa',
+  'stone-fountain', 'vintage-motorcycle', 'pocket-watch', 'upright-piano', 'knight-armor',
+]) COMPLETION_REWARDS[id] = 30;
+for (const id of ['cannon', 'shower-cabin', 'bicycle', 'rider-statue', 'chandelier', 'royal-throne', 'stone-patio', 'carousel-horse', 'vintage-tractor', 'vintage-car']) COMPLETION_REWARDS[id] = 35;
 
 export const REWARDS = {
   // Post-level boost (rewarded ad), reference multiplier bar: zones x2 | x3 | x5 | x3 | x2 (equal

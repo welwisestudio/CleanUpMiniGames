@@ -109,7 +109,16 @@ function snapshot() {
       ownedTools: s.save.loaded ? [...s.save.get('tools.owned')] : null,
       equippedTools: s.save.loaded ? { ...s.save.get('tools.equipped') } : null,
       diamonds: s.save.loaded ? s.save.get('diamonds') : null,
+      // Step 8 cosmetic skins
+      skinsOwned: s.save.loaded ? [...s.save.get('tools.skins.owned')] : null,
+      skinsEquipped: s.save.loaded ? { ...s.save.get('tools.skins.equipped') } : null,
+      skinButton: (() => {
+        const r = scene.selector?.skinButtonRect?.();
+        return r ? { x: r.x / layout.dpr, y: r.y / layout.dpr, w: r.w / layout.dpr, h: r.h / layout.dpr, visible: r.visible } : null;
+      })(),
+      skinModal: Boolean(scene.skinModal),
       tool: scene.tool && {
+        texture: scene.tools.sprite?.texture?.key ?? null,
         id: scene.tool.id,
         kind: scene.tool.kind,
         // effective finger → work point offset and nozzle → impact vector, CSS px
@@ -125,7 +134,7 @@ function snapshot() {
       xf: { cx: c.x, cy: c.y, k, size: scene.stack.size },
       region: scene.stage?.region ?? scene.stage?.params?.region ?? null,
       family: scene.family,
-      brush: { radius: scene.stage?.params?.radius ?? null, aspect: scene.stage?.params?.aspect ?? 1, aspectY: scene.mechanic?.aspectY ?? 1, mechanic: scene.stage?.mechanic },
+      brush: { radius: scene.stage?.params?.radius ?? null, effectiveRadius: scene.mechanic?.radius ?? null, aspect: scene.stage?.params?.aspect ?? 1, aspectY: scene.mechanic?.aspectY ?? 1, mechanic: scene.stage?.mechanic },
       // active-area indicator: null, 'traced' (region outline) or circles (count still shown)
       outline: scene.stack.outlineRings ? { kind: 'circles', shown: scene.stack.outlineRings.filter((r) => !r.done).length, r: scene.stack.outlineRings[0]?.r ?? null } : scene.stack.outline ? { kind: 'traced' } : null,
       // repair-spot centres of the level (object-local), e.g. the chair holes

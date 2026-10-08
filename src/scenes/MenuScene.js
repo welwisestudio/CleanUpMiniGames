@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { DISPLAY_ORDER, getLevel } from '../content/catalog.js';
 import { attachResponsiveLayout, refreshTextResolution, UI } from '../ui/layout.js';
-import { makeText } from '../ui/text.js';
+import { makeText, fitText } from '../ui/text.js';
 import { COLORS, TEXT } from '../ui/theme.js';
 import { CurrencyPill, addStatusBadges } from '../ui/hud.js';
 import { Button } from '../ui/Button.js';
@@ -109,9 +109,16 @@ export class MenuScene extends Phaser.Scene {
     this.progressChest.container.setPosition(colX, y1 + chestH + CHEST_GAP * u).setScale(CHEST_SCALE * u);
     const gutter = colX + chestW / 2 + CHEST_GAP * u; // shelves start right of the column
 
-    // list: one shelf per row with 2 objects; row height follows the width (the list scrolls)
-    const shelfW = Math.min(W - m - gutter, 560 * u);
-    const shelfCx = Math.max(W / 2, gutter + shelfW / 2); // centred when there is room
+    // list: one shelf per row with 2 objects; row height follows the width (the list scrolls).
+    // The list is centred on the SCREEN (not on the strip right of the chest column): its width is
+    // what fits around W / 2 without reaching the column. On narrow phones a fully symmetric list
+    // would be too small, so its centre may sit at most 3.5 % of the screen width right of the
+    // screen centre (reads as centred); it never touches the column or the right margin.
+    const maxW = Math.min(W - m - gutter, 560 * u); // widest list that fits right of the column
+    const shift = W * 0.035;
+    const shelfW = Math.min(maxW, 2 * (W / 2 + shift - gutter));
+    const shelfCx = Math.max(W / 2, gutter + shelfW / 2);
+    this.listRect = { x: shelfCx, y: H / 2, w: shelfW, h: H, gutter }; // QA: horizontal extent of the list
     const thumb = shelfW * 0.34;
     const rowH = thumb * 1.62 + 46 * u; // object + shelf + its label, then the next row
     const top = headerH + 18 * u;
@@ -187,6 +194,7 @@ export class MenuScene extends Phaser.Scene {
       const m = pill.bg.getWorldTransformMatrix();
       this.qaTargets.set(id, { x: m.tx, y: m.ty, w: Math.abs(pill.bg.displayWidth * this.pills.scaleX), h: Math.abs(pill.bg.displayHeight * this.pills.scaleY), visible: true });
     }
+    if (this.listRect) this.qaTargets.set('menu-list', { ...this.listRect, visible: true });
     for (const [id, w] of [['menu-timed-chest', this.timedChest], ['menu-progress-chest', this.progressChest]]) {
       const s = w.container.scaleX;
       this.qaTargets.set(id, { x: w.container.x, y: w.container.y, w: TIMED_CHEST_SIZE.w * s, h: TIMED_CHEST_SIZE.h * s, visible: true });
@@ -221,7 +229,17 @@ export class MenuScene extends Phaser.Scene {
         const mp = level.menuPreview ?? {};
         base = (size * (mp.scale ?? 1)) / Math.max(img.width, img.height);
         img.setScale(base).setPosition(x, shelfY + size * (0.08 + (mp.dy ?? 0)));
-        name.setPosition(x, labelY).setScale(u);
+        name.setPosition(x, labelY);
+        // long names never overlap the neighbour: a name much wider than its column breaks into two
+        // lines at the space nearest its middle ("Golden Ball / Trophy"), then shrinks only if needed
+        const maxW = size * 1.36;
+        name.setText(level.title).setScale(u);
+        if (name.displayWidth > maxW * 1.2 && level.title.includes(' ')) {
+          const mid = level.title.length / 2;
+          const cut = [...level.title].reduce((best, ch, i) => (ch === ' ' && Math.abs(i - mid) < Math.abs(best - mid) ? i : best), -1);
+          name.setText(`${level.title.slice(0, cut)}\n${level.title.slice(cut + 1)}`).setLineSpacing(-4);
+        }
+        fitText(name, maxW, u);
         // completion check: large and readable, on the preview's upper right
         if (badge) badge.setScale((CHECK_SIZE * u) / badge.width).setPosition(x + size * 0.38, shelfY - size * 0.8);
         const hit = Math.max(size, UI.minTouch * u);

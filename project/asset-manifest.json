@@ -7128,5 +7128,2884 @@
     }
    }
   ]
+ },
+ "batchB": {
+  "updated": "2026-10-08",
+  "reason": "Step 8: levels 16–50, background families, new tools, cosmetic skins",
+  "summary": {
+   "nb2ImagesGenerated": 130,
+   "byKind": {
+    "master": 35,
+    "edit": 58,
+    "tool": 9,
+    "skin": 24,
+    "bg": 4
+   },
+   "failedJobs": 4,
+   "backgroundRemovals": 44,
+   "resolution2kUsed": 0,
+   "creditsEstimate": {
+    "nb2": "130 × 1.5 = 195.0",
+    "removals": "44 × 1 = 44"
+   }
+  },
+  "assets": [
+   {
+    "id": "swimming-pool",
+    "kind": "master",
+    "jobId": "1e5441ff-d3a0-4673-a084-2fe39d78fe10",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a small rectangular in-ground backyard swimming pool seen from a high three-quarter angle from above, light blue mosaic tile walls and floor, white tile edging, a chrome ladder on the right side, a light sandstone coping around the pool, filled with crystal clear turquoise water. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/swimming-pool/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "6c02e747-e8e2-440b-a62a-01adf496f55b",
+     "file": "reference/cutouts/swimming-pool/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "ecf30755c19b2bee358a0efcb2743e6a82a2d06d61d9da72c9245dc416b8a206"
+   },
+   {
+    "id": "leather-jacket",
+    "kind": "master",
+    "jobId": "0bb266e1-56dc-4a60-9201-1b23d956982e",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a classic brown leather jacket laid flat, front view, closed silver zipper, collar, two zip pockets, soft glossy leather, generic design. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/leather-jacket/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "54b3c64d-b083-433e-8813-452574a61517",
+     "file": "reference/cutouts/leather-jacket/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "aea4d5ca56b770e1ca1079d17dde816f337f2aaa334137e916370c41fd7ea740"
+   },
+   {
+    "id": "rusty-cleaver",
+    "kind": "master",
+    "jobId": "eee67624-495d-4b8a-9b83-396d5adba22a",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a heavy chef's meat cleaver lying horizontally, a wide rectangular polished mirror-steel blade on the left with a sharp straight edge at the bottom, a dark rosewood handle on the right fixed with three round brass rivets. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/rusty-cleaver/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "6dc2dda2-66df-46f0-846c-cd4c288c162e",
+     "file": "reference/cutouts/rusty-cleaver/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "b8b7e25f580533594091538b03f1a388220fc73b5733162c541f7efa7bb78ab3"
+   },
+   {
+    "id": "toaster",
+    "kind": "master",
+    "jobId": "128b394a-7770-4912-aaf1-e8d4a5045628",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a retro two-slot chrome toaster with rounded edges, front three-quarter view from slightly above so both bread slots are visible, a black lever and a round black knob on the side. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/toaster/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "6b073c13-91ed-4621-81c9-df68d1382e2e",
+     "file": "reference/cutouts/toaster/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a8ee0cc4ed5fd70f8bcb476139a98a65db1114bec522bc0d629c18d6f24089bf"
+   },
+   {
+    "id": "coir-doormat",
+    "kind": "master",
+    "jobId": "6e911070-8686-44c9-8a0e-79bb92c2805b",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a rectangular natural coir doormat seen from above at a slight angle, thick bristly golden-brown coconut fibers with a simple dark brown rectangular border band. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/coir-doormat/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "e25ce642-9e35-43af-874c-538ac893b65a",
+     "file": "reference/cutouts/coir-doormat/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "2eda8b7de803f5548a491082be5cb332d744f8ddf59d1cf7a793f87161bdd2e4"
+   },
+   {
+    "id": "garden-grill",
+    "kind": "master",
+    "jobId": "5c9d9e64-ed23-4aa2-a477-fa28677e31c1",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a charcoal barbecue grill cart with the lid open, showing a shiny chrome cooking grate, a matte black enamel body, two side shelves and two wheels, front three-quarter view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/garden-grill/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "5651bbb3-f4a2-445f-ad34-3c9c3a4fc37d",
+     "file": "reference/cutouts/garden-grill/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "e1ad6e35eb844d88cae36928f5892aeab2365f0bedfd4342773382f9a47f0f55"
+   },
+   {
+    "id": "bathtub",
+    "kind": "master",
+    "jobId": "168bb9a0-4360-4617-aba1-e79014038d0e",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a white freestanding clawfoot bathtub with four chrome feet and a chrome faucet, front three-quarter view from above so the inside is visible, filled with clear water. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/bathtub/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "8048cc58-464d-42f6-816e-0750297ae406",
+     "file": "reference/cutouts/bathtub/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "4f8b53eee11e5090eef692c398e46a6b1a714898fcd8796ccf98bde949ca3bf4"
+   },
+   {
+    "id": "retro-radio",
+    "kind": "master",
+    "jobId": "00939b6e-f7f2-4f34-addc-fe30e882e8da",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a retro wooden tabletop radio with rounded corners, a woven fabric speaker grille on the left, a dial window with plain tick marks only and two round cream knobs on the right, front three-quarter view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/retro-radio/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "db4d51bc-0e33-432b-92ef-63078f139867",
+     "file": "reference/cutouts/retro-radio/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "6645b113737b2f7cd00819cbf51e2be03e41f0d12e6b35521f92f5e1f4f08835"
+   },
+   {
+    "id": "stone-lion",
+    "kind": "master",
+    "jobId": "27ceddad-2470-462a-a349-b5c31ba81149",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a stone lion statue lying calmly on a square stone pedestal, light gray granite, front three-quarter view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/stone-lion/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "161e902f-c9c0-4c2f-9ef0-bc5c22d62b9c",
+     "file": "reference/cutouts/stone-lion/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "7e3cedf409caed88e6b05d1b6c0d35220839660f2480878aef1032c58b46c2bb"
+   },
+   {
+    "id": "wooden-dresser",
+    "kind": "master",
+    "jobId": "a9b3f098-fc56-4f69-83a5-8e6fb09195a5",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a wooden three-drawer dresser in warm walnut with round brass knobs, four short legs, front three-quarter view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/wooden-dresser/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "8d33a6bc-4fb9-496b-ae5f-7008d1130e68",
+     "file": "reference/cutouts/wooden-dresser/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "377545fe82fa79cb2c6a3bc8d6726afd7ed9bdcc46e6906abb4e1455cb86ef92"
+   },
+   {
+    "id": "aquarium",
+    "kind": "master",
+    "jobId": "efb2060b-4305-4931-a612-da481cab0594",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a rectangular glass home aquarium on a black wooden stand, sand-colored gravel, green plastic plants and gray decorative rocks inside, filled with clear water, a black lid, no fish. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/aquarium/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "9324439c-7453-41a9-88b9-bb4fcac63aa7",
+     "file": "reference/cutouts/aquarium/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "c4a69bfa1c214a6f4eb98677619fba82c85189db74c968c5f3f8de3a03bc92e1"
+   },
+   {
+    "id": "backpack",
+    "kind": "master",
+    "jobId": "170050c9-bb06-46f6-9f49-6ce48bff74f5",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a teal canvas backpack standing upright, front view, a front zip pocket, two side pockets, black zippers and padded shoulder straps, generic design. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/backpack/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "f02a4efc-263b-4563-85a7-a8a0d777381e",
+     "file": "reference/cutouts/backpack/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "b6601440ec97347de2304f06c03a7a92da07cf710a4aed10dff6207c9a511327"
+   },
+   {
+    "id": "kitchen-stove",
+    "kind": "master",
+    "jobId": "853db5cf-ae8c-4158-b64a-bde84339aa2a",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a white freestanding kitchen stove with four gas burners under black cast-iron grates, a stainless steel cooktop, an oven door with a glass window and five black knobs, front three-quarter view from above. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/kitchen-stove/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "9a5b2d67-4dcf-41e1-a3b1-1d19acaee39a",
+     "file": "reference/cutouts/kitchen-stove/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "150aa81b6286b24ddc9e894ffacf3614326c78ad3e324658835ce19bba6f37cd"
+   },
+   {
+    "id": "lawn-mower",
+    "kind": "master",
+    "jobId": "d615b9d5-3d58-4629-9f1a-b344b136fa22",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a red push lawn mower with a metal deck, four black wheels, a black handle and a gray grass collection bag, side three-quarter view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/lawn-mower/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "e0499631-ae8d-4a6f-9448-a8f56ef720d3",
+     "file": "reference/cutouts/lawn-mower/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "381162ea1e1e3a4a5d4df96c899fb253e8e2a69fac3bacd162623c610d791e93"
+   },
+   {
+    "id": "street-sign",
+    "kind": "master",
+    "jobId": "4e592943-f149-4928-877c-889b3043e625",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "3:4"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a diamond-shaped yellow metal warning sign with a simple black arrow symbol, mounted with two bolts on a gray galvanized metal post, front view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/street-sign/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "dce5dece-02b5-4cb3-bdc0-425cc09608f7",
+     "file": "reference/cutouts/street-sign/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "719a993595fc8b37b97b05aa27c8c28de74f9267eeb55e283b5d8de89551b531"
+   },
+   {
+    "id": "table-lamp",
+    "kind": "master",
+    "jobId": "a91cf771-267a-4370-a208-c1befb461ec8",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "3:4"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a brass table lamp with a round brass base, a curved brass stem and a cream pleated fabric lampshade, front view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/table-lamp/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "7e858e07-b7d3-475b-884d-605fc89ba516",
+     "file": "reference/cutouts/table-lamp/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a8072e693386fed3a0485b88f1f60fbfb326d362538647e45d559747a4eac825"
+   },
+   {
+    "id": "rowboat",
+    "kind": "master",
+    "jobId": "7ae4b185-c87d-490e-8474-e765d83603a1",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a small wooden rowboat seen from the side and slightly above, white painted hull with a navy blue stripe, varnished wooden seats and rim, two wooden oars resting inside. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/rowboat/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "01d756e9-2d5d-479d-b871-799ac2e20ba4",
+     "file": "reference/cutouts/rowboat/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a362a0440880ed58165c2be73dcece2b79cde758ff8e984baf1aa728ed5f361f"
+   },
+   {
+    "id": "game-controller",
+    "kind": "master",
+    "jobId": "de73e214-c4d3-4c12-8665-6a7f0927d044",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a generic game controller with two analog sticks, a cross-shaped direction pad and four round blank buttons, matte charcoal body with lilac grips, top view at a slight angle. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/game-controller/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "54fbe41b-c442-47d0-8105-84e96d614291",
+     "file": "reference/cutouts/game-controller/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "4fcc72d4185721e23c0e90d0f178948d27e175a1698df1a35708c50a2fc078dc"
+   },
+   {
+    "id": "iron-gate",
+    "kind": "master",
+    "jobId": "765bec39-b2f8-4018-8162-abbaa4aca00c",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: an ornate wrought-iron garden gate with curled scrolls and spear-tip finials, glossy black paint with small gold-painted tips, front view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/iron-gate/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "15a61eca-3f7f-4410-99a0-21ed5a311853",
+     "file": "reference/cutouts/iron-gate/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "b8364e60894ccfd9407c56ab7e10799eddfcdb38ba06f6210b4f5c4cfb9480da"
+   },
+   {
+    "id": "sofa",
+    "kind": "master",
+    "jobId": "514cc20f-1a84-4542-85d6-75441f671666",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a three-seat fabric sofa in mustard yellow with three seat cushions, three back cushions and wooden legs, front three-quarter view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/sofa/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "3815bdae-1750-41f7-bf4a-788096060454",
+     "file": "reference/cutouts/sofa/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "edf48fea7258f2864f66bbb36ec58efe072b8ae43fff50a0a5a486c638c9e0db"
+   },
+   {
+    "id": "stone-fountain",
+    "kind": "master",
+    "jobId": "c87daf71-1b54-48e9-b5d0-35a90d93e701",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a two-tier round stone garden fountain with a large lower basin and a small upper bowl, light sandstone, a bronze water spout on top, the lower basin filled with clear water. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/stone-fountain/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "8de99484-bccd-40bc-a48f-ca5bc6481b3c",
+     "file": "reference/cutouts/stone-fountain/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "9f3af92ac29ca16ee7b7949667245618bd18a5b7606a7b901650038e052ea097"
+   },
+   {
+    "id": "vintage-motorcycle",
+    "kind": "master",
+    "jobId": "ab68ff32-79a8-4ea5-9234-402c0c47356d",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a classic vintage motorcycle, side view, glossy cherry-red fuel tank, chrome engine, chrome exhaust pipes and mirrors, black leather seat, spoked wheels, generic design. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/vintage-motorcycle/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "c2f3d479-7227-4777-9565-85fa88e7b8b1",
+     "file": "reference/cutouts/vintage-motorcycle/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "f604e8eb43152de9a9ce0b872cc670ba55b1d4abedba27e4a596af1c4823eaba"
+   },
+   {
+    "id": "pocket-watch",
+    "kind": "master",
+    "jobId": "b815c35e-d40f-4217-ad01-b98ac4f05d38",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: an antique gold pocket watch with the lid open, a white dial with plain tick marks only and ornate black hands, an engraved gold case and a short gold chain. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/pocket-watch/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "fd797b27-345d-4972-9866-d40a9b2fbbbd",
+     "file": "reference/cutouts/pocket-watch/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a39b241d1bbc4146ddef046792c90bc11ef2326be5074610c1c678bfc43fd23b"
+   },
+   {
+    "id": "upright-piano",
+    "kind": "master",
+    "jobId": "6e9cfd99-fb75-4d94-aff3-6be42ec6d86c",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: an upright piano in glossy black lacquer with white and black keys, a closed music stand, front three-quarter view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/upright-piano/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "77ea3dad-9b9d-4f2b-adea-ecb0a74df719",
+     "file": "reference/cutouts/upright-piano/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "e182950f4e3913ee4c0a00e7878de4d829c2dfc1a59b74794c4675b8ae1d902c"
+   },
+   {
+    "id": "knight-armor",
+    "kind": "master",
+    "jobId": "4c451681-e3f7-475f-935c-72397f3b7d1f",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "3:4"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a full medieval knight armor suit standing on a wooden stand, polished bright steel plates with brown leather straps, front view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/knight-armor/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "756af238-c39a-48f3-9f1d-f5e6358b5495",
+     "file": "reference/cutouts/knight-armor/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "68dff9ab31a74125b8d9e5e24748daa69eff859be630101994e40dd0af21d76c"
+   },
+   {
+    "id": "cannon",
+    "kind": "master",
+    "jobId": "26fd89ec-8864-41be-9fc5-4ba4e476c792",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: an antique black iron cannon on a wooden carriage with two large spoked wooden wheels with iron rims, side view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/cannon/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "716fe2b8-5f24-450d-82fa-c3c092bb1396",
+     "file": "reference/cutouts/cannon/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "b9e4d39c69fd38037b9b284629cb125adaa5eb2b58ad3ba4529f33150ef089a3"
+   },
+   {
+    "id": "shower-cabin",
+    "kind": "master",
+    "jobId": "ae62bf26-8b5d-4379-ab5a-1d478ca0dc6b",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "3:4"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a modern shower cabin with a clear glass door, white wall tiles, a chrome rain shower head and a chrome mixer, front three-quarter view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/shower-cabin/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "b3445363-1790-464c-8bfb-2d4e299f6e95",
+     "file": "reference/cutouts/shower-cabin/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "7cbb2a54bf4c0ec396510a335cba7cbef8eef6aa58fd133ff1a8b259575bad31"
+   },
+   {
+    "id": "bicycle",
+    "kind": "master",
+    "jobId": "1c6bdb2e-c239-48a0-b766-aac1a629e261",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a classic city bicycle, side view, mint-green frame, chrome handlebars and rims, a brown leather saddle and a wicker front basket. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/bicycle/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "5e95a03d-440b-4b64-a3a3-193389ad0cf2",
+     "file": "reference/cutouts/bicycle/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a8bf3964f22f8868ade53ad34fb949095913788567a9f73a6569765266caf555"
+   },
+   {
+    "id": "rider-statue",
+    "kind": "master",
+    "jobId": "02ee6b21-3d44-4410-a10e-81254c42f8b1",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a bronze equestrian statue of a generic fictional knight in armor riding a rearing horse, on a tall gray stone plinth, front three-quarter view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/rider-statue/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "8645b55d-e4d2-4a98-8a41-4851684d80a9",
+     "file": "reference/cutouts/rider-statue/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "198a778e113f2405fbb5d4f8da5b54c7be21683fdc2222a2b3b0bcacc815f94c"
+   },
+   {
+    "id": "chandelier",
+    "kind": "master",
+    "jobId": "877c10f1-06a5-4f8b-bcb4-4757ebcbc819",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: an ornate crystal chandelier with polished brass arms, many clear sparkling crystal drops and white candle-style bulbs, front view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/chandelier/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "d0aa04eb-9e29-42a9-9206-244dabedae0e",
+     "file": "reference/cutouts/chandelier/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "f1222bf85369231e03409d01b3345d93415ad35c8f7b35543980cee657b6978e"
+   },
+   {
+    "id": "royal-throne",
+    "kind": "master",
+    "jobId": "840f09d2-4616-4280-977a-1bbdf1669b67",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "3:4"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a royal throne with a carved gilded wooden frame, deep red velvet seat and backrest, and colorful gems set in the top crest, front view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/royal-throne/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "d11a08c9-3985-4bd0-836b-2647ee89da71",
+     "file": "reference/cutouts/royal-throne/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "ed7968b25ae7b36642f00ea12af3ffd89386c1e35ec53f4670572bc193d87a48"
+   },
+   {
+    "id": "stone-patio",
+    "kind": "master",
+    "jobId": "e86265d2-c7b6-4358-b12f-fbf0ba899da6",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a square backyard terrace of light sandstone paving slabs seen from a high three-quarter angle, with a small white wrought-iron bistro table and two chairs in the middle. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/stone-patio/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "1a37cac3-e0d3-4861-8516-06185ed95756",
+     "file": "reference/cutouts/stone-patio/clean.png",
+     "note": "remover kept only the bistro set; slab outline added as a geometric polygon crop (DECISIONS 2026-10-08)"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "7a99fc4aec8451d4463bc454596a834cefb4d1c4bb3e95fbda11edd90acb57fe"
+   },
+   {
+    "id": "carousel-horse",
+    "kind": "master",
+    "jobId": "016a99be-ac30-4da2-b53a-53677376cded",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "1:1"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: an ornate wooden carousel horse on a golden pole, painted white with a gilded saddle, a blue bridle and colorful painted flowers, side view. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/carousel-horse/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "b3efc6d0-56a9-490b-acba-33a7e40bf460",
+     "file": "reference/cutouts/carousel-horse/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "e39274e1fff3498d64547b032176f05cbc32b98890d2451f646708a0146c5b72"
+   },
+   {
+    "id": "vintage-tractor",
+    "kind": "master",
+    "jobId": "e4b3c098-ac01-4a5c-92d1-0ffacf21f1c5",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a small vintage farm tractor, side view, bright red body, big black rear tires with red rims, small front wheels, a black seat and a short exhaust pipe, generic design. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/vintage-tractor/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "a842dd5e-b721-4e22-ace7-ffba185fc726",
+     "file": "reference/cutouts/vintage-tractor/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "9b1eeb796f3ade8212165e83ee1a3891bd26e06a8b435fdb33641e44d7ffedb8"
+   },
+   {
+    "id": "vintage-car",
+    "kind": "master",
+    "jobId": "4c077819-5e7d-4909-b719-fdf83f0e998c",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "4:3"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: a classic 1950s style convertible car, side view, glossy turquoise paint, white-wall tires, chrome bumpers and trim, generic design without badges and without a license plate. Brand-new or fully restored and spotless. It is the only object in the image. Centered, the entire object fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no letters, no numbers, no logos, no brand marks, no other objects.",
+    "file": "reference/masters/vintage-car/clean.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "16bb03ad-e76b-4f54-84b4-b9903675a669",
+     "file": "reference/cutouts/vintage-car/clean.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "272fd921581f18a3f535f7be43e257ec12e4141525a49dc8354b0d3a4761775a"
+   },
+   {
+    "id": "swimming-pool/murky",
+    "kind": "edit",
+    "jobId": "29a4df8d-28bb-47af-9921-6841dd173da5",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same swimming pool: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the pool is full of murky dark green dirty water with floating scum, the pool floor is not visible through the water. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "1e5441ff-d3a0-4673-a084-2fe39d78fe10"
+    ],
+    "file": "reference/masters/swimming-pool/murky.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "86b9c2c8401d0869e8489374ccf51f82f03d97d4c1d9694a36fc9ee7af643635"
+   },
+   {
+    "id": "swimming-pool/empty-dirty",
+    "kind": "edit",
+    "jobId": "7c4a22e3-b6e4-4d77-a3a4-44b572845a09",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same swimming pool: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the pool is completely drained with no water at all: the tile walls and floor are covered with green algae, black mold spots, brown dirt and white limescale lines. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "1e5441ff-d3a0-4673-a084-2fe39d78fe10"
+    ],
+    "file": "reference/masters/swimming-pool/empty-dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "f4b42f8398983261ff6168c251def16fd0c631927ed397edaea9b6c7a155fb36"
+   },
+   {
+    "id": "swimming-pool/empty-clean",
+    "kind": "edit",
+    "jobId": "496e1138-69e5-4bb9-b2d0-1349ca902530",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same swimming pool: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the pool is completely drained with no water at all: clean light blue mosaic tile walls and floor, spotless. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "1e5441ff-d3a0-4673-a084-2fe39d78fe10"
+    ],
+    "file": "reference/masters/swimming-pool/empty-clean.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "53ebeab35b0675246de9be47eb330bcf3a0c93fd122075323085ae68226a7154"
+   },
+   {
+    "id": "leather-jacket/dirty",
+    "kind": "edit",
+    "jobId": "7cee6503-2880-442d-96f2-94d11a18c46f",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same leather jacket: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the leather is dirty: brown mud splashes, gray grime and dark stains all over, dull and matte. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "0bb266e1-56dc-4a60-9201-1b23d956982e"
+    ],
+    "file": "reference/masters/leather-jacket/dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "dc6d7702ad90fcebd4f45e70fad5d39d1e8644e525dd76fb2fcb77f42905e6e5"
+   },
+   {
+    "id": "leather-jacket/dry",
+    "kind": "edit",
+    "jobId": "153421f9-9c3c-44d1-bcd9-20b2e4a02ff7",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same leather jacket: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the jacket is clean but old and dry: dull matte faded leather with fine cracks, creases and light scuffs, no shine. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "0bb266e1-56dc-4a60-9201-1b23d956982e"
+    ],
+    "file": "reference/masters/leather-jacket/dry.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "5dd19082b3141b35fbafe6a7f26cc36e0c7e43af823ec542e1192b28ff4f53e6"
+   },
+   {
+    "id": "rusty-cleaver/rusty",
+    "kind": "edit",
+    "jobId": "e6dad28b-1329-42f6-a990-d9960b6d0e56",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same cleaver: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the blade is covered with thick orange-brown rust and pitting, the wooden handle is grimy, gray and weathered, the rivets are dull and dark. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "eee67624-495d-4b8a-9b83-396d5adba22a"
+    ],
+    "file": "reference/masters/rusty-cleaver/rusty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "8fbb7e84306516d48f55473a70db42d6a4ef27e72b555c754a4f6d78f16e19db"
+   },
+   {
+    "id": "rusty-cleaver/bare",
+    "kind": "edit",
+    "jobId": "9d6eb7ec-86cd-4c66-bc99-08d0b02d9017",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same cleaver: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the blade is bare freshly ground matte gray steel with fine circular grinding marks and no rust, the handle is raw dry pale sanded wood, the rivets are dull. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "eee67624-495d-4b8a-9b83-396d5adba22a"
+    ],
+    "file": "reference/masters/rusty-cleaver/bare.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "90c446f01e45ce5e9444ee2c3279e6dc340823748755235f80b4cf4aa9732411"
+   },
+   {
+    "id": "toaster/greasy",
+    "kind": "edit",
+    "jobId": "7a1e01c8-f697-4041-baac-49d39e68ed89",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same toaster: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the toaster is greasy and dirty: brown grease splatters, burnt crumbs, sticky fingerprints and dull cloudy chrome. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "128b394a-7770-4912-aaf1-e8d4a5045628"
+    ],
+    "file": "reference/masters/toaster/greasy.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "d02686677adaa1544f58fa04ff4d9e5dac84345f1b355d70d7e5051208816328"
+   },
+   {
+    "id": "coir-doormat/dirty",
+    "kind": "edit",
+    "jobId": "8fe8bb25-11e0-40b0-abbe-a4fb22acacbf",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same doormat: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the mat is caked with dried mud, sand, crumbs, dead leaf bits and dark dirt, the fibers matted and dull. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "6e911070-8686-44c9-8a0e-79bb92c2805b"
+    ],
+    "file": "reference/masters/coir-doormat/dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "2017f951419d4e01a9a83f7da787855978dac6480362fcbafbbb5b9972ac84d4"
+   },
+   {
+    "id": "garden-grill/rusty",
+    "kind": "edit",
+    "jobId": "27681ab3-a5f5-4595-b178-443baa6ac9a1",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same barbecue grill: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the body is faded with orange rust patches and grease stains, the cooking grate is dark and rusty with burnt grease. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "5c9d9e64-ed23-4aa2-a477-fa28677e31c1"
+    ],
+    "file": "reference/masters/garden-grill/rusty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "e4708a72d0881548d0c1fc86a08d16e1bd4123acc6df7efb0a69945f3aef45c5"
+   },
+   {
+    "id": "garden-grill/crust",
+    "kind": "edit",
+    "jobId": "853ad657-c9fa-4dcf-8c49-e9a8018fa7c4",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same barbecue grill: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the cooking grate is completely covered with a thick black burnt carbon crust with cracks; everything else unchanged. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "5c9d9e64-ed23-4aa2-a477-fa28677e31c1"
+    ],
+    "file": "reference/masters/garden-grill/crust.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "b664268a296056d4058d4a48146a123dbb5f091ee786b79b7c57cacf180d44f5"
+   },
+   {
+    "id": "bathtub/murky",
+    "kind": "edit",
+    "jobId": "b20bea72-d360-4da7-868e-66ae5967262c",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same bathtub: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the tub is filled with murky gray soapy dirty water with floating scum, the bottom is not visible. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "168bb9a0-4360-4617-aba1-e79014038d0e"
+    ],
+    "file": "reference/masters/bathtub/murky.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "4ead914de7d4e95fa0701089da664051d54ffd6bcb7bc4b3dcb0f4ad5850784a"
+   },
+   {
+    "id": "bathtub/empty-dirty",
+    "kind": "edit",
+    "jobId": "1e581f11-2636-45a9-8b5b-d8a793bf6104",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same bathtub: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the tub is completely drained with no water: a dark grime ring, yellow soap scum, rust stains under the faucet and dirty feet, cloudy chrome. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "168bb9a0-4360-4617-aba1-e79014038d0e"
+    ],
+    "file": "reference/masters/bathtub/empty-dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "e53d3f7d400022525c72f284f93ad0be4c49e4c9c335dcf38caa82abc8dfe6b1"
+   },
+   {
+    "id": "bathtub/empty-clean",
+    "kind": "edit",
+    "jobId": "ea6dd873-0c95-4128-a721-5741afa80505",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same bathtub: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the tub is completely drained with no water: clean glossy white enamel inside, spotless. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "168bb9a0-4360-4617-aba1-e79014038d0e"
+    ],
+    "file": "reference/masters/bathtub/empty-clean.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "b93b9838d174ac7d8ee4f80d899d0840e29c4133c52beedc8a86f3a3dfa393d1"
+   },
+   {
+    "id": "retro-radio/dirty",
+    "kind": "edit",
+    "jobId": "f80137d4-95f3-4230-b9ee-daf14d4766cc",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same radio: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the radio is old and dirty: sticky grime, faded scratched wood, a dirty stained fabric grille, yellowed knobs and dull finish. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "00939b6e-f7f2-4f34-addc-fe30e882e8da"
+    ],
+    "file": "reference/masters/retro-radio/dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a338ef6a8a134256e1fde159398b5f282e1c0bb88a395da05ef3edbb3e811ddf"
+   },
+   {
+    "id": "stone-lion/dirty",
+    "kind": "edit",
+    "jobId": "0ddce9d2-ef7e-4ad0-b2a1-8f370a61f1a0",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same lion statue: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the statue is covered with green moss, black grime streaks, lichen spots and dirt. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "27ceddad-2470-462a-a349-b5c31ba81149"
+    ],
+    "file": "reference/masters/stone-lion/dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "b40e58b62dd4cd88e1e3cbf472439da030f10437a53aec73d54c3a79479297ce"
+   },
+   {
+    "id": "stone-lion/crust",
+    "kind": "edit",
+    "jobId": "93126d85-857b-4972-a149-a44bb40eb003",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same lion statue: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: thick lumpy white-gray limestone crust patches cover the pedestal and the lion's paws; everything else unchanged. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "27ceddad-2470-462a-a349-b5c31ba81149"
+    ],
+    "file": "reference/masters/stone-lion/crust.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "eeefc6abdcce00fdc638cdecbdf1ed07002ac03d54ef213ca95724a8d26dc758"
+   },
+   {
+    "id": "wooden-dresser/old",
+    "kind": "edit",
+    "jobId": "2831483d-95c7-4bb6-9e46-e29cc5798a07",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same dresser: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the dresser is old and worn: scratched dull faded varnish, white water rings, grime and dark tarnished knobs. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "a9b3f098-fc56-4f69-83a5-8e6fb09195a5"
+    ],
+    "file": "reference/masters/wooden-dresser/old.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "3aba8f1857a536594e12c35db5d76800a501c667b7b4bdda373691505bc253e2"
+   },
+   {
+    "id": "wooden-dresser/sanded",
+    "kind": "edit",
+    "jobId": "ecba1e49-4f20-4620-82f1-81f2f5f3a49d",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same dresser: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the wood is raw freshly sanded pale bare wood with no varnish, the knobs are dull brass. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "a9b3f098-fc56-4f69-83a5-8e6fb09195a5"
+    ],
+    "file": "reference/masters/wooden-dresser/sanded.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "bda5f01bb47c7940a507f57ca431f0a7768ce36e31f0f72f73b8fbbd283a6c22"
+   },
+   {
+    "id": "aquarium/murky",
+    "kind": "edit",
+    "jobId": "914b7aca-ed20-44bd-8f6b-180a3925b0ae",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same aquarium: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the water is cloudy murky green, green algae covers the inside of the glass, the plants and rocks are barely visible. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "efb2060b-4305-4931-a612-da481cab0594"
+    ],
+    "file": "reference/masters/aquarium/murky.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "4ac063522ea633f6322899b38908794ea933a11b141e5d83c5fd0d5a223ac350"
+   },
+   {
+    "id": "aquarium/empty-dirty",
+    "kind": "edit",
+    "jobId": "cf78613d-fa2c-46fc-9cef-657ba4efaf79",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same aquarium: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the aquarium is drained with no water: green algae smeared on the glass, dirty brown gravel, slimy plants and grimy rocks. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "efb2060b-4305-4931-a612-da481cab0594"
+    ],
+    "file": "reference/masters/aquarium/empty-dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "bb795af9e634d4c719900c07f87afdba9f40b7077b01ab367109cce67c9f056f"
+   },
+   {
+    "id": "aquarium/empty-clean",
+    "kind": "edit",
+    "jobId": "b963b583-d4ad-4716-8844-b7b35dc6f5d4",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same aquarium: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the aquarium is drained with no water: clean clear glass, clean gravel, plants and rocks. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "efb2060b-4305-4931-a612-da481cab0594"
+    ],
+    "file": "reference/masters/aquarium/empty-clean.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "1a9ab7d5230866ce18b21404db211c70db41ad31d3c5b9772a9a9fb45cc9c59e"
+   },
+   {
+    "id": "backpack/dirty",
+    "kind": "edit",
+    "jobId": "67e0bcfe-9074-4700-a6a7-d2f5661d24b0",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same backpack: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the backpack is dirty: mud splashes, green grass stains, ink stains and gray grime, faded fabric. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "170050c9-bb06-46f6-9f49-6ce48bff74f5"
+    ],
+    "file": "reference/masters/backpack/dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a006e62ed473b04280bb0ea060c66bbd09e2a9118acea44bfc729d1fac97890d"
+   },
+   {
+    "id": "kitchen-stove/greasy",
+    "kind": "edit",
+    "jobId": "6cbb8633-83ff-4cd6-b6ab-24e020e851bb",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same stove: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the stove is greasy: burnt grease splatters and brown stains on the cooktop, crusted spills, dirty knobs and a smudged oven window. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "853db5cf-ae8c-4158-b64a-bde84339aa2a"
+    ],
+    "file": "reference/masters/kitchen-stove/greasy.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a5368558c571ae18278abeb911ecca4fa0a9aa748e62c028bf791dd75750f9f2"
+   },
+   {
+    "id": "kitchen-stove/crust",
+    "kind": "edit",
+    "jobId": "d03c059f-437d-4532-b0de-2bf253ffadb3",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same stove: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: thick black burnt-on food crust covers the cooktop around the burners; everything else unchanged. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "853db5cf-ae8c-4158-b64a-bde84339aa2a"
+    ],
+    "file": "reference/masters/kitchen-stove/crust.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "2d61c9f5e488eb5408484530bb449c8d7ca5dc6b2b2a766d4603c0d8a2c909bb"
+   },
+   {
+    "id": "lawn-mower/muddy",
+    "kind": "edit",
+    "jobId": "ad65772d-a467-44ad-980a-5172bce6ca36",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same lawn mower: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the mower is caked with mud and dried grass clippings on the deck and wheels. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "d615b9d5-3d58-4629-9f1a-b344b136fa22"
+    ],
+    "file": "reference/masters/lawn-mower/muddy.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "cb9aea89604cce2c16e01e40f7123a0f708e2cd5be5f78e91cad0bb237ea2872"
+   },
+   {
+    "id": "lawn-mower/rusty",
+    "kind": "edit",
+    "jobId": "42e0781e-dced-4733-80b9-0f4040860a50",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same lawn mower: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the deck paint is gone: rusty bare metal deck and handle with orange rust, faded and dull. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "d615b9d5-3d58-4629-9f1a-b344b136fa22"
+    ],
+    "file": "reference/masters/lawn-mower/rusty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "20b32e947584b7c924fedef75be7961412ba6713daeda6b11818cf88155e3138"
+   },
+   {
+    "id": "street-sign/rusty",
+    "kind": "edit",
+    "jobId": "3b992aca-aedf-4cfa-9a55-54c128802f1b",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same sign: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the sign is old: faded peeling yellow paint with rust streaks, rust spots and dirt, the post is rusty. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "4e592943-f149-4928-877c-889b3043e625"
+    ],
+    "file": "reference/masters/street-sign/rusty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "92ba5301dfedb673e8a3a752a8a2cb6c7fa991f2a4f8d8db186e9ec08da4b0df"
+   },
+   {
+    "id": "street-sign/bare",
+    "kind": "edit",
+    "jobId": "d8f092c9-a30c-44ca-a531-350a2bdc08b1",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same sign: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: all the paint is gone: the sign plate is bare dull gray metal with no color and no symbol, the post is bare gray metal. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "4e592943-f149-4928-877c-889b3043e625"
+    ],
+    "file": "reference/masters/street-sign/bare.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a04dd8b2762ce5315888e7424d877f09b7e885c977ca94406dbfa2a938786472"
+   },
+   {
+    "id": "table-lamp/tarnished",
+    "kind": "edit",
+    "jobId": "2bb47630-377d-42f2-aa29-a3d123b78b94",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same lamp: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the brass base and stem are dark tarnished with green-brown patina, the lampshade is dusty yellowed with stains. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "a91cf771-267a-4370-a208-c1befb461ec8"
+    ],
+    "file": "reference/masters/table-lamp/tarnished.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "fe4ba61ee64c0df1a1b434202046570447c390c6bf4a4cde5c0121ef449f7f12"
+   },
+   {
+    "id": "rowboat/dirty",
+    "kind": "edit",
+    "jobId": "ac3ed050-4326-4710-b9e0-9614f026feba",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same rowboat: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the boat is weathered: green algae and barnacles on the hull, peeling cracked paint, grime and dead leaves inside. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "7ae4b185-c87d-490e-8474-e765d83603a1"
+    ],
+    "file": "reference/masters/rowboat/dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "b2ad5b7ad92e80dbc1c3259dc919dab3c1ca8da9864a9a166089c964d590ec17"
+   },
+   {
+    "id": "rowboat/bare",
+    "kind": "edit",
+    "jobId": "5c871cc7-d11b-4ca0-9538-080ecf16a667",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same rowboat: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the hull is sanded bare pale wood with no paint, the seats and rim are raw sanded wood. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "7ae4b185-c87d-490e-8474-e765d83603a1"
+    ],
+    "file": "reference/masters/rowboat/bare.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "eaa85a6ebd3ab910847c9fa1b7dba69e6e74944d14e5c1d2cc43743a6c86735f"
+   },
+   {
+    "id": "game-controller/dirty",
+    "kind": "edit",
+    "jobId": "6dec69b2-b933-44c8-8007-f7e4668f1629",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same game controller: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the controller is dirty: sticky grime, greasy fingerprints, dust packed in the seams and dirty sticks and buttons. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "de73e214-c4d3-4c12-8665-6a7f0927d044"
+    ],
+    "file": "reference/masters/game-controller/dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "75b698657b3239477ba3b5e7a0976aa6729fd492fd9a37fed910a41d472b3303"
+   },
+   {
+    "id": "iron-gate/rusty",
+    "kind": "edit",
+    "jobId": "9257119b-bc1d-4164-acb3-4490e2a6f7e8",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same gate: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the gate is heavily rusted with orange-brown rust, flaking black paint and dirt. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "765bec39-b2f8-4018-8162-abbaa4aca00c"
+    ],
+    "file": "reference/masters/iron-gate/rusty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "fa9af4abd45bd9a3f9ac6fb05acab5f6e5693f93207999030861a3d3b486f862"
+   },
+   {
+    "id": "iron-gate/bare",
+    "kind": "edit",
+    "jobId": "a26dcf10-8771-47df-a6ba-7478bacebe6c",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same gate: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: all paint is gone: the gate is bare ground dull gray metal with no rust. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "765bec39-b2f8-4018-8162-abbaa4aca00c"
+    ],
+    "file": "reference/masters/iron-gate/bare.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "5b033445455d2853726f3428aad7982ad6f0bb2d584cba6197c69e1db3f95bb8"
+   },
+   {
+    "id": "sofa/stained",
+    "kind": "edit",
+    "jobId": "55a8ca37-447f-47c7-844f-53d8bc03acc2",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same sofa: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the sofa is dirty: coffee and juice stains, crumbs, dust, gray grime on the armrests and faded fabric. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "514cc20f-1a84-4542-85d6-75441f671666"
+    ],
+    "file": "reference/masters/sofa/stained.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "39c9a35840b2bc42c1b34f9268b672a25ca8c320c55e15d770fa7041816d2508"
+   },
+   {
+    "id": "stone-fountain/murky",
+    "kind": "edit",
+    "jobId": "b46c124d-6bff-4ea6-9592-2c9d8ebdb645",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same fountain: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the basins are full of murky green water with floating leaves and scum. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "c87daf71-1b54-48e9-b5d0-35a90d93e701"
+    ],
+    "file": "reference/masters/stone-fountain/murky.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "91dcd47de944e8080552011554513c270260ea1e7cd148a2951b51b3d2815d1f"
+   },
+   {
+    "id": "stone-fountain/empty-dirty",
+    "kind": "edit",
+    "jobId": "ce8f40aa-6d7e-4f85-8fae-babf21d67ef2",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same fountain: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the fountain is drained with no water: green moss, black grime and white lime crust in the basins and on the stone, a green tarnished spout. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "c87daf71-1b54-48e9-b5d0-35a90d93e701"
+    ],
+    "file": "reference/masters/stone-fountain/empty-dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "42a787ef26aac93596b889b21e90aad200015c74e026172f0d01981e8e0cc61c"
+   },
+   {
+    "id": "stone-fountain/empty-clean",
+    "kind": "edit",
+    "jobId": "75a33490-ad31-49a1-9b45-d8ffe55d94f6",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same fountain: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the fountain is drained with no water: clean light sandstone basins, spotless. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "c87daf71-1b54-48e9-b5d0-35a90d93e701"
+    ],
+    "file": "reference/masters/stone-fountain/empty-clean.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "9c824231a092e975619bd6403f9f19598faa1e10e78d438a646e587e90899957"
+   },
+   {
+    "id": "vintage-motorcycle/dirty",
+    "kind": "edit",
+    "jobId": "055f5588-0a7b-465a-8619-388e2b28b70b",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same motorcycle: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the motorcycle is covered with mud splashes, dust and grime. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "ab68ff32-79a8-4ea5-9234-402c0c47356d"
+    ],
+    "file": "reference/masters/vintage-motorcycle/dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "5669912464517f1eb51e42b4fbbbc794d902c1284e42963d4ac5a2ca6822d220"
+   },
+   {
+    "id": "vintage-motorcycle/rusty",
+    "kind": "edit",
+    "jobId": "a26ded88-ffa8-44d6-a16b-10bf7afd5608",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same motorcycle: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the chrome parts are rusty and dull, the red paint is faded and chipped, the seat is cracked. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "ab68ff32-79a8-4ea5-9234-402c0c47356d"
+    ],
+    "file": "reference/masters/vintage-motorcycle/rusty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "fc29cbabd946d5209f1826a61c6a944eeb720ff34f8f5c092e1fb34c7695b21b"
+   },
+   {
+    "id": "pocket-watch/tarnished",
+    "kind": "edit",
+    "jobId": "2e70bcfd-e3ee-4d7f-97b7-56de5bfe43be",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same pocket watch: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the gold case and chain are dark tarnished and grimy, the glass over the dial is scratched and cloudy. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "b815c35e-d40f-4217-ad01-b98ac4f05d38"
+    ],
+    "file": "reference/masters/pocket-watch/tarnished.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "881b1a1c70d19e2686fba80bf3ec4549e09a0f3a26c3602ba44380d7598c919b"
+   },
+   {
+    "id": "upright-piano/old",
+    "kind": "edit",
+    "jobId": "0bc6f722-56d4-4215-82b4-b9d39f5b1082",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same piano: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the piano is old: scratched dull lacquer, dust, yellowed keys and grime. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "6e9cfd99-fb75-4d94-aff3-6be42ec6d86c"
+    ],
+    "file": "reference/masters/upright-piano/old.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "ab9915f2674e77ad671a851842b7e437ab5b985de258717d638103c493c42fdb"
+   },
+   {
+    "id": "knight-armor/rusty",
+    "kind": "edit",
+    "jobId": "9fc355b8-8596-4253-9b68-431ad7474523",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same armor: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the armor is covered with orange-brown rust patches and grime, the leather straps are dry and cracked. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "4c451681-e3f7-475f-935c-72397f3b7d1f"
+    ],
+    "file": "reference/masters/knight-armor/rusty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "0fe4f57310f3e81beb63e8b685e27eaa2d756da08d006efbc417fd4ce22a7794"
+   },
+   {
+    "id": "cannon/rusty",
+    "kind": "edit",
+    "jobId": "cb5b80c0-8d64-4442-a985-e53a195e5716",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same cannon: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the iron barrel and wheel rims are rusty, the wooden carriage and wheels are gray, cracked and weathered. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "26fd89ec-8864-41be-9fc5-4ba4e476c792"
+    ],
+    "file": "reference/masters/cannon/rusty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a14a0262667fcd3a104b8196c93dc311bdd497abb4dead166c85c1ebca0c792a"
+   },
+   {
+    "id": "cannon/bare",
+    "kind": "edit",
+    "jobId": "0226de43-509b-4684-82b1-f987918d1ee9",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same cannon: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the barrel and rims are bare ground gray steel, the carriage and wheels are raw sanded pale wood. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "26fd89ec-8864-41be-9fc5-4ba4e476c792"
+    ],
+    "file": "reference/masters/cannon/bare.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "c5ec8120b8179f1e566397ae16370930f5d7ac6d2dab402682f8dd03eeef7211"
+   },
+   {
+    "id": "shower-cabin/dirty",
+    "kind": "edit",
+    "jobId": "b44c9d27-c932-489e-ad2c-fb9d6b58b4c8",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same shower cabin: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: soap scum and water spots cloud the glass, limescale on the chrome, black mold in the grout lines and a dirty shower tray. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "ae62bf26-8b5d-4379-ab5a-1d478ca0dc6b"
+    ],
+    "file": "reference/masters/shower-cabin/dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "8c950cdb3facce18bba94d2d51b009e3f789673d904c7ff14b9e06eb289384f4"
+   },
+   {
+    "id": "bicycle/muddy",
+    "kind": "edit",
+    "jobId": "290e8864-9557-4894-84a5-d88403e828ee",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same bicycle: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the bicycle is muddy: mud splashes on the frame and wheels, a rusty chain, rusty dull rims and handlebars, a dirty saddle. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "1c6bdb2e-c239-48a0-b766-aac1a629e261"
+    ],
+    "file": "reference/masters/bicycle/muddy.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "5e149f55be8f7ea2afda9e5d20d0aa5d0b9c8534e74a1e23d90b6709fa360c03"
+   },
+   {
+    "id": "rider-statue/patina",
+    "kind": "edit",
+    "jobId": "b581a77a-6356-4ed5-8730-f31fbf442de3",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same statue: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the bronze is covered with green verdigris patina and black streaks, the stone plinth is grimy with moss. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "02ee6b21-3d44-4410-a10e-81254c42f8b1"
+    ],
+    "file": "reference/masters/rider-statue/patina.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "32240fefbb0e359454968500c86a7b9369986286789eec78129100ff5403d38e"
+   },
+   {
+    "id": "chandelier/dusty",
+    "kind": "edit",
+    "jobId": "286c3ca5-2aa0-482a-b652-806127cdf3c3",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same chandelier: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the chandelier is covered with gray dust and cobwebs, the brass is tarnished and the crystals are cloudy. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "877c10f1-06a5-4f8b-bcb4-4757ebcbc819"
+    ],
+    "file": "reference/masters/chandelier/dusty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a90fdcb0a0c108000b16cfef35ec71a69c1288925b9f745c798a06a9d4f1c8be"
+   },
+   {
+    "id": "royal-throne/old",
+    "kind": "edit",
+    "jobId": "25da5f68-7656-4b2d-930b-166cc2684bd6",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same throne: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the throne is old: faded dusty stained velvet, chipped flaking gilding showing brown wood, and the gem sockets in the crest are empty with no gems. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "840f09d2-4616-4280-977a-1bbdf1669b67"
+    ],
+    "file": "reference/masters/royal-throne/old.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "fc1c74ed4271f81f7619ffd02b7cdbf6a638c81f65a55c07e0e487fc478fc886"
+   },
+   {
+    "id": "stone-patio/dirty",
+    "kind": "edit",
+    "jobId": "47eea080-92f3-4cc0-949e-ef0446b05b39",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same patio: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the slabs are dirty with green moss in the joints, dark dirt stains and dead leaves, the bistro set is rusty. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "e86265d2-c7b6-4358-b12f-fbf0ba899da6"
+    ],
+    "file": "reference/masters/stone-patio/dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a2ded39004664731834f5d65727f65b5e3ed932605c5275a2236f4acfef0736d"
+   },
+   {
+    "id": "carousel-horse/old",
+    "kind": "edit",
+    "jobId": "498b95d9-4971-4559-b2d9-b8376e1885b9",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same carousel horse: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the paint is chipped and faded, the gilding is flaking, grime and cracks everywhere. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "016a99be-ac30-4da2-b53a-53677376cded"
+    ],
+    "file": "reference/masters/carousel-horse/old.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "72082559337739ed8d33d5e625fc083b3591691f9815bf689fad590a042869d4"
+   },
+   {
+    "id": "carousel-horse/primer",
+    "kind": "edit",
+    "jobId": "cbea82fe-3bb3-4839-8470-8a5ce0dcd7b0",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same carousel horse: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the horse is sanded and covered with an even matte white primer, no colors and no gold, the pole is dull gray. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "016a99be-ac30-4da2-b53a-53677376cded"
+    ],
+    "file": "reference/masters/carousel-horse/primer.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a288b98e3798a885e04c1ff6d5f6ee06394d1b74b005977c034a6a1965e8a57a"
+   },
+   {
+    "id": "vintage-tractor/muddy",
+    "kind": "edit",
+    "jobId": "5f4e542a-b766-4402-8938-6295c9577bbb",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same tractor: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the tractor is caked with mud on the wheels and body, the red paint is faded with rust spots. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "e4b3c098-ac01-4a5c-92d1-0ffacf21f1c5"
+    ],
+    "file": "reference/masters/vintage-tractor/muddy.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "18c14cada17c5e1c4055b412685358b7662a28389a0b4495c3d892bdca24334d"
+   },
+   {
+    "id": "vintage-tractor/bare",
+    "kind": "edit",
+    "jobId": "4bcdfc8e-5abe-4958-a651-4e26f6082f97",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same tractor: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the body paint is gone: bare gray metal body and rims, the tires are clean black. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "e4b3c098-ac01-4a5c-92d1-0ffacf21f1c5"
+    ],
+    "file": "reference/masters/vintage-tractor/bare.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "563132e4be0c50c28d122ae9674b449259057e238e5dd17f3bc85cd0e6dede68"
+   },
+   {
+    "id": "vintage-car/dirty",
+    "kind": "edit",
+    "jobId": "7fbf7daf-1ea3-4f50-bb4e-bcff0e2ec30b",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same car: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the car is dusty and muddy with rust spots, faded dull paint and cloudy chrome. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "4c077819-5e7d-4909-b719-fdf83f0e998c"
+    ],
+    "file": "reference/masters/vintage-car/dirty.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "1a0246674e17c1c7640a288467fc46e2f7c4c8d7c070707bb5d4a99ca1688cf9"
+   },
+   {
+    "id": "vintage-car/primer",
+    "kind": "edit",
+    "jobId": "cdd5bec7-50f3-4d4b-ba18-4ef8ac99f683",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto (same as the master)"
+    },
+    "prompt": "Edit the reference image. Keep the exact same car: identical size, position, silhouette, every part, camera angle and framing, and the same plain flat light gray background. Change only the surface: the body is sanded down to an even matte gray primer with no color, the chrome parts are dull. No text, no cast shadow on the background.",
+    "referenceJobs": [
+     "4c077819-5e7d-4909-b719-fdf83f0e998c"
+    ],
+    "file": "reference/masters/vintage-car/primer.png",
+    "alpha": "master cutout alpha (pixel-aligned edit, no own removal)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "ffd9acbc0d6e2ad66e887dee67b95c0d0cb8aece4bbd3039ea62f703bb47c40d"
+   },
+   {
+    "id": "shared/tool-laser",
+    "kind": "tool",
+    "jobId": "ed86e03d-e6c0-4b89-879b-e7a456f7346f",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: one handheld industrial laser cleaning gun standing perfectly vertical: a short black emitter nozzle with a small red lens pointing straight up at the very top, a chunky dark gray and safety-orange gun body with cooling fins below it, a trigger and a rubber pistol grip at the bottom. Straight side view, centered, the nozzle on the vertical axis. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No beam, no text, no logos, no hands, no extra objects.",
+    "file": "reference/masters/shared/tool-laser.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "6087e10d-22d2-4a55-83d1-e00b649ede4d",
+     "file": "reference/cutouts/shared/tool-laser.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "16911a614d106836b8a63466ed1bc092d3256963d0399406bc7f101fef0f3551"
+   },
+   {
+    "id": "shared/tool-spray-bottle",
+    "kind": "tool",
+    "jobId": "d8798faf-b8a9-4bec-9d7d-a683e79f6475",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one plastic trigger spray bottle standing perfectly vertical with the nozzle pointing straight up at the very top: a white trigger sprayer head with the small nozzle opening at the top, a translucent turquoise bottle filled with blue cleaning liquid below. Straight side view, centered, the nozzle on the vertical axis. The entire bottle fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No label, no text, no logos, no hands, no extra objects.",
+    "file": "reference/masters/shared/tool-spray-bottle.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "07424ab8-ece2-46ad-bc7c-eb3680f28b0c",
+     "file": "reference/cutouts/shared/tool-spray-bottle.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "8378b61dcf1333df76bc650e32e3eef0c79d4b6b9701e7ffaee64558ee2dd434"
+   },
+   {
+    "id": "shared/tool-steam-cleaner",
+    "kind": "tool",
+    "jobId": "13687c77-e01a-4220-b5d6-4d4026bb074a",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one handheld steam cleaner standing perfectly vertical: a narrow steam nozzle with a small round brush ring pointing straight up at the very top, a glossy white and sky-blue body with a clear water tank in the middle, and a handle with a trigger at the bottom. Straight side view, centered, the nozzle on the vertical axis. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No steam, no text, no logos, no hands, no extra objects.",
+    "file": "reference/masters/shared/tool-steam-cleaner.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "a39b3bce-39bd-4f71-9a39-339f2af58106",
+     "file": "reference/cutouts/shared/tool-steam-cleaner.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "954f1a2aff5fdba58b0108d677c3a362f59f9b587fc299fd3af411b6e45a309b"
+   },
+   {
+    "id": "shared/tool-pump",
+    "kind": "tool",
+    "jobId": "1d62e9bb-b4f4-482c-86d0-c259352f6d89",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one portable electric water pump with a suction hose: a round black strainer intake at the very top pointing up, a short black corrugated hose below it, and a compact glossy blue pump body with a carry handle at the bottom. Straight front view, centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No water, no text, no logos, no hands, no extra objects.",
+    "file": "reference/masters/shared/tool-pump.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "f2b2d3a2-03ae-4e04-b654-f0faa3c44811",
+     "file": "reference/cutouts/shared/tool-pump.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "20319b7b2ddcdcdeabef46847bf467c9db7ba54d647ce3e561beda6e26898ed7"
+   },
+   {
+    "id": "shared/tool-hose",
+    "kind": "tool",
+    "jobId": "5ac78716-12d5-417d-9546-2438cdef33c3",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one garden hose spray nozzle standing perfectly vertical: a yellow and green plastic spray nozzle with the round water outlet pointing straight up at the very top, a pistol grip with a trigger, and a short coil of bright green garden hose at the bottom. Straight side view, centered, the outlet on the vertical axis. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No water, no text, no logos, no hands, no extra objects.",
+    "file": "reference/masters/shared/tool-hose.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "4b8459a1-4a1a-4109-bd80-01c0f1a2c0fd",
+     "file": "reference/cutouts/shared/tool-hose.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "ed639e926d34929de266f771fc678a4a8121c3ba9261b7cee36f0c5cefb5e2ca"
+   },
+   {
+    "id": "shared/tool-skimmer-net",
+    "kind": "tool",
+    "jobId": "50dbeda8-5aa7-4741-a43d-9374bbed9fcf",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one pool skimmer net standing upright: a flat rectangular blue mesh net frame at the very top, and a long straight white aluminium telescopic pole going straight down. Straight front view, centered. The entire tool fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No leaves, no text, no logos, no hands, no extra objects.",
+    "file": "reference/masters/shared/tool-skimmer-net.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "603e6bde-63e2-457b-bc26-010212ffe106",
+     "file": "reference/cutouts/shared/tool-skimmer-net.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "51e082ea4bc29ac92fec469aa16ae1e262a2cc8cb0bf4692e47a0631073c2c52"
+   },
+   {
+    "id": "shared/tool-whetstone",
+    "kind": "tool",
+    "jobId": "02981a44-970c-488d-8a97-09a64543bc2c",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Create a production 2D game sprite for a casual restoration mobile game. Subject: one knife sharpening whetstone held upright: a rectangular two-tone sharpening stone (gray coarse side and tan fine side) at the very top with its long flat edge facing up, mounted in a small dark wooden holder with a short handle going straight down. Straight front view, centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No knife, no text, no logos, no hands, no extra objects.",
+    "file": "reference/masters/shared/tool-whetstone.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "56e91e26-56ac-4d00-b20f-946a4f208891",
+     "file": "reference/cutouts/shared/tool-whetstone.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "d0dc5b0cda51fb75596212ac86c9c5331e4ebdfce53dd9f3074b17fa3a296eb7"
+   },
+   {
+    "id": "shared/tool-carpet-beater",
+    "kind": "tool",
+    "jobId": "fedd9091-2da7-491a-80ec-ab5f4660db2a",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one traditional rattan carpet beater standing upright: a large woven rattan beating head shaped like a trefoil loop at the very top, and a straight wrapped rattan handle going straight down. Straight front view, centered. The entire tool fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+    "file": "reference/masters/shared/tool-carpet-beater.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "0e7f6448-9513-44f1-afd7-3e3266c0829a",
+     "file": "reference/cutouts/shared/tool-carpet-beater.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "813b4259727538dd34f88c15ec4f210ae4aff12cfd54f96a6afe2303031abbaf"
+   },
+   {
+    "id": "shared/tool-mop",
+    "kind": "tool",
+    "jobId": "e8a5c218-fa39-4fd9-8ef5-6a6d7c2a8b89",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one flat microfiber floor mop standing upside down so the mop head is at the very top: a wide flat rectangular light-blue microfiber pad facing up at the top, a swivel joint below it, and a long straight silver aluminium handle going straight down. Straight front view, centered. The entire mop fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No water, no text, no logos, no hands, no extra objects.",
+    "file": "reference/masters/shared/tool-mop.png",
+    "backgroundRemoval": {
+     "operation": "Higgsfield Background Remover (remove_background)",
+     "jobId": "f083c712-75d1-409a-8cdf-2b7a2d42fbaa",
+     "file": "reference/cutouts/shared/tool-mop.png"
+    },
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "1b38af49f1d4728e90db481dd47d279ad5f48bf787d575d8d26921fc1e9bc829"
+   },
+   {
+    "id": "shared/skin-washer-red",
+    "kind": "skin",
+    "jobId": "bc843754-c7da-43f4-b05f-95079a736d8f",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same pressure washer lance: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy fire-red gun body and wand with black accents. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "42692379-3210-4013-80c8-7ed6bda96c35"
+    ],
+    "file": "reference/masters/shared/skin-washer-red.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "956aaff63b83a07ce4a4c73562d11599ffbb8e3cd7c49178d25429d29ebc2159"
+   },
+   {
+    "id": "shared/skin-washer-neon",
+    "kind": "skin",
+    "jobId": "9ffa44e5-eedf-436f-b97d-a2909e99882c",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same pressure washer lance: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy neon cyan and electric blue body and wand with bright accents. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "42692379-3210-4013-80c8-7ed6bda96c35"
+    ],
+    "file": "reference/masters/shared/skin-washer-neon.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "b8eaf29f95862a077661c8949b9b1eaab2e4e5dd87864e2ae2dd95705eef15c7"
+   },
+   {
+    "id": "shared/skin-washer-candy",
+    "kind": "skin",
+    "jobId": "17333a9d-b141-44de-b0ae-b4ad9c9dd8ab",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same pressure washer lance: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: playful glossy candy colors: bubblegum pink body, mint green wand and white stripes. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "42692379-3210-4013-80c8-7ed6bda96c35"
+    ],
+    "file": "reference/masters/shared/skin-washer-candy.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "13276673fd385c8d21fac237e5bc45c28cb4b8a60092d0573562c992afb70640"
+   },
+   {
+    "id": "shared/skin-scrub-wood",
+    "kind": "skin",
+    "jobId": "ac9d73ca-7ae9-41cb-b91b-a26664089224",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same scrub brush: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a natural varnished light wood back with cream bristles. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "8a846bb8-153a-4e5e-bf3b-63907e0da262"
+    ],
+    "file": "reference/masters/shared/skin-scrub-wood.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "2d4e92e7ef60e011f520759f5d97abed8622dab5aab12e80dbf076c5d96707d3"
+   },
+   {
+    "id": "shared/skin-scrub-pink",
+    "kind": "skin",
+    "jobId": "821e203e-9064-4f6a-9fcc-2059dccd6877",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same scrub brush: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy bubblegum pink back with white bristles. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "8a846bb8-153a-4e5e-bf3b-63907e0da262"
+    ],
+    "file": "reference/masters/shared/skin-scrub-pink.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "d11ef50dc6eceea074d912bb41406aee8be7521ef0488faa790a2fa07c4dcb27"
+   },
+   {
+    "id": "shared/skin-scrub-gold",
+    "kind": "skin",
+    "jobId": "dce0bc46-bdb6-4c2f-a337-a0979d7c4064",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same scrub brush: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a polished shiny gold back with white bristles. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "8a846bb8-153a-4e5e-bf3b-63907e0da262"
+    ],
+    "file": "reference/masters/shared/skin-scrub-gold.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "9d02c1017c0f2ba1596a935662db9ab827aadc8b71a51cc06eddf677f182c4bc"
+   },
+   {
+    "id": "shared/skin-foam-candy",
+    "kind": "skin",
+    "jobId": "cda693cf-d9c8-4896-9636-068a504b55c0",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same foam sprayer: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: playful glossy candy colors: pink and mint green with white details. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "450a026b-545b-49d1-bd3c-b1455fb6d9fb"
+    ],
+    "file": "reference/masters/shared/skin-foam-candy.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "d7514f19f2e2328d5c80529aa9073b70dfa853e91e7026d81c9c0fcb91059416"
+   },
+   {
+    "id": "shared/skin-foam-neon",
+    "kind": "skinfailed",
+    "jobId": "a08ee9b2-6e4f-49c1-b55b-428bc54ff579",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same foam sprayer: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy neon lime green and black body. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "450a026b-545b-49d1-bd3c-b1455fb6d9fb"
+    ],
+    "file": "reference/masters/shared/skin-foam-neon.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "failed at the service (no image); resubmitted",
+    "sha256": "f588fc30910c77d708094b412a1c02b0759376d3c4a66d1f2ed57ff7a34653b4"
+   },
+   {
+    "id": "shared/skin-foam-gold",
+    "kind": "skin",
+    "jobId": "dbf3af71-c0be-4545-b1bc-70d96fde7d1a",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same foam sprayer: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: polished shiny gold with glossy black details. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "450a026b-545b-49d1-bd3c-b1455fb6d9fb"
+    ],
+    "file": "reference/masters/shared/skin-foam-gold.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "a0cbdeba7b2e12848e1901e4d60432631d3d9157a5ec266f445db8d42f2ffbf5"
+   },
+   {
+    "id": "shared/skin-screw-blue",
+    "kind": "skin",
+    "jobId": "7e9a1df8-eec1-4ea7-8ff8-85e5fb650ad3",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same screwdriver: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a transparent royal blue and black handle, the same chrome shaft. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "52fd17ec-bd4e-4b7a-91be-e80c3c259d18"
+    ],
+    "file": "reference/masters/shared/skin-screw-blue.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "aceb84526ec2780ab69d6b78668bb2ff1e2e151c80a662d53892753061ac01aa"
+   },
+   {
+    "id": "shared/skin-screw-industrial",
+    "kind": "skin",
+    "jobId": "e694c8cf-5b21-4a6d-9a99-58f84ae019d6",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same screwdriver: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: an industrial safety-yellow and black handle, the same chrome shaft. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "52fd17ec-bd4e-4b7a-91be-e80c3c259d18"
+    ],
+    "file": "reference/masters/shared/skin-screw-industrial.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "5fd0eb7ffdaeadb4f12beeb37d24de7db59dc1b3787afa3eadea98f5c9658737"
+   },
+   {
+    "id": "shared/skin-screw-neon",
+    "kind": "skin",
+    "jobId": "c88cba59-2d22-4a7c-9cb3-837d6c74599c",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same screwdriver: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy neon green and black handle, the same chrome shaft. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "52fd17ec-bd4e-4b7a-91be-e80c3c259d18"
+    ],
+    "file": "reference/masters/shared/skin-screw-neon.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "0f7ee2a438dc5b4f7731e49b1c0541f0a5483fa5fe0cde0262ad77a5deb3c122"
+   },
+   {
+    "id": "shared/skin-hammer-construction",
+    "kind": "skin",
+    "jobId": "b0cc8ef1-4494-481b-9164-bf5d970aba1b",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same claw hammer: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a construction style: dark steel head and a safety-yellow and black rubber grip handle. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "93161e16-b5ca-4e8f-acf6-946769af0244"
+    ],
+    "file": "reference/masters/shared/skin-hammer-construction.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "9629d760e2e6a7883e275ab4d19902692b803394d395e92660e94d03f2a1fd07"
+   },
+   {
+    "id": "shared/skin-hammer-toy",
+    "kind": "skin",
+    "jobId": "49127709-10bc-4ee5-88a6-59562ffce826",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same claw hammer: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a playful toy style: glossy red plastic head and a blue and yellow striped handle. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "93161e16-b5ca-4e8f-acf6-946769af0244"
+    ],
+    "file": "reference/masters/shared/skin-hammer-toy.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "71160796b32f651f747a3cce6ef07b8b3bbf1ab7c1c6f4f495cc4652aa43e4aa"
+   },
+   {
+    "id": "shared/skin-hammer-red",
+    "kind": "skin",
+    "jobId": "e2eb3dcd-fb8a-4839-8134-5bfb33aff1c1",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same claw hammer: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a polished steel head and a glossy fire-red handle with a black end cap. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "93161e16-b5ca-4e8f-acf6-946769af0244"
+    ],
+    "file": "reference/masters/shared/skin-hammer-red.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "0fab0aa4aaf93191e96a6c2a3981e7aa2a17a05b72b73aa2883f98bd1a79f9da"
+   },
+   {
+    "id": "shared/skin-grinder-red",
+    "kind": "skinfailed",
+    "jobId": "17d681da-2d95-4858-b575-1515e1c06fa7",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same angle grinder: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy fire-red and black motor body and battery, the same disc. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "7865abf5-0b15-4618-aab2-2caaa085cdcb"
+    ],
+    "file": "reference/masters/shared/skin-grinder-red.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "failed at the service (no image); resubmitted",
+    "sha256": "5d4a4bff9416356ee8596ca870d2e9b5f81353eec2b0da8b3c81d9525703c23a"
+   },
+   {
+    "id": "shared/skin-grinder-neon",
+    "kind": "skin",
+    "jobId": "efdf24db-b834-4aa2-b783-d8899c4d08fc",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same angle grinder: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy neon blue and black motor body and battery, the same disc. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "7865abf5-0b15-4618-aab2-2caaa085cdcb"
+    ],
+    "file": "reference/masters/shared/skin-grinder-neon.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "b43691516e82a4e2a5efb8c884d2e2d35085b1bc4f83b5253a591373dd97c0c8"
+   },
+   {
+    "id": "shared/skin-grinder-industrial",
+    "kind": "skin",
+    "jobId": "ded5a414-9b05-4000-9a12-0663eacfb03f",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same angle grinder: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: an industrial safety-yellow and black motor body and battery, the same disc. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "7865abf5-0b15-4618-aab2-2caaa085cdcb"
+    ],
+    "file": "reference/masters/shared/skin-grinder-industrial.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "644e74fe6181545e5bdc6337bc72b2e709166c2ebf38eb238fbc90365ef2eb0f"
+   },
+   {
+    "id": "shared/skin-polisher-pink",
+    "kind": "skinfailed",
+    "jobId": "ea222460-fce4-46c0-82e8-2a2001231026",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same rotary polishing machine: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy candy pink and white body with a pink wool pad. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "2ddae8db-4ecc-4023-8ed3-68e3b438f28c"
+    ],
+    "file": "reference/masters/shared/skin-polisher-pink.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "failed at the service (no image); resubmitted",
+    "sha256": "49841b02d7ae6d8c0d5f7b4d15e45c40bb45b0b38eef3257327f434811192451"
+   },
+   {
+    "id": "shared/skin-polisher-blue",
+    "kind": "skin",
+    "jobId": "78c5430c-c481-43f9-9d18-3d20171dedac",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same rotary polishing machine: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy electric blue and black body with a white wool pad. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "2ddae8db-4ecc-4023-8ed3-68e3b438f28c"
+    ],
+    "file": "reference/masters/shared/skin-polisher-blue.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "1f55baea6ec5b7a61787732614db0496790ffa94275b0a84a4f42a8d0a89de01"
+   },
+   {
+    "id": "shared/skin-polisher-chrome",
+    "kind": "skinfailed",
+    "jobId": "c3ca6c48-6a07-45d4-90a7-0fcb3d9c5960",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same rotary polishing machine: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a polished chrome and white body with a light gray wool pad. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "2ddae8db-4ecc-4023-8ed3-68e3b438f28c"
+    ],
+    "file": "reference/masters/shared/skin-polisher-chrome.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "failed at the service (no image); resubmitted",
+    "sha256": "1788910265f189dbdd181544ce1f95da11cb9dd8be387af8a8803a7020cb6a67"
+   },
+   {
+    "id": "shared/skin-laser-redblack",
+    "kind": "skin",
+    "jobId": "6cd6317e-3f38-4a5e-815d-0c56f0ca2399",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same laser cleaning gun: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy red and black body with a red lens. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "ed86e03d-e6c0-4b89-879b-e7a456f7346f"
+    ],
+    "file": "reference/masters/shared/skin-laser-redblack.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "3e365cb2be97ca8451b6765f699c48f761ba78b16e4319c2fb4515770f949bfb"
+   },
+   {
+    "id": "shared/skin-laser-blue",
+    "kind": "skin",
+    "jobId": "307b5f73-ca41-4742-9dde-b326924e57e6",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same laser cleaning gun: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a futuristic glossy white and electric blue body with a blue lens and blue light strips. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "ed86e03d-e6c0-4b89-879b-e7a456f7346f"
+    ],
+    "file": "reference/masters/shared/skin-laser-blue.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "f6bee176b6de94cff36d889d47d3cfb1ccf7fb3fe3c2d33d80fa6d0450ccd916"
+   },
+   {
+    "id": "shared/skin-laser-gold",
+    "kind": "skin",
+    "jobId": "d95008fc-d2a4-4207-bf74-df95e7649dfa",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same laser cleaning gun: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a premium polished gold and black body with a gold nozzle. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "ed86e03d-e6c0-4b89-879b-e7a456f7346f"
+    ],
+    "file": "reference/masters/shared/skin-laser-gold.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "03b2061d50ef33b2946246c238abf9983e9a682b79a033059fd5734e0aa97a7d"
+   },
+   {
+    "id": "shared/skin-foam-neon",
+    "kind": "skin",
+    "jobId": "4759fd03-6f05-49eb-8458-38b90969bb37",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same foam sprayer: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy neon lime green and black body. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "450a026b-545b-49d1-bd3c-b1455fb6d9fb"
+    ],
+    "file": "reference/masters/shared/skin-foam-neon.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "f588fc30910c77d708094b412a1c02b0759376d3c4a66d1f2ed57ff7a34653b4"
+   },
+   {
+    "id": "shared/skin-grinder-red",
+    "kind": "skin",
+    "jobId": "58a8b233-18a7-4eda-8a79-8a90f5410e23",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same angle grinder: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy fire-red and black motor body and battery, the same disc. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "7865abf5-0b15-4618-aab2-2caaa085cdcb"
+    ],
+    "file": "reference/masters/shared/skin-grinder-red.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "5d4a4bff9416356ee8596ca870d2e9b5f81353eec2b0da8b3c81d9525703c23a"
+   },
+   {
+    "id": "shared/skin-polisher-pink",
+    "kind": "skin",
+    "jobId": "336c4a7e-6613-4eca-9c12-82d5baa50a5d",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same rotary polishing machine: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a glossy candy pink and white body with a pink wool pad. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "2ddae8db-4ecc-4023-8ed3-68e3b438f28c"
+    ],
+    "file": "reference/masters/shared/skin-polisher-pink.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "49841b02d7ae6d8c0d5f7b4d15e45c40bb45b0b38eef3257327f434811192451"
+   },
+   {
+    "id": "shared/skin-polisher-chrome",
+    "kind": "skin",
+    "jobId": "ec8aba7e-cb6d-48bb-917a-2c95ada6cd8d",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "auto"
+    },
+    "prompt": "Edit the reference image. Keep the exact same rotary polishing machine: identical shape, silhouette, size, position, orientation, camera and framing, and the same plain flat light gray background. Change only the colors and materials: a polished chrome and white body with a light gray wool pad. No text, no logos, no cast shadow on the background.",
+    "referenceJobs": [
+     "2ddae8db-4ecc-4023-8ed3-68e3b438f28c"
+    ],
+    "file": "reference/masters/shared/skin-polisher-chrome.png",
+    "alpha": "base tool cutout alpha + the base crop (same working point)",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "1788910265f189dbdd181544ce1f95da11cb9dd8be387af8a8803a7020cb6a67"
+   },
+   {
+    "id": "backgrounds/bg-plaza",
+    "kind": "bg",
+    "jobId": "193b5ede-3045-4a32-b8bc-59085d1c6f86",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Premium mobile game gameplay background, portrait 9:16, for a casual cleaning game. Match the attached reference background's rendering quality and mood exactly (semi-realistic polished 3D render, soft depth of field, calm, a brighter clean central area for the game object, slightly darker top band behind the HUD) but show a different place: a sunny old town plaza: softly blurred warm cream and terracotta building facades with arched windows and green shutters and a few potted plants in the upper part, a bright sky at the very top, and light gray cobblestone paving in the lower half seen in perspective, warm afternoon light. Empty plaza, no people, no cars, no text, no signs, no logos, no UI.",
+    "referenceJobs": [
+     "758073a2-92d8-41f6-aad1-2fc4daedfb41"
+    ],
+    "file": "reference/masters/backgrounds/bg-plaza.png",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "fcead94dc321e073371eac51ca21ddda962d9ff60af773833b84f3a11d8e33df"
+   },
+   {
+    "id": "backgrounds/bg-garage",
+    "kind": "bg",
+    "jobId": "aa93ec14-928e-4c91-b442-caad900bf663",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Premium mobile game gameplay background, portrait 9:16, for a casual cleaning game. Match the attached reference background's rendering quality and mood exactly (semi-realistic polished 3D render, soft depth of field, calm, a brighter clean central area for the game object, slightly darker top band behind the HUD) but show a different place: a clean bright restoration garage: a softly blurred light gray wall with a closed white roll-up door, a red tool cabinet and a coiled hose far in the background in the upper part, and a smooth glossy light gray epoxy floor in the lower half seen in perspective, bright overhead light. Empty floor, no vehicles, no people, no text, no logos, no UI.",
+    "referenceJobs": [
+     "758073a2-92d8-41f6-aad1-2fc4daedfb41"
+    ],
+    "file": "reference/masters/backgrounds/bg-garage.png",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "1db2ae96fccd6c17fca269d42e9a436c64cce3079ff494526fddc85c9913d580"
+   },
+   {
+    "id": "backgrounds/bg-vip",
+    "kind": "bg",
+    "jobId": "ec91c5e1-40b8-4b64-9481-61f36b5be555",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Premium mobile game gameplay background, portrait 9:16, for a casual cleaning game. Match the attached reference background's rendering quality and mood exactly (semi-realistic polished 3D render, soft depth of field, calm, a brighter clean central area for the game object, slightly darker top band behind the HUD) but show a different place: an elegant palace hall: softly blurred royal blue walls with gold-trimmed panels, tall arched windows with cream curtains and a warm glow in the upper part, and a polished cream and white marble floor in the lower half seen in perspective, soft golden light. Empty hall, no furniture in the foreground, no people, no text, no logos, no UI.",
+    "referenceJobs": [
+     "758073a2-92d8-41f6-aad1-2fc4daedfb41"
+    ],
+    "file": "reference/masters/backgrounds/bg-vip.png",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "7507c646c314f71ba98997ac828c64464040be6e469bbfcfe37c741c566b268b"
+   },
+   {
+    "id": "backgrounds/bg-shore",
+    "kind": "bg",
+    "jobId": "80603158-4fd3-41b5-8ae0-c5449489d24d",
+    "provider": "Higgsfield MCP (https://mcp.higgsfield.ai/mcp)",
+    "higgsfieldProjectFolder": "21f4df55-05f7-4bef-a8c3-a68d58b70adb",
+    "requestedModel": "nano_banana_2",
+    "actualModel": "nano_banana_flash (service id reported for nano_banana_2 jobs)",
+    "parameters": {
+     "resolution": "standard (1k), not 2K",
+     "aspect_ratio": "9:16"
+    },
+    "prompt": "Premium mobile game gameplay background, portrait 9:16, for a casual cleaning game. Match the attached reference background's rendering quality and mood exactly (semi-realistic polished 3D render, soft depth of field, calm, a brighter clean central area for the game object, slightly darker top band behind the HUD) but show a different place: a sunny lakeside shore: a bright blue sky and a calm turquoise lake with softly blurred green hills and a small wooden pier far away in the upper part, and smooth light sand with a few pebbles in the lower half seen in perspective, bright summer light. Empty beach, no boats, no people, no text, no logos, no UI.",
+    "referenceJobs": [
+     "758073a2-92d8-41f6-aad1-2fc4daedfb41"
+    ],
+    "file": "reference/masters/backgrounds/bg-shore.png",
+    "status": "approved for use (AI review on contact sheets)",
+    "sha256": "2a4d97cc06986b8de7d3e596ad73778601e7eb40a3f4ab02501081faf2cd3ac0"
+   }
+  ],
+  "derived": "scripts/prepare_batch_b.py (+ batch_b_core.py): registration with the master alpha, procedural dust / wet / dull / grime layers, regions, thumbnails 320 px, result pictures, skins with the base crop"
  }
 }

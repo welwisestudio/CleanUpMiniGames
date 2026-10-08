@@ -1,4 +1,5 @@
 import { BATCH_A_ASSETS } from './generated/batchAAssets.js';
+import { BATCH_B_ASSETS, BATCH_B_BOOT } from './generated/batchBAssets.js';
 
 // Runtime asset registry (local files only; nothing is fetched from Higgsfield at runtime).
 // Sources: Nano Banana 2 masters → Higgsfield Background Remover → scripts/prepare_assets.py.
@@ -123,15 +124,21 @@ Object.assign(
   ...BATCH_A_LEVELS.map((id) => ({ [`${id}-thumb`]: `assets/${id}/thumb.webp`, [`${id}-thumb-clean`]: `assets/${id}/thumb-clean.webp` })),
 );
 
+// ---- Step 8 Batch B (levels 16–50) ----
+// Boot: light 320 px menu thumbnails, the new tool sprites and the cosmetic skin sprites (cards and
+// the skin picker can show them anywhere). Level art is lazy, as in Batch A; some Batch A sprites
+// (leaves, junk, screws, dents, paint can / tray) are shared by URL and loaded with the level.
+Object.assign(IMAGE_ASSETS, BATCH_B_BOOT);
+
 // Lazily loaded art of a level ({} for levels 1–5, whose art is part of the boot set).
 export function levelAssets(levelId) {
-  return BATCH_A_ASSETS[levelId] ?? {};
+  return BATCH_A_ASSETS[levelId] ?? BATCH_B_ASSETS[levelId] ?? {};
 }
 
 // Every texture key that is loaded per level (used to release the art of other levels).
 export function lazyAssetKeys() {
   const keys = new Set();
-  for (const set of Object.values(BATCH_A_ASSETS)) for (const k of Object.keys(set)) keys.add(k);
+  for (const set of [...Object.values(BATCH_A_ASSETS), ...Object.values(BATCH_B_ASSETS)]) for (const k of Object.keys(set)) keys.add(k);
   return keys;
 }
 

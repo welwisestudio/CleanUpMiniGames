@@ -11,9 +11,10 @@ import { getTool } from '../content/tools.js';
 export const CARD = { w: 74, h: 74, gap: 12, label: 24 };
 
 export class ToolSelector {
-  constructor(scene, { onTap }) {
+  constructor(scene, { onTap, onSkin }) {
     this.scene = scene;
     this.onTap = onTap;
+    this.onSkin = onSkin;
     this.container = scene.add.container(0, 0).setDepth(120);
     this.cards = [];
     this.vertical = false;
@@ -36,14 +37,25 @@ export class ToolSelector {
     const g = s.add.graphics();
     const frame = s.add.graphics();
     const tool = getTool(o.tool);
-    const img = fitImage(s, tool.texture, w * 0.72, 0, -h * 0.04);
+    const img = fitImage(s, o.texture ?? tool.texture, w * 0.72, 0, -h * 0.04);
     const pill = nineSlice(s, 'ui-pill', w * 1.02, label, 0, h / 2 + label * 0.18);
     const content = s.add.container(0, 0);
     const zone = s.add.zone(0, label * 0.2, Math.max(w, 48), Math.max(h + label * 0.6, 48)).setInteractive({ useHandCursor: true });
     zone.on('pointerup', () => this.onTap?.(o.tool));
     root.add([frame, g, img, pill, content, zone]);
+    // Step 8: cosmetic skins - a small round brush button on the equipped base tool card
+    let skinBtn = null;
+    if (o.skinnable && this.onSkin) {
+      skinBtn = s.add.container(w / 2 - 2, -h / 2 + 2);
+      const bg = s.add.circle(0, 0, 17, 0xffffff, 1).setStrokeStyle(4, 0xc77dff, 1);
+      const ic = fitImage(s, 'tool-paint-brush', 26, 0, 0).setAngle(35);
+      const hit = s.add.zone(0, 0, 48, 48).setInteractive({ useHandCursor: true });
+      hit.on('pointerup', () => this.onSkin?.());
+      skinBtn.add([bg, ic, hit]);
+      root.add(skinBtn);
+    }
     this.container.add(root);
-    const card = { o, root, g, frame, img, pill, content, zone };
+    const card = { o, root, g, frame, img, pill, content, zone, skinBtn };
     this._paint(card, o);
     return card;
   }
@@ -52,6 +64,7 @@ export class ToolSelector {
     const s = this.scene;
     const { w, h, label } = CARD;
     card.o = o;
+    if (o.texture !== undefined) card.img.setTexture(o.texture ?? getTool(o.tool).texture);
     card.g.clear();
     card.g.fillStyle(0xffffff, 1).fillRoundedRect(-w / 2, -h / 2, w, h, 12);
     card.g.fillStyle(o.card ?? 0xd8e6f5, 1).fillRoundedRect(-w / 2 + 4, -h / 2 + 4, w - 8, h - 8, 9);
@@ -76,7 +89,18 @@ export class ToolSelector {
   }
 
   update(options) {
+    // a change of the skin button (equip moved) needs the cards rebuilt
+    if (options.some((o, i) => Boolean(o.skinnable) !== Boolean(this.cards[i]?.skinBtn))) return this.setOptions(this.familyId, options);
     options.forEach((o, i) => this.cards[i] && this._paint(this.cards[i], o));
+  }
+
+  // QA: the skin button of the equipped card (world rect) or null
+  skinButtonRect() {
+    const c = this.cards.find((k) => k.skinBtn);
+    if (!c) return null;
+    const m = c.skinBtn.getWorldTransformMatrix();
+    const k = Math.hypot(m.a, m.b);
+    return { x: m.tx, y: m.ty, w: 48 * k, h: 48 * k, visible: this.container.visible && this.container.alpha > 0.5 };
   }
 
   _arrange() {

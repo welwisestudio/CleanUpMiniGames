@@ -133,6 +133,13 @@ export const TOOL_FAMILIES = {
   },
 };
 
+// ---- Step 8 Batch B ----
+// Laser: no functional alternative yet (a single card); its looks come from the cosmetic skins
+// (content/toolSkins.js), which never change the beam.
+Object.assign(TOOL_FAMILIES, {
+  laser: { name: 'Laser', base: 'laser', options: [{ tool: 'laser', unlock: { type: 'default' }, card: 0xffd7a8 }] },
+});
+
 export const TOOL_AD_PLACEMENT = 'tool-unlock';
 
 export function getFamily(id) {

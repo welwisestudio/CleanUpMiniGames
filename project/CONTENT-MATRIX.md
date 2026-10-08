@@ -1,6 +1,6 @@
 # Content matrix — 50 levels (Step 8 plan)
 
-Status: **matrix approved 2026-10-08.** Levels 1–5 approved; **Batch A (levels 6–15) implemented in build #55, waiting for approval** (interpretations of rows 7, 8, 11, 13, 15 in DECISIONS 2026-10-08). Levels 16–50: not started, no art.
+Status: **matrix approved 2026-10-08.** Levels 1–15 = accepted baseline. **Levels 16–50 implemented in build #60, waiting for designer review.** The implemented 16–50 objects / stages are in `src/content/levels/batchB/levels.js` (stage list per level) and `scripts/prepare_batch_b.py` (art stack); they replace the matrix rows for 16–50 where they differ (replaced objects: 20, 27, 30, 31, 43, 47, 48 — DECISIONS 2026-10-08).
 
 Scope rules:
 - Every level follows the approved Core Loop: object → sequential cleaning / restoration stages → tools → visible progress → restored object → reward / meta → next object.

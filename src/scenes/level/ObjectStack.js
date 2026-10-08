@@ -208,6 +208,14 @@ export class ObjectStack {
     this._rt(id).stamp(key, null, local.x, local.y, { erase: true, scale: size / Math.max(f.width, f.height), angle });
   }
 
+  // Step 8 fill / drain: erase a horizontal band of a layer (object-local rectangle).
+  eraseRect(id, x0, y0, x1, y1) {
+    if (!this._eraser) this._eraser = this.scene.make.graphics({}, false);
+    const g = this._eraser;
+    g.clear().fillStyle(0xffffff, 1).fillRect(0, 0, Math.max(1, x1 - x0), Math.max(1, y1 - y0));
+    this._rt(id).erase(g, x0, y0);
+  }
+
   stampTextureAt(id, key, local, size, alpha = 1, angle = 0) {
     const f = this.scene.textures.getFrame(key);
     this._rt(id).stamp(key, null, local.x, local.y, { scale: size / Math.max(f.width, f.height), alpha, angle });
@@ -646,6 +654,7 @@ export class ObjectStack {
   }
 
   destroy() {
+    this._eraser?.destroy();
     this.container.destroy(true);
   }
 }

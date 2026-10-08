@@ -12,7 +12,9 @@ import { Button } from '../ui/Button.js';
 import { ResultCard, PauseModal, SettingsModal } from '../ui/modals.js';
 import { ChestOfferModal, TimedChestWidget, ProgressChestMini, TIMED_CHEST_SIZE, flyIcons, worldOf } from '../ui/rewards.js';
 import { ToolSelector } from '../ui/toolSelector.js';
-import { familyOption } from '../content/toolFamilies.js';
+import { familyOption, TOOL_FAMILIES } from '../content/toolFamilies.js';
+import { TOOL_SKINS } from '../content/toolSkins.js';
+import { SkinModal } from '../ui/skinModal.js';
 import { registerQaScene } from '../app/qa.js';
 
 // One play run of a level: sequential stages → completion → result.
@@ -101,7 +103,7 @@ export class LevelScene extends Phaser.Scene {
     this.strip = new ToolStrip(this, { stages: this.level.stages, getTool: (id, st) => (st ? this.toolFor(st) : getTool(id)) });
     // Step 7: alternative-tool cards (only levels with tool families)
     this.hasFamilies = this.level.stages.some((st) => st.family);
-    this.selector = this.hasFamilies ? new ToolSelector(this, { onTap: (id) => this.onToolCard(id) }) : null;
+    this.selector = this.hasFamilies ? new ToolSelector(this, { onTap: (id) => this.onToolCard(id), onSkin: () => this.openSkins() }) : null;
     this.selector?.container.setVisible(false);
     this.progressBar = new ProgressBar(this);
     this.pauseButton = new Button(this, { id: 'hud-pause', x: 0, y: 0, w: UI.pause, h: UI.pause, style: 'square', icon: 'icon-pause', iconSize: 0.5, onClick: () => this.openPause() });
@@ -190,6 +192,7 @@ export class LevelScene extends Phaser.Scene {
     this.buildFx(this.objFit.scale / 0.4);
 
     this.result?.layout(l);
+    this.skinModal?.layout(l);
     this.chestOffer?.layout(l);
     this.pauseModal?.layout(l);
     this.settingsModal?.layout(l);
@@ -267,6 +270,8 @@ export class LevelScene extends Phaser.Scene {
       shine: mk('fx-sparkle', { speed: { min: 10 * k, max: 50 * k }, lifespan: 520, scale: { start: 0.05 * k, end: 0.16 * k }, alpha: { start: 1, end: 0 }, rotate: { min: 0, max: 90 } }),
       sawdust: mk('fx-dot', { speed: { min: 40 * k, max: 180 * k }, gravityY: 500 * k, lifespan: 600, scale: { start: 0.9 * k, end: 0.3 * k }, alpha: { start: 0.85, end: 0 }, tint: 0xe9d3a6 }),
       impact: mk('fx-dot', { speed: { min: 80 * k, max: 260 * k }, lifespan: 380, scale: { start: 1.2 * k, end: 0.2 * k }, alpha: { start: 0.9, end: 0 }, tint: 0xd8d2c8 }),
+      smoke: mk('fx-dot', { speed: { min: 20 * k, max: 70 * k }, angle: { min: 240, max: 300 }, lifespan: 700, scale: { start: 0.8 * k, end: 2.6 * k }, alpha: { start: 0.45, end: 0 }, tint: 0x6b6b6b }),
+      steam: mk('fx-dot', { speed: { min: 30 * k, max: 120 * k }, angle: { min: 230, max: 310 }, lifespan: 800, scale: { start: 1.2 * k, end: 3.6 * k }, alpha: { start: 0.5, end: 0 } }),
     };
   }
 
@@ -274,7 +279,60 @@ export class LevelScene extends Phaser.Scene {
   // ---- alternative tools (Step 7) ---------------------------------------------------------
   // The stage's tool: the equipped option of its family, else the stage tool.
   toolFor(stage) {
-    return getTool(stage.family ? this.services.toolShop.equipped(stage.family) : stage.tool);
+    return this.skinned(getTool(stage.family ? this.services.toolShop.equipped(stage.family) : stage.tool), stage.family);
+  }
+
+  // Step 8 cosmetic skins: the family's BASE tool is drawn with the equipped skin texture; nothing
+  // else of the tool (working point, offsets, footprint) changes.
+  skinned(tool, familyId) {
+    if (!familyId || !TOOL_SKINS[familyId] || TOOL_FAMILIES[familyId]?.base !== tool.id) return tool;
+    const tex = this.services.skins.textureFor(familyId);
+    return tex ? { ...tool, texture: tex } : tool;
+  }
+
+  openSkins() {
+    const fam = this.stage?.family;
+    if (!fam || !TOOL_SKINS[fam] || this.skinModal || !this.canInteract() || this.activePointerId !== null) return;
+    this.services.audio.play('ui-tap');
+    this.hint.hide();
+    this.services.pause.set('skinMenu', true);
+    const skins = this.services.skins;
+    const m = new SkinModal(this, { skins, familyId: fam, onClose: () => this.closeSkins() });
+    m.onTap = async (id) => {
+      const o = skins.options(fam).find((x) => x.id === id);
+      if (!o || o.busy) return;
+      this.services.audio.play('ui-tap');
+      let r;
+      if (o.owned) r = skins.equip(fam, id);
+      else if (o.unlock.type === 'coins' || o.unlock.type === 'diamonds') {
+        r = skins.purchase(fam, id);
+        if (r.status === 'insufficient') {
+          m.shake(id);
+          m.toast(`Not enough ${r.currency}`);
+          return;
+        }
+        if (r.status === 'purchased') (r.currency === 'coins' ? this.coinsPill : this.diamondsPill).setValue(r.after);
+      } else {
+        m.setEnabled(false);
+        m.refresh();
+        r = await skins.unlockWithAd(fam, id);
+        if (!this.alive || this.skinModal !== m) return;
+        m.setEnabled(true);
+        if (r.status !== 'unlocked' && r.status !== 'equipped') m.toast(r.status === 'not-earned' ? 'Ad closed early' : 'Ad not available');
+        else m.clearToast(); // an older failure message must not linger after the unlock
+      }
+      m.refresh();
+      const eq = this.services.toolShop.equipped(fam);
+      if (TOOL_FAMILIES[fam]?.base === eq) this.applyTool(eq);
+    };
+    this.skinModal = m;
+  }
+
+  closeSkins() {
+    this.skinModal?.destroy();
+    this.skinModal = null;
+    this.services.pause.set('skinMenu', false);
+    this.refreshSelector();
   }
 
   toolMods(stage, toolId) {
@@ -303,7 +361,15 @@ export class LevelScene extends Phaser.Scene {
       return;
     }
     const shop = this.services.toolShop;
-    const opts = shop.options(fam).map((o) => ({ ...o, affordable: shop.canAfford(o), busy: o.busy || (this.cardBusy && this.cardBusy === o.tool) }));
+    const skinTex = this.services.skins.textureFor(fam);
+    const opts = shop.options(fam).map((o) => ({
+      ...o,
+      affordable: shop.canAfford(o),
+      busy: o.busy || (this.cardBusy && this.cardBusy === o.tool),
+      // the base tool card shows the equipped skin; its equipped card gets the skin button
+      texture: o.tool === TOOL_FAMILIES[fam].base ? skinTex : null,
+      skinnable: Boolean(TOOL_SKINS[fam]) && o.tool === TOOL_FAMILIES[fam].base && o.equipped,
+    }));
     if (rebuild || this.selector.familyId !== fam || !this.selector.container.visible) this.selector.setOptions(fam, opts);
     else this.selector.update(opts);
   }
@@ -362,7 +428,7 @@ export class LevelScene extends Phaser.Scene {
   applyTool(toolId) {
     this.endStroke();
     this.selector?.clearToast(); // an older "Ad closed early" must not linger after success
-    const tool = getTool(toolId);
+    const tool = this.skinned(getTool(toolId), this.stage.family);
     const mods = this.toolMods(this.stage, toolId);
     this.tool = tool;
     this.tools.toolScale = (this.stage.toolScale ?? 1) * mods.toolScale;
@@ -653,6 +719,10 @@ export class LevelScene extends Phaser.Scene {
     } else if (id === 'dry-brush' && Math.random() < 0.5) this.fx.dust.emitParticleAt(p.x, p.y, 1);
     else if (id === 'scrub' && Math.random() < 0.3) this.fx.foam.emitParticleAt(p.x, p.y, 1);
     else if (fx === 'sparks') this.fx.sparks.emitParticleAt(p.x, p.y, 3);
+    else if (fx === 'laser') {
+      this.fx.sparks.emitParticleAt(p.x, p.y, 1);
+      if (Math.random() < 0.5) this.fx.smoke.emitParticleAt(p.x, p.y, 1);
+    } else if (fx === 'steam' && Math.random() < 0.6) this.fx.steam.emitParticleAt(p.x, p.y, 1);
     else if (fx === 'shine' && Math.random() < 0.25) this.fx.shine.emitParticleAt(p.x, p.y, 1);
     else if (fx === 'sawdust' && Math.random() < 0.5) this.fx.sawdust.emitParticleAt(p.x, p.y, 1);
     else if (fx === 'dust' && Math.random() < 0.5) this.fx.dust.emitParticleAt(p.x, p.y, 1);
@@ -685,9 +755,11 @@ export class LevelScene extends Phaser.Scene {
       const nozzle = this.tools.workPointFor(this.tools.pointerWorld);
       const impact = this.tools.impactFor(nozzle);
       const before = this.mechanic.validContacts;
-      this.mechanic.spray(impact, Math.min(delta, 50) / 1000);
+      // a jet on a hold-based stage (the hose filling a basin) works where its water lands
+      if (this.mechanic.spray) this.mechanic.spray(impact, Math.min(delta, 50) / 1000);
+      else this.mechanic.hold?.(impact, Math.min(delta, 50) / 1000);
       if (this.mechanic.validContacts > before && Math.random() < 0.5) {
-        if (this.tool.jetStyle === 'paint' || this.tool.jetStyle === 'air') this.emitContactFx(impact);
+        if (['paint', 'air', 'laser', 'steam'].includes(this.tool.jetStyle)) this.emitContactFx(impact);
         else (this.tool.jetStyle === 'foam' ? this.fx.foam : this.fx.mist).emitParticleAt(impact.x, impact.y, 1);
       }
     }
@@ -1039,6 +1111,9 @@ export class LevelScene extends Phaser.Scene {
     this.hudProgressChest?.destroy();
     this.selector?.destroy();
     this.selector = null;
+    this.skinModal?.destroy();
+    this.skinModal = null;
+    this.services.pause.set('skinMenu', false);
     this.chestOffer?.destroy();
     this.chestOffer = null;
     this.settingsModal = null;

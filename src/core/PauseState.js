@@ -2,7 +2,7 @@ import { Emitter } from './Emitter.js';
 
 // Independent pause reasons. Removing one reason never clears another:
 // a host resume does not lift the player's own pause.
-export const PAUSE_REASONS = ['user', 'host', 'adBusy', 'navigationBusy', 'assetsLoading'];
+export const PAUSE_REASONS = ['user', 'host', 'adBusy', 'navigationBusy', 'assetsLoading', 'skinMenu'];
 
 export class PauseState extends Emitter {
   constructor() {

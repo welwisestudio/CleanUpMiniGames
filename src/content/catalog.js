@@ -15,6 +15,7 @@ import { keyboard } from './levels/keyboard.js';
 import { wateringCan } from './levels/wateringCan.js';
 import { porcelainVase } from './levels/porcelainVase.js';
 import { TOOLS } from './tools.js';
+import { BATCH_B_LEVELS } from './levels/batchB/levels.js';
 
 // Levels are addressed by their permanent string ID. The display order is separate data.
 export const LEVELS = {
@@ -34,6 +35,8 @@ export const LEVELS = {
   [keyboard.id]: keyboard,
   [wateringCan.id]: wateringCan,
   [porcelainVase.id]: porcelainVase,
+  // Step 8 Batch B (levels 16–50)
+  ...Object.fromEntries(BATCH_B_LEVELS.map((l) => [l.id, l])),
 };
 
 // Menu / campaign order (approved first five levels, decision 2026-10-04). Separate from level data.
@@ -41,10 +44,12 @@ export const LEVELS = {
 export const DISPLAY_ORDER = [
   'soccer-ball', 'rug', 'golden-trophy', 'chair', 'sneaker',
   'rain-boots', 'frying-pan', 'wooden-crate', 'toolbox', 'bathroom-sink', 'desk-fan', 'garden-bench', 'keyboard', 'watering-can', 'porcelain-vase',
+  // Step 8 Batch B: levels 16–50 in campaign order
+  ...BATCH_B_LEVELS.map((l) => l.id),
 ];
 
-export const KNOWN_MECHANICS = ['chunkBreak', 'brush', 'dragToTarget', 'spots', 'points'];
-export const POINT_MODES = ['hold', 'tap', 'pull'];
+export const KNOWN_MECHANICS = ['chunkBreak', 'brush', 'dragToTarget', 'spots', 'points', 'fill'];
+export const POINT_MODES = ['hold', 'tap', 'pull', 'screw', 'place', 'repeatedTap'];
 export const BRUSH_MODES = ['reveal', 'apply', 'scrub'];
 
 export function getLevel(id) {
@@ -76,7 +81,7 @@ export function validateCatalog() {
         if (!fam) errors.push(`${level.id}/${st.id}: unknown tool family ${st.family}`);
         else {
           if (fam.base !== st.tool) errors.push(`${level.id}/${st.id}: tool ${st.tool} is not the base of family ${st.family}`);
-          if (fam.options.length !== 3) errors.push(`${st.family}: a family needs exactly 3 options`);
+          if (fam.options.length !== 3 && fam.options.length !== 1) errors.push(`${st.family}: a family needs 3 options (or 1: a skin-only card)`);
           for (const o of fam.options) if (!TOOLS[o.tool]) errors.push(`${st.family}: unknown tool ${o.tool}`);
           if (fam.options.filter((o) => o.unlock.type === 'default').length !== 1 || fam.options[0].tool !== fam.base) errors.push(`${st.family}: the base tool must be the single default option`);
         }
@@ -103,6 +108,11 @@ export function validateCatalog() {
       const reg = st.region ?? p.region;
       if (reg && !regionIds.has(reg)) errors.push(`${level.id}/${st.id}: unknown region ${reg}`);
       if (st.focus && !level.object.focus?.[st.focus]) errors.push(`${level.id}/${st.id}: unknown focus ${st.focus}`);
+      if (st.mechanic === 'fill') {
+        if (!['drain', 'fill'].includes(p.mode)) errors.push(`${level.id}/${st.id}: fill mode must be drain or fill`);
+        if (!layerIds.has(p.layer)) errors.push(`${level.id}/${st.id}: unknown layer ${p.layer}`);
+        if (!p.region || !regionIds.has(p.region)) errors.push(`${level.id}/${st.id}: fill needs a region`);
+      }
       if (st.mechanic === 'dragToTarget') {
         const slotted = p.items?.length && p.items.every((it) => it.slot);
         if (!(p.items?.length && (p.target || slotted))) errors.push(`${level.id}/${st.id}: items and a target (or a slot per item) required`);

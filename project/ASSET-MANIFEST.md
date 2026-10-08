@@ -181,3 +181,14 @@ Model: **Nano Banana Pro** (`nano_banana_pro`, 2k) by designer instruction (the 
 **Totals: 108 Nano Banana Pro generations (5 rejected + 1 superseded), 93 background removals.**
 
 Derived in `prepare_batch_a.py` (registration / masks / compositing only): zone masks from colour or state differences (pan cooking surface + rust, crate slats / posts, sink faucet / basin, bench slats / frame, keyboard keycap cells + spill), dust films for the crate / toolbox / vase / fan guard from the approved `materials/dust-wood` texture, keycap cut-outs from the clean and dirty keyboard, vase repair patches from the clean vase, per-material foams, thumbnails and result pictures (object over its background family).
+
+## Step 8 Batch B — levels 16–50, background families, new tools, cosmetic skins (2026-10-08)
+
+Full per-asset records (prompt, model, job ID, reference job, removal job, file hash): `project/asset-manifest.json → batchB` (written by `scripts/write_batch_b_manifest.py` from the ledger `reference/batch-b/jobs.txt` and the prompt sources `reference/batch-b/{subjects,edits,tools,skins}.py`).
+
+- **Model:** Nano Banana 2 (`nano_banana_2`, reported by the service as `nano_banana_flash`), paid credits, **standard resolution (1k) only — no 2K anywhere**, no Nano Banana Pro (designer rule 2026-10-08).
+- **Generated images: 130** — 35 clean object masters, 58 state edits of those masters, 9 new tool masters, 24 skin recolours of tool masters, 4 background families (PLAZA, GARAGE, VIP, SHORE; 9:16, reference = the approved pitch background). 4 skin jobs failed at the service without an image and were resubmitted once (recorded as `skinfailed`).
+- **Background Remover: 44** — one per object master (35) and one per new tool (9). State edits and skins reuse the master / base-tool alpha (pixel-aligned edits, checked on contact sheets).
+- **Exception:** stone patio — the remover kept only the bistro set; the slab outline is a geometric polygon crop of the master, united with the remover alpha (DECISIONS 2026-10-08).
+- **Derived (no generation):** dust film, wet droplets, dull / matte, grime layers composited from approved art (`scripts/batch_b_core.py`); regions from colour / state differences; 320 px menu thumbnails; result pictures on the family backgrounds; reused Batch A sprites (leaves, junk, screws, dents, paint can / tray) by URL.
+- **Credits (estimate):** 130 × 1.5 = 195 (NB2) + 44 × 1 = 44 (removals).
