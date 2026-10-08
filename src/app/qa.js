@@ -37,6 +37,7 @@ function qaTargetsLocal(scene) {
   const st = scene.stack;
   if (!m || !st) return null;
   if (m.itemsLocal) return { kind: 'drag', items: m.itemsLocal(), target: m.targetLocal() };
+  if (m.pointsLocal) return { kind: 'points', mode: m.mode, points: m.pointsLocal() };
   if (m.spotsLocal) return { kind: 'spots', spots: m.spotsLocal(), needsLoad: Boolean(m.needsLoad?.()), tub: m.params.source ? m.tubOpening() : null };
   const region = scene.stage?.region ?? scene.stage?.params?.region;
   const b = st.regionBounds(region);
@@ -49,7 +50,9 @@ function qaTargetsLocal(scene) {
     const id = m.map.labelAt(x, y);
     return id >= 0 && !m.removed[id];
   }) : undefined;
-  return { kind: 'area', bounds: b, points: pts, step, crust };
+  // paint source (Step 8): where the tool is dipped while it is empty
+  const load = m.source ? { needsLoad: m.needsLoad(), source: m.sourceOpening() } : {};
+  return { kind: 'area', bounds: b, points: pts, step, crust, ...load };
 }
 
 function snapshot() {
@@ -100,6 +103,12 @@ function snapshot() {
       stageCount: scene.level.stages.length,
       progress: scene.mechanic?.progress ?? 0,
       completedFlag: scene.mechanic?.completed ?? false,
+      // Step 7 tool cards (CSS px) and the active family
+      toolFamily: scene.stage?.family ?? null,
+      toolCards: scene.selector ? scene.selector.cardRects().map((r) => ({ ...r, x: r.x / layout.dpr, y: r.y / layout.dpr, w: r.w / layout.dpr, h: r.h / layout.dpr })) : null,
+      ownedTools: s.save.loaded ? [...s.save.get('tools.owned')] : null,
+      equippedTools: s.save.loaded ? { ...s.save.get('tools.equipped') } : null,
+      diamonds: s.save.loaded ? s.save.get('diamonds') : null,
       tool: scene.tool && {
         id: scene.tool.id,
         kind: scene.tool.kind,

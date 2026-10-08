@@ -42,6 +42,12 @@ P3 = {
     'shared/icon-vip': ('c86a58bc-b4d7-41c9-88c0-019caf219c10', '60132c39-3c4e-4576-8043-7af201ede788', '1:1', "Create a production 2D game icon for a casual cleaning mobile game: a VIP bonus mini-games reward symbol. A shiny golden royal crown with rounded points and three sparkling gemstones (magenta, turquoise, purple), sitting on top of a small glossy purple game ticket with a gold star in its middle. Rich premium look, bold readable shapes for small sizes. Centered, the entire icon fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no letters, no numbers, no extra objects."),
     'shared/bg-menu-portrait': ('1dc437a5-ce62-4627-9673-525bf47b76f8', None, '9:16', "Vertical background for the level-select menu of a casual cleaning mobile game: a soft warm pastel cream-peach wall with a subtle large-scale wallpaper pattern of faint lighter diamond lattice lines and tiny soft sparkle dots, gentle warm light falling from the top center fading slightly darker toward the bottom corners, very calm and low contrast so cards and text placed over it stay readable. No objects, no furniture, no shelves, no windows, no people, no text, no logos. Smooth soft painterly casual mobile game background render, even and uncluttered over the whole frame."),
 }
+# Step 7 (2026-10-07): alternative tools (content/toolFamilies.js)
+P4 = {
+    'shared/tool-scrub-brush-oval': ('8e1f4464-46f2-45d4-b824-43712e8b8832', '039a9e67-2f58-46db-b1c7-15000a3a0b7e', '1:1', "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one oval hand scrub brush seen exactly from the side: a chunky glossy orange plastic oval back with a soft rounded top edge and a small grip groove, and a wide skirt of dense stiff white bristles pointing straight down. Centered. The entire brush fits in the frame with 14% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects."),
+    'shared/tool-foam-gun': ('c180f9a1-5b82-4ace-b39e-c4ec9fc5093e', '2f9d7b89-d17d-4527-bae8-e32a7e5b399c', '9:16', "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one handheld foam gun standing perfectly vertical: a short wide yellow foam nozzle pointing straight up at the very top, a glossy sunny-yellow plastic gun body with a black trigger, and a round transparent bottle below it filled with pink soapy foam liquid, a small black connector at the bottom. Straight front view, centered, all parts on one vertical line. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects."),
+    'shared/tool-foam-cannon': ('b9f4a9f2-6b64-4756-854a-a28022869ee7', 'e272fc22-ebd4-4e91-a2f7-4a4418560e96', '9:16', "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one premium foam cannon standing perfectly vertical: a polished chrome flared foam nozzle pointing straight up at the very top, a glossy purple and gold brass cannon body with a small adjustment knob, and a large clear bottle below it filled with turquoise soapy liquid, a small gold connector at the bottom. Straight front view, centered, all parts on one vertical line. Rich special-edition look. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects."),
+}
 REJ = {'shared/tool-foam-can-v2': 'tool-foam-can-v2', 'shared/tool-drill-brush-v2': 'tool-drill-brush-v2', 'shared/ui-logo-emblem': 'ui-logo-emblem', 'shared/bg-menu-portrait': 'bg-menu-portrait'}
 
 
@@ -68,6 +74,9 @@ def entry(gid, job, bg, ar, prompt, date):
 out = [entry(gid, *v, '2026-10-04') for gid, v in P.items()]
 out2 = [entry(gid, *v, '2026-10-05') for gid, v in P2.items()]
 out3 = [entry(gid, *v, '2026-10-06') for gid, v in P3.items()]
+out4 = [entry(gid, *v, '2026-10-07') for gid, v in P4.items()]
+for e in out4:
+    e['workingPoint'] = {'shared/tool-scrub-brush-oval': 'bristle tips (prepare_levels rule bottom)', 'shared/tool-foam-gun': 'nozzle tip (rule top)', 'shared/tool-foam-cannon': 'nozzle tip (rule top)'}[e['id']]
 for e in out3:
     if e['id'] == 'shared/ui-btn-orange':
         e['references'] = [{'role': 'image_references (style only)', 'jobId': '80b72ba7-3072-472d-8b30-9bcc99a0a197', 'asset': 'soccer-ball/ui-buttons-sheet'}]
@@ -123,6 +132,14 @@ man['step6'] = {
         'sneaker scuffs mask': 'pixels darker in sneaker-scuffed than in sneaker-clean (> 12), blobs >= 40 px, dilated 14 px, filled',
         'putty tub': '7th part of reference/cutouts/chair/dents-putty-sheet.png',
     },
+}
+man['step7'] = {
+    'updated': '2026-10-07',
+    'reason': 'Step 7 alternative tools: new variants for the scrub and foam families (the drill brush, sponge and eraser reuse approved art)',
+    'credits': {'generations': 3, 'backgroundRemovals': 3},
+    'export': 'python scripts/prepare_levels.py tools',
+    'reused': 'drill-brush (scrub, diamonds), stain-sponge art as wipe-sponge, eraser art as wipe-eraser (wipe family)',
+    'assets': out4,
 }
 (ROOT / 'project/asset-manifest.json').write_text(json.dumps(man, indent=2), encoding='utf-8')
 print(len(out), 'Step 6 assets recorded')

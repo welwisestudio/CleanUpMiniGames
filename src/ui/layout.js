@@ -49,12 +49,13 @@ export function computeLayout(W, H, dpr = 1) {
 // Screen-scale jets: `jetReach` (object units: nozzle offset) + `jetPx` (device px: the jet) is a
 // second, separate finger-room requirement; the tighter of the two limits the scale. The jet is
 // capped at 30 % of the play height (short landscape screens).
-export function fitObject(layout, target, { reach = 540, jetReach = 0, jetPx = 0, canvasSize = 1024, share = null } = {}) {
+// `bottomReserve` (device px) keeps a band above the bottom free (Step 7 tool cards).
+export function fitObject(layout, target, { reach = 540, jetReach = 0, jetPx = 0, canvasSize = 1024, share = null, bottomReserve = 0 } = {}) {
   const b = typeof target === 'number' ? [canvasSize / 2 - target, canvasSize / 2 - target, canvasSize / 2 + target, canvasSize / 2 + target] : target;
   const objW = b[2] - b[0];
   const objH = b[3] - b[1];
   const top = layout.hudBottom;
-  const bottom = layout.H - layout.margin - 24 * layout.u; // keep clear of the status badges
+  const bottom = layout.H - layout.margin - 24 * layout.u - bottomReserve; // clear of the status badges (and tool cards)
   const playH = Math.max(1, bottom - top);
   const playW = layout.W - 2 * layout.margin;
   const hShare = share ?? (layout.portrait ? 0.58 : 0.61);

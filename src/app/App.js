@@ -3,6 +3,8 @@ import { assertPlatform } from '../platform/contract.js';
 import { PauseState } from '../core/PauseState.js';
 import { SaveService } from '../services/SaveService.js';
 import { RewardService } from '../services/RewardService.js';
+import { ToolService } from '../services/ToolService.js';
+import { TOOL_FAMILIES, TOOL_AD_PLACEMENT } from '../content/toolFamilies.js';
 import { AudioService } from '../services/AudioService.js';
 import { economy } from '../content/economy.js';
 import { validateCatalog } from '../content/catalog.js';
@@ -21,6 +23,7 @@ export function createApp({ platform, parent }) {
   const pause = new PauseState();
   const save = new SaveService(platform);
   const rewards = new RewardService({ save, economy, platform, pause });
+  const toolShop = new ToolService({ save, rewards, families: TOOL_FAMILIES, placement: TOOL_AD_PLACEMENT });
   const audio = new AudioService({ save, pause });
   let runCounter = 0;
 
@@ -29,6 +32,7 @@ export function createApp({ platform, parent }) {
     pause,
     save,
     rewards,
+    toolShop,
     audio,
     economy,
     build: { number: __BUILD_NUMBER__, time: __BUILD_TIME__ },

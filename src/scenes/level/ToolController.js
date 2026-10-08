@@ -62,13 +62,15 @@ export class ToolController {
 
   // Material carried by the tool (putty on the knife after dipping): a small blob drawn at the
   // working point, following the tool. null removes it.
-  setLoad(textureKey) {
+  // Step 8: `tint` colours a generic blob (paint on a roller / brush).
+  setLoad(textureKey, tint) {
     this.loadSprite?.destroy();
     this.loadSprite = null;
     if (!textureKey) return;
     this.loadSprite = this.scene.add.image(0, 0, textureKey).setDepth(42);
+    if (tint != null) this.loadSprite.setTint(tint);
     this.loadSprite.setScale(0);
-    const k = (70 * this.objScale) / Math.max(this.loadSprite.width, this.loadSprite.height);
+    const k = ((tint != null ? 90 : 70) * this.objScale) / Math.max(this.loadSprite.width, this.loadSprite.height);
     this.scene.tweens.add({ targets: this.loadSprite, scale: k, duration: 220, ease: 'Back.easeOut' });
   }
 
@@ -167,6 +169,16 @@ export class ToolController {
     }
   }
 
+  // Step 8: hammer / mallet blow — a quick swing around the working point (visual only).
+  strike() {
+    const s = this.sprite;
+    if (!s) return;
+    const base = this.tool.holdAngle ?? 0;
+    this.scene.tweens.killTweensOf(s);
+    s.setAngle(base - 28);
+    this.scene.tweens.add({ targets: s, angle: base, duration: 90, ease: 'Quad.easeIn' });
+  }
+
   // Per-frame jet visuals (code-drawn stream between nozzle and impact).
   update() {
     if (this.loadSprite && this.sprite) this.loadSprite.setPosition(this.sprite.x, this.sprite.y - 8 * this.objScale);
@@ -175,6 +187,10 @@ export class ToolController {
     const nozzle = this.workPointFor(this.pointerWorld);
     const impact = this.impactFor(nozzle);
     const foam = this.tool.jetStyle === 'foam';
+    if (this.tool.jetStyle === 'paint' || this.tool.jetStyle === 'air') {
+      this._fineJet(nozzle, impact);
+      return;
+    }
     const k = this.objScale;
     const spread = (this.sprayRadius ?? 100) / 100; // impact spray follows the stage's spray radius
     const g = this._geomScale() / k; // side-held tools draw a proportionally thinner stream
@@ -206,6 +222,35 @@ export class ToolController {
     for (let i = 0; i < 7; i++) {
       this.jetGfx.fillCircle(impact.x + Phaser.Math.Between(-45, 45) * k * spread, impact.y + Phaser.Math.Between(-45, 45) * k * spread, (foam ? 16 : 8) * k * spread);
     }
+  }
+
+  // Step 8 jet styles: 'paint' = a fan of fine coloured mist (spray gun, `paintTint`), 'air' = a
+  // thin translucent air stream (blower). Code-drawn like the water / foam jets.
+  _fineJet(nozzle, impact) {
+    const g = this.jetGfx;
+    const k = this.objScale;
+    const spread = (this.sprayRadius ?? 100) / 100;
+    const dx = impact.x - nozzle.x;
+    const dy = impact.y - nozzle.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len;
+    const ny = dx / len;
+    const paint = this.tool.jetStyle === 'paint';
+    const col = paint ? this.paintTint ?? 0xffffff : 0xe8f6ff;
+    const phase = (this.scene.time.now / 300) % 1;
+    for (let i = 0; i < 16; i++) {
+      const t = (phase + i / 16) % 1;
+      const w = (paint ? 6 + 46 * t : 3 + 20 * t) * k * spread;
+      const side = Math.sin(i * 2.399) * w;
+      g.fillStyle(col, (paint ? 0.55 : 0.35) * (1 - t * 0.5));
+      g.fillCircle(nozzle.x + dx * t + nx * side, nozzle.y + dy * t + ny * side, (paint ? 3 + 7 * t : 2 + 3 * t) * k);
+    }
+    if (!paint) {
+      g.lineStyle(4 * k, 0xffffff, 0.25);
+      g.lineBetween(nozzle.x, nozzle.y, impact.x, impact.y);
+    }
+    g.fillStyle(col, paint ? 0.35 : 0.2);
+    for (let i = 0; i < 6; i++) g.fillCircle(impact.x + Phaser.Math.Between(-40, 40) * k * spread, impact.y + Phaser.Math.Between(-40, 40) * k * spread, (paint ? 14 : 9) * k * spread);
   }
 
   destroy() {

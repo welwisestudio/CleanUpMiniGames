@@ -46,6 +46,7 @@ export const soccerBall = {
     },
     {
       id: 'foam-spray',
+      family: 'foam',
       tool: 'foam-sprayer',
       mechanic: 'brush',
       params: { mode: 'apply', layer: 'foam', stamp: 'stamp-foam', radius: 140, threshold: 0.96 },
@@ -53,6 +54,7 @@ export const soccerBall = {
     },
     {
       id: 'scrub',
+      family: 'scrub',
       tool: 'scrub-brush',
       mechanic: 'brush',
       params: {
@@ -74,6 +76,7 @@ export const soccerBall = {
     },
     {
       id: 'dry',
+      family: 'wipe',
       tool: 'cloth',
       mechanic: 'brush',
       params: { mode: 'reveal', layers: ['wet'], radius: 125, threshold: 0.96 },

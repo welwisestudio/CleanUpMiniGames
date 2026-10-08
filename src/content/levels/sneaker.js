@@ -32,10 +32,10 @@ export const sneaker = {
   stages: [
     { id: 'chisel', tool: 'chisel', mechanic: 'chunkBreak', params: { layer: 'mud', chunkCount: 22, breakDistance: 170, tipRadius: 38, seed: 5501 }, targetSeconds: [12, 16] },
     { id: 'rinse-mud', tool: 'washer-lance', mechanic: 'brush', params: { mode: 'reveal', layers: ['muddy'], radius: 85, threshold: 0.96 }, targetSeconds: [6, 9] },
-    { id: 'foam-spray', tool: 'foam-sprayer', mechanic: 'brush', params: { mode: 'apply', layer: 'foam', stamp: 'stamp-foam', radius: 105, threshold: 0.96 }, targetSeconds: [6, 9] },
+    { id: 'foam-spray', family: 'foam', tool: 'foam-sprayer', mechanic: 'brush', params: { mode: 'apply', layer: 'foam', stamp: 'stamp-foam', radius: 105, threshold: 0.96 }, targetSeconds: [6, 9] },
     { id: 'scrub', tool: 'drill-brush', mechanic: 'brush', toolScale: 1.3, params: { mode: 'scrub', from: 'foam', under: 'scrubbed', clear: ['stained'], radius: 70, threshold: 0.96 }, targetSeconds: [6, 9] },
     { id: 'rinse', tool: 'washer-lance', mechanic: 'brush', params: { mode: 'reveal', layers: ['foam', 'scrubbed', 'stained'], radius: 85, threshold: 0.96 }, targetSeconds: [6, 9] },
-    { id: 'dry', tool: 'cloth', mechanic: 'brush', params: { mode: 'reveal', layers: ['wet'], radius: 120, threshold: 0.96 }, targetSeconds: [4, 6] },
+    { id: 'dry', family: 'wipe', tool: 'cloth', mechanic: 'brush', params: { mode: 'reveal', layers: ['wet'], radius: 120, threshold: 0.96 }, targetSeconds: [4, 6] },
     { id: 'erase', tool: 'eraser', mechanic: 'brush', region: 'scuffs', params: { mode: 'reveal', layers: ['scuffed'], radius: 60, threshold: 0.96 }, targetSeconds: [4, 6] },
   ],
 };

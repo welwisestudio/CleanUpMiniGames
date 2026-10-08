@@ -49,9 +49,8 @@ for (const [i, id] of LEVELS.entries()) {
     await page.screenshot({ path: `project/screenshots/step5/${tag}-${i + 1}-${id}-result.png` });
     // Replay restarts the same level at stage 1
     const run = result.level.runId;
-    const next = LEVELS[i + 1];
-    if (next) expect(result.buttons['result-next']).toBeDefined();
-    else expect(result.buttons['result-next']).toBeUndefined();
+    const next = LEVELS[i + 1] ?? 'rain-boots'; // Step 8: level 5 → level 6
+    expect(result.buttons['result-next']).toBeDefined();
     await pressButton(page, drv, 'result-replay');
     const again = await waitFor(page, (s) => s.level?.runId !== run && s.level?.state === 'playing');
     expect(again.level.id).toBe(id);

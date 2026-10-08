@@ -5,12 +5,16 @@ import { BrushMechanic } from '../../src/mechanics/BrushMechanic.js';
 import { ChunkBreakMechanic } from '../../src/mechanics/ChunkBreakMechanic.js';
 import { SaveService, parseSave, SaveCorruptError, createDefaultState } from '../../src/services/SaveService.js';
 import { RewardService } from '../../src/services/RewardService.js';
+import { ToolService } from '../../src/services/ToolService.js';
+import { TOOL_FAMILIES } from '../../src/content/toolFamilies.js';
 import { AudioService } from '../../src/services/AudioService.js';
 import { PauseState } from '../../src/core/PauseState.js';
 import { createDevPlatform } from '../../src/platform/dev/DevPlatform.js';
 import { assertPlatform } from '../../src/platform/contract.js';
 import { DragToTargetMechanic } from '../../src/mechanics/DragToTargetMechanic.js';
 import { SpotsMechanic } from '../../src/mechanics/SpotsMechanic.js';
+import { PointTargetsMechanic } from '../../src/mechanics/PointTargetsMechanic.js';
+import { TOOLS } from '../../src/content/tools.js';
 import { validateCatalog, getLevel, DISPLAY_ORDER, nextLevelId } from '../../src/content/catalog.js';
 import { economy } from '../../src/content/economy.js';
 import { computeLayout, fitObject, UI } from '../../src/ui/layout.js';
@@ -350,6 +354,109 @@ describe('Rewards: boost x2…x5, timed chest, level-progress chest (Step 6 rewa
   });
 });
 
+describe('Alternative tools (Step 7)', () => {
+  async function setup({ ad = 'earned', coins = 0, diamonds = 0 } = {}) {
+    const platform = createDevPlatform({ rewardedOutcome: ad, rewardedDelayMs: 1 });
+    const save = new SaveService(platform);
+    await save.load();
+    await save.update((s) => Object.assign(s, { coins, diamonds }));
+    const rewards = new RewardService({ save, economy, platform, pause: new PauseState() });
+    const shop = new ToolService({ save, rewards, families: TOOL_FAMILIES });
+    return { platform, save, rewards, shop };
+  }
+
+  it('every family has 3 options, one free base; all unlock types are present', () => {
+    const types = new Set();
+    for (const f of Object.values(TOOL_FAMILIES)) {
+      expect(f.options).toHaveLength(3);
+      expect(f.options[0]).toMatchObject({ tool: f.base, unlock: { type: 'default' } });
+      f.options.forEach((o) => types.add(o.unlock.type));
+      for (const o of f.options) expect((o.radius ?? 1) >= 1 && (o.radius ?? 1) <= 1.1).toBe(true); // never weaker, at most +10 %
+    }
+    expect([...types].sort()).toEqual(['ad', 'coins', 'default', 'diamonds']);
+    expect(validateCatalog()).toEqual([]);
+  });
+
+  it('base tool is owned and equipped by default; a locked tool cannot be equipped', async () => {
+    const { shop } = await setup();
+    expect(shop.equipped('scrub')).toBe('scrub-brush');
+    expect(shop.options('scrub').map((o) => [o.tool, o.owned, o.equipped])).toEqual([['scrub-brush', true, true], ['scrub-brush-oval', false, false], ['drill-brush', false, false]]);
+    expect(shop.equip('scrub', 'drill-brush').status).toBe('not-owned');
+    expect(shop.equipped('scrub')).toBe('scrub-brush');
+  });
+
+  it('coins purchase: charged once (double tap), owned + equipped; insufficient coins change nothing', async () => {
+    const poor = await setup({ coins: 14 });
+    expect(poor.shop.purchase('scrub', 'scrub-brush-oval')).toMatchObject({ status: 'insufficient', currency: 'coins' });
+    expect(poor.save.get('coins')).toBe(14);
+    expect(poor.shop.isOwned('scrub', 'scrub-brush-oval')).toBe(false);
+    const { save, shop } = await setup({ coins: 40 });
+    const a = shop.purchase('scrub', 'scrub-brush-oval');
+    const b = shop.purchase('scrub', 'scrub-brush-oval');
+    expect(a.status).toBe('purchased');
+    expect(b.status).toBe('equipped');
+    expect(save.get('coins')).toBe(25);
+    expect(shop.equipped('scrub')).toBe('scrub-brush-oval');
+    expect(save.get('tools.purchases')).toBe(1);
+    // switch back to another owned tool and again
+    expect(shop.equip('scrub', 'scrub-brush').status).toBe('equipped');
+    expect(shop.equipped('scrub')).toBe('scrub-brush');
+    expect(shop.equip('scrub', 'scrub-brush-oval').status).toBe('equipped');
+    expect(save.get('coins')).toBe(25);
+  });
+
+  it('diamonds purchase; insufficient diamonds change nothing', async () => {
+    const poor = await setup({ diamonds: 4 });
+    expect(poor.shop.purchase('scrub', 'drill-brush')).toMatchObject({ status: 'insufficient', currency: 'diamonds' });
+    expect(poor.save.get('diamonds')).toBe(4);
+    const { save, shop } = await setup({ diamonds: 5, coins: 3 });
+    expect(shop.purchase('scrub', 'drill-brush').status).toBe('purchased');
+    expect(save.get('diamonds')).toBe(0);
+    expect(save.get('coins')).toBe(3);
+    expect(shop.equipped('scrub')).toBe('drill-brush');
+  });
+
+  it('rewarded-ad unlock: only a watched ad unlocks (permanently, equipped); cancel / fail / unavailable change nothing; parallel results unlock once', async () => {
+    for (const ad of ['not-earned', 'error', 'unavailable']) {
+      const { save, shop } = await setup({ ad, coins: 50 });
+      const r = await shop.unlockWithAd('foam', 'foam-cannon');
+      expect(r.status).toBe(ad);
+      expect(shop.isOwned('foam', 'foam-cannon')).toBe(false);
+      expect(shop.equipped('foam')).toBe('foam-sprayer');
+      expect(save.get('coins')).toBe(50);
+    }
+    const { platform, save, shop } = await setup();
+    const [a, b] = await Promise.all([shop.unlockWithAd('foam', 'foam-cannon'), shop.unlockWithAd('foam', 'foam-cannon')]);
+    expect([a.status, b.status].sort()).toEqual(['busy', 'unlocked']);
+    expect(save.get('tools.owned')).toEqual(['foam-cannon']);
+    expect(shop.equipped('foam')).toBe('foam-cannon');
+    // owned: no second ad needed
+    expect((await shop.unlockWithAd('foam', 'foam-cannon')).status).toBe('equipped');
+    expect(platform.dev.rewardedLog).toHaveLength(1);
+    // coins / diamonds cannot buy an ad tool, an ad cannot unlock a priced tool
+    expect(shop.purchase('foam', 'foam-cannon').status).toBe('equipped');
+    expect((await shop.unlockWithAd('foam', 'foam-gun')).status).toBe('invalid');
+  });
+
+  it('ownership and equipped tools persist across a reload; bad saved data is sanitised', async () => {
+    const { platform, shop } = await setup({ coins: 20 });
+    await shop.purchase('wipe', 'wipe-sponge').savePromise; // written before the "reload"
+    const save2 = new SaveService(platform);
+    await save2.load();
+    const shop2 = new ToolService({ save: save2, rewards: null, families: TOOL_FAMILIES });
+    expect(shop2.isOwned('wipe', 'wipe-sponge')).toBe(true);
+    expect(shop2.equipped('wipe')).toBe('wipe-sponge');
+    expect(save2.get('coins')).toBe(10);
+    const st = parseSave(JSON.stringify({ version: 2, tools: { owned: ['foam-gun', 'foam-gun', 7], equipped: { scrub: 'drill-brush', foam: 3 } } }));
+    expect(st.tools).toEqual({ owned: ['foam-gun'], equipped: { scrub: 'drill-brush' }, purchases: 0 });
+    // equipped but not owned in the save → the base tool is used
+    const s3 = new SaveService(createDevPlatform());
+    await s3.load();
+    await s3.update((s) => (s.tools.equipped.scrub = 'drill-brush'));
+    expect(new ToolService({ save: s3, rewards: null, families: TOOL_FAMILIES }).equipped('scrub')).toBe('scrub-brush');
+  });
+});
+
 describe('PauseState and AudioService gate', () => {
   it('host resume does not lift the user pause', () => {
     const ps = new PauseState();
@@ -400,12 +507,13 @@ describe('Dev platform contract', () => {
 describe('Content', () => {
   it('catalog is valid and the soccer ball has the 6 reference stages in order', () => {
     expect(validateCatalog()).toEqual([]);
-    expect(DISPLAY_ORDER).toEqual(['soccer-ball', 'rug', 'golden-trophy', 'chair', 'sneaker']);
+    expect(DISPLAY_ORDER.slice(0, 5)).toEqual(['soccer-ball', 'rug', 'golden-trophy', 'chair', 'sneaker']);
     const lvl = getLevel('soccer-ball');
     expect(lvl.stages.map((s) => s.tool)).toEqual(['chisel', 'dry-brush', 'foam-sprayer', 'scrub-brush', 'washer-lance', 'cloth']);
     expect(nextLevelId('soccer-ball')).toBe('rug');
     expect(nextLevelId('chair')).toBe('sneaker');
-    expect(nextLevelId('sneaker')).toBe(null);
+    expect(nextLevelId('sneaker')).toBe('rain-boots'); // Step 8 Batch A: 1 → … → 15
+    expect(nextLevelId('porcelain-vase')).toBe(null); // after 15: back to the object list
   });
 });
 
@@ -587,5 +695,174 @@ describe('Step 6: soft auto-complete and putty dip', () => {
     for (let i = 0; i < 10; i++) m.stroke({ x: 280, y: 300 }, { x: 320, y: 300 });
     expect(m.progress).toBe(0.5);
     expect(m.needsLoad()).toBe(true); // next dent needs a new dip
+  });
+});
+
+// ---- Step 8 Batch A (levels 6–15) -------------------------------------------------------------
+function partScene() {
+  const sc = fakeScene();
+  sc.time = { now: 0 };
+  sc.tweens.killTweensOf = () => {};
+  const img = sc.add.image;
+  sc.add.image = (x, y) => {
+    const o = img(x, y);
+    o.setAlpha = (a) => ((o.alpha = a), o);
+    o.setTexture = () => o;
+    o.setTintFill = () => o;
+    return o;
+  };
+  return sc;
+}
+function partStack() {
+  const st = overlayStack();
+  st.toWorld = (l) => ({ x: l.x, y: l.y });
+  st.eraseTexture = (...a) => st.ops.push(['eraseTex', ...a]);
+  st.stampTextureAt = (...a) => st.ops.push(['stampTex', ...a]);
+  return st;
+}
+
+describe('Step 8: point targets (hold / tap / pull)', () => {
+  const targets = [{ x: 300, y: 300, r: 40, texture: 'screw', size: 40, layer: 'screws' }, { x: 700, y: 300, r: 40, texture: 'screw', size: 40, layer: 'screws' }];
+
+  it('hold: only time with the working point on a target counts; taps and rubbing add nothing', () => {
+    const m = new PointTargetsMechanic({ stack: partStack(), params: { mode: 'hold', holdMs: 600, targets }, scene: partScene() });
+    m.tap({ x: 300, y: 300 });
+    m.stroke({ x: 280, y: 300 }, { x: 320, y: 300 });
+    for (let i = 0; i < 40; i++) m.hold({ x: 500, y: 500 }, 0.05); // empty surface
+    expect(m.progress).toBe(0);
+    for (let i = 0; i < 11; i++) m.hold({ x: 305, y: 298 }, 0.05);
+    expect(m.doneCount).toBe(0); // 550 ms < 600 ms
+    m.hold({ x: 305, y: 298 }, 0.06);
+    expect(m.doneCount).toBe(1);
+    for (let i = 0; i < 13; i++) m.hold({ x: 700, y: 300 }, 0.05);
+    expect(m.completed).toBe(true);
+  });
+
+  it('remove cuts the part out of its layer; install bakes it in once seated', () => {
+    const st = partStack();
+    const m = new PointTargetsMechanic({ stack: st, params: { mode: 'hold', holdMs: 100, targets: [targets[0]] }, scene: partScene() });
+    m.hold({ x: 300, y: 300 }, 0.2);
+    expect(st.ops.some((o) => o[0] === 'eraseTex' && o[1] === 'screws')).toBe(true);
+    const st2 = partStack();
+    const m2 = new PointTargetsMechanic({ stack: st2, params: { mode: 'hold', action: 'install', holdMs: 100, targets: [targets[0]] }, scene: partScene() });
+    m2.hold({ x: 300, y: 300 }, 0.2);
+    expect(m2.completed).toBe(true);
+    expect(st2.ops.some((o) => o[0] === 'stampTex' && o[1] === 'screws')).toBe(true);
+  });
+
+  it('tap: separate hits on the target; a double hit within 120 ms counts once', () => {
+    const sc = partScene();
+    const m = new PointTargetsMechanic({ stack: partStack(), params: { mode: 'tap', taps: 3, targets: [targets[0]] }, scene: sc });
+    m.tap({ x: 300, y: 300 });
+    sc.time.now = 50;
+    m.tap({ x: 300, y: 300 }); // too soon
+    sc.time.now = 300;
+    m.tap({ x: 600, y: 600 }); // off target
+    expect(m.targets[0].hits).toBe(1);
+    sc.time.now = 600;
+    m.tap({ x: 300, y: 300 });
+    sc.time.now = 900;
+    m.tap({ x: 300, y: 300 });
+    expect(m.completed).toBe(true);
+  });
+
+  it('a card option may shorten the hold by at most 10 %', () => {
+    const m = new PointTargetsMechanic({ stack: partStack(), params: { mode: 'hold', holdMs: 1000, targets }, scene: partScene() });
+    m.setTool({}, 0, { work: 0.9 });
+    expect(m.holdMs).toBe(900);
+  });
+});
+
+describe('Step 8: parts into slots (DragToTarget extension)', () => {
+  it('a part seats only near its slot and is baked into the layer; a wrong drop eases back', () => {
+    const st = partStack();
+    const params = { items: [{ texture: 'guard', x: 900, y: 900, size: 100, slot: { x: 400, y: 400, size: 300 } }], onPlace: { stamp: 'guard' } };
+    const m = new DragToTargetMechanic({ stack: st, params, scene: partScene() });
+    expect(m.grab({ x: 900, y: 900 })).toBe(true);
+    m.drag({ x: 700, y: 700 });
+    m.release();
+    expect(m.progress).toBe(0);
+    m.grab({ x: 900, y: 900 });
+    m.drag({ x: 420, y: 390 });
+    m.release();
+    expect(m.completed).toBe(true);
+    expect(st.ops.some((o) => o[0] === 'stampTex' && o[1] === 'guard')).toBe(true);
+  });
+
+  it('fromLayer lifts the part out of the object layer at the start', () => {
+    const st = partStack();
+    new DragToTargetMechanic({ stack: st, params: { target: { texture: 'tub', x: 900, y: 900, size: 200 }, items: [{ texture: 'g', x: 400, y: 400, size: 300, fromLayer: 'guardOld' }] }, scene: partScene() });
+    expect(st.ops[0][0]).toBe('eraseTex');
+    expect(st.ops[0][1]).toBe('guardOld');
+  });
+});
+
+describe('Step 8: paint source (BrushMechanic extension)', () => {
+  it('an empty roller paints nothing; dipping loads it; the load runs out with distance', () => {
+    const stack = fakeStack();
+    stack.overlay = { add() {}, addAt() {} };
+    stack.childPos = (x, y) => ({ x, y });
+    stack.scene = partScene();
+    const source = { texture: 'tray', x: 100, y: 720, size: 200, opening: { dx: 0, dy: 0, r: 0.3 }, capacity: 900 };
+    const m = new BrushMechanic({ stack, params: { mode: 'reveal', layers: ['bare'], radius: 40, threshold: 0.95, source }, tool: {} });
+    sweep(m);
+    expect(m.progress).toBe(0); // not loaded
+    expect(m.needsLoad()).toBe(true);
+    // dip: move inside the tray opening (world = local + offset of the fake stack)
+    const w = (x, y) => ({ x: x + 540 - SIZE / 2, y: y + 860 - SIZE / 2 });
+    m.stroke(w(80, 720), w(120, 720));
+    m.stroke(w(120, 720), w(80, 720));
+    expect(m.needsLoad()).toBe(false);
+    sweep(m);
+    expect(m.progress).toBeGreaterThan(0);
+    expect(m.needsLoad()).toBe(true); // 900 units of paint are used up by a full sweep
+  });
+});
+
+describe('Step 8 Batch A content (CONTENT-MATRIX levels 6–15)', () => {
+  const tools = (id) => getLevel(id).stages.map((s) => s.tool);
+  it('15 levels in order; every Batch A level follows its matrix stage sequence', () => {
+    expect(DISPLAY_ORDER).toHaveLength(15);
+    expect(DISPLAY_ORDER.slice(5)).toEqual(['rain-boots', 'frying-pan', 'wooden-crate', 'toolbox', 'bathroom-sink', 'desk-fan', 'garden-bench', 'keyboard', 'watering-can', 'porcelain-vase']);
+    expect(tools('rain-boots')).toEqual(['chisel', 'washer-lance', 'foam-sprayer', 'scrub-brush', 'washer-lance', 'cloth']);
+    expect(tools('frying-pan')).toEqual(['putty-knife', 'foam-sprayer', 'scrub-brush', 'steel-wool', 'washer-lance', 'cloth', 'stain-sponge']);
+    expect(tools('wooden-crate')).toEqual(['duster', 'wide-scraper', 'sandpaper', 'cloth', 'paint-brush', 'detail-brush', 'stain-sponge']);
+    expect(tools('toolbox')).toEqual(['trash-bin', 'duster', 'foam-sprayer', 'wire-brush', 'angle-grinder', 'spray-gun', 'cloth']);
+    expect(tools('bathroom-sink')).toEqual(['trash-bin', 'foam-sprayer', 'scrub-brush', 'detail-brush', 'mist-nozzle', 'cloth', 'polisher']);
+    expect(tools('desk-fan')).toEqual(['screwdriver', 'soak-tub', 'duster', 'foam-sprayer', 'scrub-brush', 'cloth', 'fan-guard', 'screwdriver']);
+    expect(tools('garden-bench')).toEqual(['trash-bin', 'wide-scraper', 'sandpaper', 'wire-brush', 'cloth', 'paint-roller', 'paint-brush', 'stain-sponge']);
+    expect(tools('keyboard')).toEqual(['keycap-puller', 'air-blower', 'detail-brush', 'cotton-swab', 'cloth', 'new-keycaps', 'cloth']);
+    expect(tools('watering-can')).toEqual(['hammer', 'wire-brush', 'foam-sprayer', 'scrub-brush', 'washer-lance', 'cloth', 'spray-gun']);
+    expect(tools('porcelain-vase')).toEqual(['duster', 'mist-nozzle', 'foam-sprayer', 'detail-brush', 'mist-nozzle', 'cloth', 'paint-brush']);
+    for (const id of DISPLAY_ORDER.slice(5)) {
+      const n = getLevel(id).stages.length;
+      expect(n).toBeGreaterThanOrEqual(6);
+      expect(n).toBeLessThanOrEqual(8);
+      expect(economy.completionReward(id)).toBeGreaterThan(0);
+    }
+  });
+
+  it('levels 1–5 keep their approved card families (no new families added to them)', () => {
+    const fam = (id) => getLevel(id).stages.map((s) => s.family ?? null);
+    expect(fam('soccer-ball')).toEqual([null, null, 'foam', 'scrub', null, 'wipe']);
+    expect(fam('rug')).toEqual([null, null, 'foam', 'scrub', null, null]);
+    expect(fam('sneaker')).toEqual([null, null, 'foam', null, null, 'wipe', null]);
+    expect(fam('chair').every((f) => f === null)).toBe(true);
+  });
+
+  it('new families: base free, one coins option, one diamonds / ad option, modifiers ≤ 10 %', () => {
+    for (const id of ['rinse', 'rust', 'scrape', 'sand', 'grind', 'spray', 'polish', 'screw', 'roll', 'hammer']) {
+      const f = TOOL_FAMILIES[id];
+      expect(f.options).toHaveLength(3);
+      expect(f.options[0]).toMatchObject({ tool: f.base, unlock: { type: 'default' } });
+      expect(f.options[1].unlock.type).toBe('coins');
+      expect(['diamonds', 'ad']).toContain(f.options[2].unlock.type);
+      for (const o of f.options) {
+        expect(TOOLS[o.tool]).toBeDefined();
+        expect(o.radius ?? 1).toBeLessThanOrEqual(1.1);
+        expect(o.work ?? 1).toBeGreaterThanOrEqual(0.9);
+        expect(TOOLS[o.tool].kind).toBe(TOOLS[f.base].kind); // same job, same handling
+      }
+    }
   });
 });

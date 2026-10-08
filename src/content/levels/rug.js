@@ -28,8 +28,8 @@ export const rug = {
   stages: [
     { id: 'rinse-dirt', tool: 'washer-lance', mechanic: 'brush', params: { mode: 'reveal', layers: ['sandy'], radius: 78, threshold: 0.96 }, targetSeconds: [8, 12] },
     { id: 'squeegee-1', tool: 'squeegee', mechanic: 'brush', params: { mode: 'reveal', layers: ['muddy'], radius: 30, aspect: 3.4, threshold: 0.96 }, targetSeconds: [5, 8] },
-    { id: 'foam-spray', tool: 'foam-sprayer', mechanic: 'brush', params: { mode: 'apply', layer: 'foam', stamp: 'stamp-foam', radius: 92, threshold: 0.96 }, targetSeconds: [6, 9] },
-    { id: 'scrub', tool: 'scrub-brush', mechanic: 'brush', params: { mode: 'scrub', from: 'foam', under: 'scrubbed', clear: ['stained'], radius: 96, threshold: 0.96 }, targetSeconds: [6, 9] },
+    { id: 'foam-spray', family: 'foam', tool: 'foam-sprayer', mechanic: 'brush', params: { mode: 'apply', layer: 'foam', stamp: 'stamp-foam', radius: 92, threshold: 0.96 }, targetSeconds: [6, 9] },
+    { id: 'scrub', family: 'scrub', tool: 'scrub-brush', mechanic: 'brush', params: { mode: 'scrub', from: 'foam', under: 'scrubbed', clear: ['stained'], radius: 96, threshold: 0.96 }, targetSeconds: [6, 9] },
     { id: 'rinse', tool: 'washer-lance', mechanic: 'brush', params: { mode: 'reveal', layers: ['foam', 'scrubbed', 'stained'], radius: 80, threshold: 0.96 }, targetSeconds: [6, 9] },
     { id: 'squeegee-2', tool: 'squeegee', mechanic: 'brush', params: { mode: 'reveal', layers: ['wet'], radius: 30, aspect: 3.4, threshold: 0.96 }, targetSeconds: [5, 8] },
   ],

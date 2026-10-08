@@ -9,7 +9,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['list']],
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: process.env.E2E_BASE ?? 'http://127.0.0.1:4173', // E2E_BASE: a dev server while building content
     channel: 'chrome',
     headless: true,
     trace: 'off',
@@ -22,7 +22,7 @@ export default defineConfig({
     timeout: 60_000,
   },
   projects: [
-    { name: 'desktop-mouse', use: { viewport: { width: 1280, height: 800 } }, testMatch: /mouse|invalid|resize|pause|visual|levels5|step5-ui|step6/ },
-    { name: 'phone-touch', use: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, testMatch: /touch|visual|levels5|step5|step6/ },
+    { name: 'desktop-mouse', use: { viewport: { width: 1280, height: 800 } }, testMatch: /mouse|invalid|resize|pause|visual|levels5|step5-ui|step6|step7|step8/ },
+    { name: 'phone-touch', use: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, testMatch: /touch|visual|levels5|step5|step6|step7|step8/ },
   ],
 });

@@ -207,3 +207,34 @@ Focused checks only. Base: commit `7705b74`.
 |---|---|---|---|
 | Completed screen + bar (mouse + touch) | `npx playwright test step6-ui-pass4` (unchanged spec): values 2 / 3 / 5 only, marker moves, lock + watched ad → base × value; hub and reel checks as before | **PASS** 2/2 | `project/screenshots/step6/ui-pass4/<project>/02-*` |
 | Visual | close-up of the bar on phone and desktop: lane and x5 segment equal height, centred on the green face | DONE | `project/screenshots/step6/before-after/42-multiplier-bar-even.png` |
+
+## Step 7 — alternative tools · build #53 (2026-10-06T21:53:47Z)
+
+Focused checks only. Base: commit `212e04d`.
+
+| Check | Command / steps | Result | Artifact | Limitations |
+|---|---|---|---|---|
+| Unit tests | `npm test`: families (3 options, one free base, all unlock types, radius 1–1.1, catalog valid); default equipped; locked tool cannot be equipped; coins purchase once (double tap), switch back and forth; insufficient coins / diamonds change nothing; diamonds purchase; ad cancel / error / unavailable → nothing; parallel ad results → one unlock; owned ad tool needs no second ad; reload persistence; bad save data sanitised | **PASS** 41/41 | console | — |
+| Real input, rug (mouse + touch) | `npx playwright test step7-tools`: foam stage cards (equipped / 15 coins / ad); buy foam gun (20 → 5 coins), equipped, second tap charges nothing; partial progress 26 %; ad cancelled, ad failed → nothing changes, progress identical; ad watched → foam cannon unlocked + equipped, progress identical; switch back to free sprayer and to the foam gun → progress identical; stage completed with the foam gun. Scrub stage: not enough coins (oval 15, 5 coins) and not enough diamonds (drill 5, 4 diamonds) → nothing changes; completed with the base brush. Reload: foam gun + cannon still owned, foam gun still equipped; drill bought with 5 diamonds; scrub completed with the drill; no cards on the next stage | **PASS** 2/2 | `project/screenshots/step7/<project>/` | Bot input |
+| Layout + pause | `npx playwright test step7-tools-layout`: landscape phone (column, 67 px cards), tablet (row, 115 px), small phone (row, 72 px): all cards inside, no overlap with counters, tool strip, pause, chests or the object; card tap while paused changes nothing | **PASS** | `project/screenshots/step7/responsive/` | — |
+| Base tools complete their stages | `npx playwright test levels5 -g "soccer-ball\|golden-trophy\|sneaker" --project=phone-touch` (all card stages with the default tools; rug covered above) | **PASS** 3/3 | console | Phone only |
+| Screenshot boards | cards, locked states, equip / switch, persistence + diamonds | DONE | `project/screenshots/step6/before-after/43–46` | — |
+
+## Step 7 — phone tool-card placement · build #54 (2026-10-07T18:19:40Z)
+
+| Check | Command / steps | Result | Artifact |
+|---|---|---|---|
+| Layout (5 viewports) | `npx playwright test step7-tools-layout`: phone portrait 390×844, phone landscape 844×390, small phone 360×640, tablet 768×1024 → one bottom row below the object, cards ≥ 67 px; desktop 1280×800 → right column beside the object; all cards inside, no overlap with HUD / chests / object | **PASS** | `project/screenshots/step7/responsive/` |
+| Tool flow, phone touch | `npx playwright test step7-tools --project=phone-touch` (buy, insufficient, ad cancel / fail / success, mid-stage switches keep progress, reload persistence, diamond buy) | **PASS** | `project/screenshots/step7/phone-touch/` |
+
+## Step 8 Batch A — levels 6–15 · build #55 (2026-10-08T13:12:57Z)
+
+| Check | Command / steps | Result | Artifact |
+|---|---|---|---|
+| Unit | `npx vitest run` — incl. PointTargets hold / tap / pull (anti-cheat, remove cuts / install bakes, ≤10 % card modifier), parts into slots + `fromLayer`, paint source (empty roller paints nothing, dip loads, load runs out), catalog of 15 levels + Batch A stage sequences, levels 1–5 families unchanged, new families rules | **51 / 51 PASS** | — |
+| Levels 6–15, phone touch (dev server) | `E2E_BASE=… npx playwright test step8-batch-a --project=phone-touch` — every stage of all 10 levels by real touch, stage transitions, final state, result card, Replay / Next (alternating), menu order 1–15, no console errors | **11 / 11 PASS** (16.4 min) | `project/screenshots/step8/phone-touch/` (start / mid / final / result per level), `batch-a-overview-*.png` |
+| Levels 6–15, desktop mouse (production #55, preview) | `npx playwright test step8-batch-a --project=desktop-mouse` — same checks; Next of level 15 → object list | **11 / 11 PASS** (9.8 min) | `project/screenshots/step8/desktop-mouse/` |
+| Regression levels 1–5 (production) | `npx playwright test levels5 --project=phone-touch -g "soccer-ball\|chair\|sneaker"` (full play, Replay, Next — sneaker now → rain boots) | **3 / 3 PASS** | `project/screenshots/step5/` |
+| Regression alternative tools (production) | `npx playwright test step7-tools.spec --project=phone-touch` (buy, insufficient, ad cancel / fail / success, mid-stage switch, persistence) | **1 / 1 PASS** | `project/screenshots/step7/phone-touch/` |
+
+Not run (by instruction: no full historical suite): rug / golden-trophy level runs, layout / visual / step6 specs. Stage times of the test bot (not a player): chunk-break stages are the longest (boots chisel 23–46 s, crate / bench peel 8–38 s after tuning); all other stages 1–19 s. Known limitation: the keyboard (a very wide object) is small on narrow phones.

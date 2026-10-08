@@ -34,9 +34,9 @@ export const goldenTrophy = {
     { id: 'dry-brush', tool: 'dry-brush', mechanic: 'brush', region: 'ball', params: { mode: 'reveal', layers: ['dusty'], radius: 62, aspect: 2.6, threshold: 0.96 }, targetSeconds: [5, 8] },
     { id: 'detail-brush', tool: 'detail-brush', mechanic: 'brush', region: 'base', outline: true, params: { mode: 'reveal', layers: ['dusty'], radius: 34, threshold: 0.96 }, targetSeconds: [5, 8] },
     { id: 'wet', tool: 'mist-nozzle', mechanic: 'brush', params: { mode: 'reveal', layers: ['tarnished'], radius: 100, threshold: 0.96 }, targetSeconds: [5, 8] },
-    { id: 'foam-spray', tool: 'foam-sprayer', mechanic: 'brush', params: { mode: 'apply', layer: 'foam', stamp: 'stamp-foam', radius: 115, threshold: 0.96 }, targetSeconds: [6, 9] },
-    { id: 'scrub', tool: 'scrub-brush', mechanic: 'brush', params: { mode: 'scrub', from: 'foam', under: 'scrubbed', clear: ['tarnishWet'], radius: 106, threshold: 0.96 }, targetSeconds: [6, 9] },
+    { id: 'foam-spray', family: 'foam', tool: 'foam-sprayer', mechanic: 'brush', params: { mode: 'apply', layer: 'foam', stamp: 'stamp-foam', radius: 115, threshold: 0.96 }, targetSeconds: [6, 9] },
+    { id: 'scrub', family: 'scrub', tool: 'scrub-brush', mechanic: 'brush', params: { mode: 'scrub', from: 'foam', under: 'scrubbed', clear: ['tarnishWet'], radius: 106, threshold: 0.96 }, targetSeconds: [6, 9] },
     { id: 'rinse', tool: 'washer-lance', mechanic: 'brush', params: { mode: 'reveal', layers: ['foam', 'scrubbed', 'tarnishWet'], radius: 95, threshold: 0.96 }, targetSeconds: [6, 9] },
-    { id: 'dry', tool: 'cloth', mechanic: 'brush', params: { mode: 'reveal', layers: ['wet'], radius: 125, threshold: 0.96 }, targetSeconds: [4, 6] },
+    { id: 'dry', family: 'wipe', tool: 'cloth', mechanic: 'brush', params: { mode: 'reveal', layers: ['wet'], radius: 125, threshold: 0.96 }, targetSeconds: [4, 6] },
   ],
 };

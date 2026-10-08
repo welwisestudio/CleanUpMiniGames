@@ -1,8 +1,19 @@
+import { TOOL_FAMILIES } from './toolFamilies.js';
 import { soccerBall } from './levels/soccerBall.js';
 import { rug } from './levels/rug.js';
 import { goldenTrophy } from './levels/goldenTrophy.js';
 import { chair } from './levels/chair.js';
 import { sneaker } from './levels/sneaker.js';
+import { rainBoots } from './levels/rainBoots.js';
+import { fryingPan } from './levels/fryingPan.js';
+import { woodenCrate } from './levels/woodenCrate.js';
+import { toolbox } from './levels/toolbox.js';
+import { bathroomSink } from './levels/bathroomSink.js';
+import { deskFan } from './levels/deskFan.js';
+import { gardenBench } from './levels/gardenBench.js';
+import { keyboard } from './levels/keyboard.js';
+import { wateringCan } from './levels/wateringCan.js';
+import { porcelainVase } from './levels/porcelainVase.js';
 import { TOOLS } from './tools.js';
 
 // Levels are addressed by their permanent string ID. The display order is separate data.
@@ -12,12 +23,28 @@ export const LEVELS = {
   [goldenTrophy.id]: goldenTrophy,
   [chair.id]: chair,
   [sneaker.id]: sneaker,
+  // Step 8 Batch A (CONTENT-MATRIX levels 6–15)
+  [rainBoots.id]: rainBoots,
+  [fryingPan.id]: fryingPan,
+  [woodenCrate.id]: woodenCrate,
+  [toolbox.id]: toolbox,
+  [bathroomSink.id]: bathroomSink,
+  [deskFan.id]: deskFan,
+  [gardenBench.id]: gardenBench,
+  [keyboard.id]: keyboard,
+  [wateringCan.id]: wateringCan,
+  [porcelainVase.id]: porcelainVase,
 };
 
 // Menu / campaign order (approved first five levels, decision 2026-10-04). Separate from level data.
-export const DISPLAY_ORDER = ['soccer-ball', 'rug', 'golden-trophy', 'chair', 'sneaker'];
+// Step 8 Batch A appends levels 6–15 in CONTENT-MATRIX order.
+export const DISPLAY_ORDER = [
+  'soccer-ball', 'rug', 'golden-trophy', 'chair', 'sneaker',
+  'rain-boots', 'frying-pan', 'wooden-crate', 'toolbox', 'bathroom-sink', 'desk-fan', 'garden-bench', 'keyboard', 'watering-can', 'porcelain-vase',
+];
 
-export const KNOWN_MECHANICS = ['chunkBreak', 'brush', 'dragToTarget', 'spots'];
+export const KNOWN_MECHANICS = ['chunkBreak', 'brush', 'dragToTarget', 'spots', 'points'];
+export const POINT_MODES = ['hold', 'tap', 'pull'];
 export const BRUSH_MODES = ['reveal', 'apply', 'scrub'];
 
 export function getLevel(id) {
@@ -44,6 +71,16 @@ export function validateCatalog() {
       if (stageIds.has(st.id)) errors.push(`${level.id}: duplicate stage ${st.id}`);
       stageIds.add(st.id);
       if (!TOOLS[st.tool]) errors.push(`${level.id}/${st.id}: unknown tool ${st.tool}`);
+      if (st.family) {
+        const fam = TOOL_FAMILIES[st.family];
+        if (!fam) errors.push(`${level.id}/${st.id}: unknown tool family ${st.family}`);
+        else {
+          if (fam.base !== st.tool) errors.push(`${level.id}/${st.id}: tool ${st.tool} is not the base of family ${st.family}`);
+          if (fam.options.length !== 3) errors.push(`${st.family}: a family needs exactly 3 options`);
+          for (const o of fam.options) if (!TOOLS[o.tool]) errors.push(`${st.family}: unknown tool ${o.tool}`);
+          if (fam.options.filter((o) => o.unlock.type === 'default').length !== 1 || fam.options[0].tool !== fam.base) errors.push(`${st.family}: the base tool must be the single default option`);
+        }
+      }
       if (!KNOWN_MECHANICS.includes(st.mechanic)) errors.push(`${level.id}/${st.id}: unknown mechanic ${st.mechanic}`);
       const p = st.params ?? {};
       if (st.mechanic === 'brush') {
@@ -52,12 +89,26 @@ export function validateCatalog() {
         for (const r of refs) if (!layerIds.has(r)) errors.push(`${level.id}/${st.id}: unknown layer ${r}`);
         if (!(p.threshold > 0.5 && p.threshold <= 1)) errors.push(`${level.id}/${st.id}: threshold out of range`);
         if (!(p.radius > 0)) errors.push(`${level.id}/${st.id}: radius must be positive`);
+        if (p.source && !(p.source.texture && p.source.size > 0)) errors.push(`${level.id}/${st.id}: paint source needs a texture and a size`);
+      }
+      if (st.mechanic === 'points') {
+        if (!POINT_MODES.includes(p.mode)) errors.push(`${level.id}/${st.id}: bad point mode ${p.mode}`);
+        if (!p.targets?.length) errors.push(`${level.id}/${st.id}: point targets required`);
+        for (const t of p.targets ?? []) {
+          if (!(t.r > 0)) errors.push(`${level.id}/${st.id}: point target radius must be positive`);
+          if (t.layer && !layerIds.has(t.layer)) errors.push(`${level.id}/${st.id}: unknown layer ${t.layer}`);
+        }
       }
       const regionIds = new Set(Object.keys(level.object.regions ?? {}));
       const reg = st.region ?? p.region;
       if (reg && !regionIds.has(reg)) errors.push(`${level.id}/${st.id}: unknown region ${reg}`);
       if (st.focus && !level.object.focus?.[st.focus]) errors.push(`${level.id}/${st.id}: unknown focus ${st.focus}`);
-      if (st.mechanic === 'dragToTarget' && !(p.items?.length && p.target)) errors.push(`${level.id}/${st.id}: items and target required`);
+      if (st.mechanic === 'dragToTarget') {
+        const slotted = p.items?.length && p.items.every((it) => it.slot);
+        if (!(p.items?.length && (p.target || slotted))) errors.push(`${level.id}/${st.id}: items and a target (or a slot per item) required`);
+        for (const it of p.items ?? []) if (it.fromLayer && !layerIds.has(it.fromLayer)) errors.push(`${level.id}/${st.id}: unknown layer ${it.fromLayer}`);
+        for (const k of ['stamp', 'erase']) if (p.onPlace?.[k] && !layerIds.has(p.onPlace[k])) errors.push(`${level.id}/${st.id}: unknown layer ${p.onPlace[k]}`);
+      }
       if (st.mechanic === 'spots') {
         if (!layerIds.has(p.layer)) errors.push(`${level.id}/${st.id}: unknown layer ${p.layer}`);
         if (!(level.object.regions?.[p.region]?.circles?.length)) errors.push(`${level.id}/${st.id}: spots need a circles region`);

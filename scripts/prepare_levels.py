@@ -270,6 +270,9 @@ def tool(name, img, rule):
     elif rule == 'right-tip':  # sideways nozzle tube (foam can): its tip at the right end
         band = xs > xs.max() - max(3, int(w * 0.01))
         wp = (float(xs.max()) / w, float(ys[band].mean()) / h)
+    elif rule == 'bottom-band':  # Step 8: sideways brush whose bristles hang under one end (wire brush)
+        band = ys > ys.max() - (ys.max() - ys.min()) * 0.18
+        wp = (float(xs[band].mean()) / w, (ys.max() - (ys.max() - ys.min()) * 0.12) / h)
     elif rule == 'bottom':
         wp = ((xs.min() + xs.max()) / 2 / w, (ys.max() - (ys.max() - ys.min()) * 0.10) / h)
     else:
@@ -283,7 +286,9 @@ def tool(name, img, rule):
 
 
 def run_tools():
-    for name, rule in [('tool-squeegee', 'top'), ('tool-detail-brush', 'top'), ('tool-mist-nozzle', 'top'), ('tool-duster', 'head'), ('tool-foam-can', 'right-tip'), ('tool-drill-brush', 'left-head'), ('tool-putty-knife', 'top')]:
+    for name, rule in [('tool-squeegee', 'top'), ('tool-detail-brush', 'top'), ('tool-mist-nozzle', 'top'), ('tool-duster', 'head'), ('tool-foam-can', 'right-tip'), ('tool-drill-brush', 'left-head'), ('tool-putty-knife', 'top'),
+                       # Step 7 alternative tools
+                       ('tool-scrub-brush-oval', 'bottom'), ('tool-foam-gun', 'top'), ('tool-foam-cannon', 'top')]:
         tool(name, Image.open(C / 'shared' / f'{name}.png').convert('RGBA'), rule)
     im, it = components(C / 'shared' / 'tools-sanding-sponge-eraser-sheet.png')
     it.sort(key=lambda t: t[1])

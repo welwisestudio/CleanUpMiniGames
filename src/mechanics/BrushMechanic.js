@@ -18,6 +18,8 @@ import { CoverageGrid } from './CoverageGrid.js';
 // (display) through a small surface API. It never touches rewards, saves or UI.
 
 const SPRAY_RATE = 45; // stamps per second while a jet is held
+const OUTLINE = 0x00f010;
+const DIP_DISTANCE = 70; // movement inside the paint source needed to load the tool
 
 // Soft auto-complete (Step 6): from SOFT_MIN progress, a stage completes when only small scattered
 // remnants are left (largest uncovered patch ≤ max(SOFT_BLOB_MIN cells, SOFT_BLOB_SHARE of the
@@ -44,6 +46,90 @@ export class BrushMechanic {
     this.validContacts = 0;
     this._paintedSinceClip = false;
     if (this.mode === 'scrub') stack.fillLayer(params.under, 0);
+    // Step 8 (CONTENT-MATRIX §4.3 E1): optional paint source. The tool must be dipped first (tool
+    // working point moving inside the source opening); the load is used up with the distance
+    // painted on the object, then the tool has to be dipped again. An empty tool paints nothing.
+    this.source = params.source ?? null;
+    this.loaded = !this.source;
+    this.charge = 0;
+    this.dipped = 0;
+    if (this.source) this._buildSource();
+  }
+
+  _buildSource() {
+    const src = this.source;
+    const scene = this.stack.scene;
+    const p = this.stack.childPos(src.x, src.y);
+    this.sourceImg = scene.add.image(p.x, p.y, src.texture);
+    this.sourceImg.setScale(src.size / Math.max(this.sourceImg.width, this.sourceImg.height));
+    this.stack.overlay.addAt(this.sourceImg, 0);
+    this.sourceRing = scene.add.graphics();
+    this.stack.overlay.add(this.sourceRing);
+    this._drawSourceRing(true);
+  }
+
+  // Opening of the source (object-local): where the tool is dipped.
+  sourceOpening() {
+    const s = this.source;
+    const o = s.opening ?? { dx: 0, dy: -0.1, r: 0.32 };
+    return { x: s.x + o.dx * s.size, y: s.y + o.dy * s.size, r: o.r * s.size };
+  }
+
+  _drawSourceRing(on) {
+    const g = this.sourceRing;
+    if (!g) return;
+    g.clear();
+    if (!on) return;
+    const t = this.sourceOpening();
+    const p = this.stack.childPos(t.x, t.y);
+    g.lineStyle(5, OUTLINE, 1);
+    const n = 18;
+    for (let i = 0; i < n; i++) {
+      const a0 = (i / n) * Math.PI * 2;
+      g.beginPath();
+      g.arc(p.x, p.y, t.r, a0, a0 + Math.PI / n);
+      g.strokePath();
+    }
+  }
+
+  needsLoad() {
+    return Boolean(this.source) && !this.loaded;
+  }
+
+  _setLoaded(on) {
+    this.loaded = on;
+    this.charge = on ? this.source.capacity ?? 2600 : 0;
+    this.dipped = 0;
+    this._drawSourceRing(!on && !this.completed);
+    const tools = this.stack.scene.tools;
+    tools?.setLoad?.(on ? this.source.load ?? 'fx-dot' : null, this.source.tint);
+  }
+
+  // Source handling for one sample point along a stroke; returns true if the point may paint.
+  _sourceStep(local, seg) {
+    if (this.loaded) {
+      this.charge -= seg;
+      if (this.charge <= 0) {
+        this._setLoaded(false);
+        return false;
+      }
+      return true;
+    }
+    const t = this.sourceOpening();
+    if ((local.x - t.x) ** 2 + (local.y - t.y) ** 2 <= t.r * t.r) {
+      this.dipped += seg;
+      this.validContacts += 1;
+      if (this.dipped >= DIP_DISTANCE) this._setLoaded(true);
+    }
+    return false;
+  }
+
+  // Step 7: another tool for the same job, mid-stage. Only the footprint changes; the coverage grid
+  // and every layer stay exactly as they are (no progress lost).
+  setTool(tool, radius) {
+    this.tool = tool;
+    this.radius = radius;
+    if (this.params.aspectY == null) this.aspectY = tool?.head ? (tool.head[1] / tool.head[0]) * 0.9 : 1;
   }
 
   get progress() {
@@ -60,7 +146,9 @@ export class BrushMechanic {
     const n = Math.max(1, Math.ceil(dist / step));
     for (let i = 1; i <= n; i++) {
       const t = i / n;
-      this._stampAt({ x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t });
+      const pt = { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t };
+      if (this.source && !this._sourceStep(pt, dist / n)) continue;
+      this._stampAt(pt);
     }
     this._afterInput();
   }
@@ -82,7 +170,7 @@ export class BrushMechanic {
 
   // A single press without movement: one stamp (can never complete a stage by itself).
   tap(pointWorld) {
-    if (this.completed) return;
+    if (this.completed || !this.loaded) return;
     this._stampAt(this.stack.toLocal(pointWorld));
     this._afterInput();
   }
@@ -140,6 +228,13 @@ export class BrushMechanic {
   // Brings the visuals to the exact final state of this stage (leftover specks fade out).
   finish(duration = 450) {
     const p = this.params;
+    if (this.source) {
+      this._drawSourceRing(false);
+      this.stack.scene.tools?.setLoad?.(null);
+      const img = this.sourceImg;
+      this.stack.scene.tweens.add({ targets: img, alpha: 0, duration: 350, onComplete: () => img.destroy() });
+      this.sourceImg = null;
+    }
     // Region stages clean up only inside their region (the rest of the layer belongs to other stages).
     if (this.region && this.stack.fadeOutRegion) {
       if (this.mode === 'reveal') return this.stack.fadeOutRegion(p.layers, this.region, duration);
@@ -176,5 +271,9 @@ export class BrushMechanic {
     return best;
   }
 
-  dispose() {}
+  dispose() {
+    this.sourceImg?.destroy();
+    this.sourceRing?.destroy();
+    if (this.source) this.stack.scene.tools?.setLoad?.(null);
+  }
 }

@@ -171,6 +171,11 @@ export class RewardService extends Emitter {
     return r;
   }
 
+  // Shared rewarded-ad request (tool unlocks use it too): 'earned' | 'not-earned' | 'unavailable' | 'error'.
+  rewardedAd(placement) {
+    return this._rewardedAd(placement);
+  }
+
   // ---- rewarded ad -------------------------------------------------------------------------
   async _rewardedAd(placement) {
     if (!this.platform) return 'unavailable';

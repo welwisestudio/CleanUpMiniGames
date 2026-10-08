@@ -1,10 +1,14 @@
 # Current project status
 
-Updated: 2026-10-07 (rev. 19) · Build **#50** (2026-10-06T21:20:19Z UTC) · Commit: `7705b74` ("5 lvls build") + uncommitted UI / reward pass 3
+Updated: 2026-10-08 (rev. 22) · Build **#55** (2026-10-08T13:12:57Z UTC) · Commit: `212e04d` + uncommitted Step 7 / Step 8 plan / **Step 8 Batch A (levels 6–15)**
 
-- **Current stage goal:** Step 6 — UI / reward polish before designer review (gameplay approved). Step 7 not started. Nothing committed.
+- **Current stage goal:** Step 8 Batch A — **levels 6–15 implemented, waiting for designer approval** (build #55). Levels 16–50 not started. Content matrix approved 2026-10-08.
+- **Batch A (build #55):** Rain Boots, Frying Pan, Wooden Crate, Toolbox, Bathroom Sink, Desk Fan, Garden Bench, Keyboard, Watering Can, Porcelain Vase — full stage sequences from CONTENT-MATRIX, 108 Nano Banana Pro generations + 93 background removals, new `points` mechanic (hold / tap / pull), parts into slots, paint loading, zone dim, power-tool effects, 30 new tool sprites, 10 new card families, shared backgrounds WASH / STUDIO / WORKSHOP / YARD, lazy per-level art loading, 15-level menu, Next 15 → object list. Validation: VALIDATION "Step 8 Batch A".
+- **Known open points (Batch A):** keyboard is small on narrow phones (wide object); chunk-break stages (bench / crate peel, boots chisel) are the longest stages; credits: Batch A art was charged to normal credits (unlimited mode not available via MCP) — new rule: Nano Banana Pro only in verified unlimited mode.
+- **Checkpoint 4 accepted (2026-10-07):** metagame / monetization incl. alternative tools; phone tool cards always a bottom row (build #54).
 - **Step 6 gameplay approved** (2026-10-06).
-- **Multiplier bar polish (build #50), waiting for approval:** inner segments equal height and evenly centred.
+- **Step 7 alternative tools (build #53, accepted with CP4):** 3 tool cards on 10 stages (families scrub / foam / wipe), coins / diamonds / rewarded-ad unlocks, permanent ownership, equipped per family, mid-stage switching without progress loss. See DECISIONS 2026-10-07 Step 7 rows.
+- **Multiplier bar polish (build #50, approved):** inner segments equal height and evenly centred.
 - **UI pass 4 (build #49):** multiplier bar after the reference (x2 | x3 | x5 | x3 | x2, purple marker), Chair / Rug hub previews larger, chest reel clipped to the card.
 - **UI / reward pass 3 (build #47, approved):** hub clean previews + 46-unit checks; completed screen (Home + wide yellow Replay, full-width Next; boost meter x2…x5 + pink button: tap locks, ad pays base × multiplier); larger, vertically centred objects (screen-scale jets); Level Chest offer (green Open chest with pulse + sheen, "Skip chest" text + lost-forever warning — skipping forfeits the chest) and a reward reel. Backgrounds unchanged; ad-based tool / colour choice is backlog only.
 - **x3 button v4 (build #43):** purple button with the clapperboard watch-ad icon, "Claim" + large yellow "x3".
@@ -77,7 +81,7 @@ Updated: 2026-10-07 (rev. 19) · Build **#50** (2026-10-06T21:20:19Z UTC) · Com
 ## Backlog (recorded, not implemented)
 
 - Regular levels after the first five: one reusable standard background family; VIP levels: a separate premium background family.
-- Choosing tool skins / colours by watching an ad (future monetization).
+- ~~Choosing tool skins / colours by watching an ad~~ → started as Step 7 alternative tools (build #53).
 - VIP mini-games: the reward reel shows a VIP card as decoration only.
 
 ## Open items (not blocking)

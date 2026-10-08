@@ -1,3 +1,5 @@
+import { BATCH_A_ASSETS } from './generated/batchAAssets.js';
+
 // Runtime asset registry (local files only; nothing is fetched from Higgsfield at runtime).
 // Sources: Nano Banana 2 masters → Higgsfield Background Remover → scripts/prepare_assets.py.
 // See project/ASSET-MANIFEST.md for prompts, job IDs and review results.
@@ -60,6 +62,10 @@ export const IMAGE_ASSETS = {
   'icon-replay': `${U}icon-replay.webp`,
   'icon-next': `${U}icon-next.webp`,
   'icon-vip': `${U}icon-vip.webp`,
+  // Step 7 alternative tools
+  'tool-scrub-brush-oval': 'assets/shared/tool-scrub-brush-oval.webp',
+  'tool-foam-gun': 'assets/shared/tool-foam-gun.webp',
+  'tool-foam-cannon': 'assets/shared/tool-foam-cannon.webp',
   'ui-chest-timed': `${U}ui-chest-timed.webp`,
   'ui-chest-progress': `${U}ui-chest-progress.webp`,
 };
@@ -99,5 +105,34 @@ Object.assign(
   Object.fromEntries(['squeegee', 'detail-brush', 'mist-nozzle', 'duster', 'foam-can', 'drill-brush', 'putty-knife', 'sandpaper', 'stain-sponge', 'eraser'].map((t) => [`tool-${t}`, `assets/shared/tool-${t}.webp`])),
   Object.fromEntries(['icon-gear', 'icon-sound', 'icon-music', 'icon-vibration', 'icon-close', 'ui-toggle-on', 'ui-toggle-off', 'ui-hint-hand'].map((k) => [k, `assets/ui/${k}.webp`])),
 );
+
+// ---- Step 8 Batch A (levels 6–15) ----
+// Loaded at boot: the menu thumbnails (dirty / clean) and every tool sprite (the tool cards can
+// show any family option). Everything else of a level (layers, masks, foam, parts, its shared
+// background family) is loaded when the level opens (LevelScene.preload) and released when
+// another lazily loaded level opens.
+export const BATCH_A_LEVELS = ['rain-boots', 'frying-pan', 'wooden-crate', 'toolbox', 'bathroom-sink', 'desk-fan', 'garden-bench', 'keyboard', 'watering-can', 'porcelain-vase'];
+const BATCH_A_TOOLS = [
+  'steel-wool', 'wide-scraper', 'paint-brush', 'wire-brush', 'angle-grinder', 'spray-gun', 'polisher', 'screwdriver', 'paint-roller', 'keycap-puller', 'air-blower', 'cotton-swab', 'hammer',
+  'turbo-lance', 'gold-washer', 'wire-wheel', 'pro-scraper', 'sanding-block', 'orbital-sander', 'gold-grinder', 'airbrush', 'gold-spray-gun', 'orbital-polisher', 'gold-polisher',
+  'e-screwdriver', 'gold-screwdriver', 'wide-roller', 'foam-roller', 'mallet', 'gold-hammer',
+];
+Object.assign(
+  IMAGE_ASSETS,
+  Object.fromEntries(BATCH_A_TOOLS.map((t) => [`tool-${t}`, `assets/shared/tool-${t}.webp`])),
+  ...BATCH_A_LEVELS.map((id) => ({ [`${id}-thumb`]: `assets/${id}/thumb.webp`, [`${id}-thumb-clean`]: `assets/${id}/thumb-clean.webp` })),
+);
+
+// Lazily loaded art of a level ({} for levels 1–5, whose art is part of the boot set).
+export function levelAssets(levelId) {
+  return BATCH_A_ASSETS[levelId] ?? {};
+}
+
+// Every texture key that is loaded per level (used to release the art of other levels).
+export function lazyAssetKeys() {
+  const keys = new Set();
+  for (const set of Object.values(BATCH_A_ASSETS)) for (const k of Object.keys(set)) keys.add(k);
+  return keys;
+}
 
 export const FX_CHUNKS = ['fx-chunk-1', 'fx-chunk-2', 'fx-chunk-3', 'fx-chunk-4', 'fx-chunk-5'];

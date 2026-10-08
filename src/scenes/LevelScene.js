@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { getLevel, nextLevelId } from '../content/catalog.js';
 import { getTool } from '../content/tools.js';
-import { FX_CHUNKS } from '../content/assets.js';
+import { FX_CHUNKS, levelAssets, lazyAssetKeys } from '../content/assets.js';
 import { createMechanic, gestureFamily } from '../mechanics/index.js';
 import { HintController } from './level/HintController.js';
 import { ObjectStack } from './level/ObjectStack.js';
@@ -11,6 +11,8 @@ import { CurrencyPill, ToolStrip, ProgressBar, addStatusBadges } from '../ui/hud
 import { Button } from '../ui/Button.js';
 import { ResultCard, PauseModal, SettingsModal } from '../ui/modals.js';
 import { ChestOfferModal, TimedChestWidget, ProgressChestMini, TIMED_CHEST_SIZE, flyIcons, worldOf } from '../ui/rewards.js';
+import { ToolSelector } from '../ui/toolSelector.js';
+import { familyOption } from '../content/toolFamilies.js';
 import { registerQaScene } from '../app/qa.js';
 
 // One play run of a level: sequential stages → completion → result.
@@ -29,7 +31,33 @@ export class LevelScene extends Phaser.Scene {
     this.levelId = data.levelId;
   }
 
+  // Step 8: level-specific art (levels 6+) is loaded when the level opens, not at boot; art of
+  // other lazily loaded levels is released so memory stays flat while playing through the list.
+  preload() {
+    const own = levelAssets(this.levelId);
+    const need = Object.entries(own).filter(([k]) => !this.textures.exists(k));
+    for (const k of lazyAssetKeys()) if (!(k in own) && this.textures.exists(k)) this.textures.remove(k);
+    if (!need.length) return;
+    const pause = this.registry.get('services').pause;
+    pause.set('assetsLoading', true);
+    const { width: w, height: h } = this.scale;
+    this.loadingBg = this.add.rectangle(0, 0, w, h, 0xfdf3ec).setOrigin(0);
+    this.loadingBar = this.add.graphics();
+    this.load.on('progress', (v) => {
+      const bw = Math.min(w * 0.6, 520);
+      this.loadingBar.clear().fillStyle(0x0d233e, 0.2).fillRoundedRect(w / 2 - bw / 2, h / 2, bw, 20, 10).fillStyle(0x31b6f5, 1).fillRoundedRect(w / 2 - bw / 2, h / 2, Math.max(20, bw * v), 20, 10);
+    });
+    this.load.once('complete', () => {
+      this.load.off('progress');
+      pause.set('assetsLoading', false);
+    });
+    for (const [k, url] of need) this.load.image(k, url);
+  }
+
   create() {
+    this.loadingBg?.destroy();
+    this.loadingBar?.destroy();
+    this.loadingBg = this.loadingBar = null;
     const s = (this.services = this.registry.get('services'));
     this.level = getLevel(this.levelId);
     this.runId = s.nextRunId();
@@ -70,7 +98,11 @@ export class LevelScene extends Phaser.Scene {
     this.coinsPill = new CurrencyPill(this, { icon: 'icon-coin', value: save.get('coins') });
     this.diamondsPill = new CurrencyPill(this, { icon: 'icon-diamond', value: save.get('diamonds') });
     this.topLeft.add([this.coinsPill.container, this.diamondsPill.container]);
-    this.strip = new ToolStrip(this, { stages: this.level.stages, getTool });
+    this.strip = new ToolStrip(this, { stages: this.level.stages, getTool: (id, st) => (st ? this.toolFor(st) : getTool(id)) });
+    // Step 7: alternative-tool cards (only levels with tool families)
+    this.hasFamilies = this.level.stages.some((st) => st.family);
+    this.selector = this.hasFamilies ? new ToolSelector(this, { onTap: (id) => this.onToolCard(id) }) : null;
+    this.selector?.container.setVisible(false);
     this.progressBar = new ProgressBar(this);
     this.pauseButton = new Button(this, { id: 'hud-pause', x: 0, y: 0, w: UI.pause, h: UI.pause, style: 'square', icon: 'icon-pause', iconSize: 0.5, onClick: () => this.openPause() });
     // Chests stay visible during play (display only: a touch here never claims mid-stroke;
@@ -134,6 +166,13 @@ export class LevelScene extends Phaser.Scene {
       this.qaTargets.set('hud-progress-chest', { x: cx, y: top + ch * 1.5 + 4 * u, w: cw, h: ch, visible: this.hud.alpha > 0.5 });
     }
     this.badges.layoutTo(l);
+    // tool cards: bottom row on portrait screens, right column on landscape / desktop
+    if (this.selector) {
+      const vertical = this.selectorVertical(l);
+      const ext = ToolSelector.extent(vertical);
+      if (vertical) this.selector.place(W - m - (ext.w / 2) * u, (l.hudBottom + H) / 2, u, true);
+      else this.selector.place(W / 2, H - m - 22 * u - (ext.h / 2) * u, u, false);
+    }
 
     // QA geometry of HUD blocks (read-only, used by layout tests)
     const pillsW = (l.compact ? this.coinsPill.width * 2 + 14 : this.coinsPill.width) * u;
@@ -192,7 +231,7 @@ export class LevelScene extends Phaser.Scene {
     // (Step 6: the chair and the rug were framed too small), the reach constraint still keeps
     // room below for the finger / jet tools.
     const share = 0.78; // same height share for every object (Soccer Ball included since the Step 6 UI pass)
-    const fit = fitObject(l, t.bounds, { reach: t.reach, jetReach: t.jetReach, jetPx: t.jetPx, canvasSize: this.level.object.canvasSize, share });
+    const fit = fitObject(l, t.bounds, { reach: t.reach, jetReach: t.jetReach, jetPx: t.jetPx, canvasSize: this.level.object.canvasSize, share, bottomReserve: this.selectorReserve(l) });
     const changed = this.fitKey !== null && this.fitKey !== t.key;
     this.fitKey = t.key;
     this.objFit = fit;
@@ -223,22 +262,139 @@ export class LevelScene extends Phaser.Scene {
       dust: mk('fx-dot', { speed: { min: 30 * k, max: 140 * k }, lifespan: 650, scale: { start: 1.4 * k, end: 3.4 * k }, alpha: { start: 0.45, end: 0 }, tint: 0xc9bfae }),
       mist: mk('fx-drop-1', { speed: { min: 80 * k, max: 320 * k }, angle: { min: 180, max: 360 }, gravityY: 1200 * k, lifespan: 500, scale: { start: 0.35 * k, end: 0.15 * k }, alpha: { start: 0.9, end: 0 } }),
       foam: mk('fx-dot', { speed: { min: 40 * k, max: 160 * k }, lifespan: 500, scale: { start: 1.0 * k, end: 1.8 * k }, alpha: { start: 0.9, end: 0 } }),
+      // Step 8 power-tool effects (tool.fx): grinder / wire-wheel sparks, polish shine, sawdust
+      sparks: mk('fx-dot', { speed: { min: 260 * k, max: 720 * k }, angle: { min: 200, max: 340 }, gravityY: 1600 * k, lifespan: { min: 220, max: 420 }, scale: { start: 0.55 * k, end: 0.08 * k }, tint: [0xfff3b0, 0xffd166, 0xff9f1c], blendMode: 'ADD' }),
+      shine: mk('fx-sparkle', { speed: { min: 10 * k, max: 50 * k }, lifespan: 520, scale: { start: 0.05 * k, end: 0.16 * k }, alpha: { start: 1, end: 0 }, rotate: { min: 0, max: 90 } }),
+      sawdust: mk('fx-dot', { speed: { min: 40 * k, max: 180 * k }, gravityY: 500 * k, lifespan: 600, scale: { start: 0.9 * k, end: 0.3 * k }, alpha: { start: 0.85, end: 0 }, tint: 0xe9d3a6 }),
+      impact: mk('fx-dot', { speed: { min: 80 * k, max: 260 * k }, lifespan: 380, scale: { start: 1.2 * k, end: 0.2 * k }, alpha: { start: 0.9, end: 0 }, tint: 0xd8d2c8 }),
     };
   }
 
   // ---- stages ----------------------------------------------------------------------------
+  // ---- alternative tools (Step 7) ---------------------------------------------------------
+  // The stage's tool: the equipped option of its family, else the stage tool.
+  toolFor(stage) {
+    return getTool(stage.family ? this.services.toolShop.equipped(stage.family) : stage.tool);
+  }
+
+  toolMods(stage, toolId) {
+    const o = stage.family ? familyOption(stage.family, toolId) : null;
+    return { radius: o?.radius ?? 1, toolScale: o?.toolScale ?? 1, work: o?.work ?? 1 };
+  }
+
+  // Phones (shorter side < 600 CSS px, any orientation): bottom row, as in the reference. Large
+  // landscape screens (desktop, landscape tablet): a right-hand column beside the object.
+  selectorVertical(l) {
+    const phone = Math.min(l.cssW, l.cssH) < 600;
+    return !phone && l.W / l.H > 1.05;
+  }
+
+  // Height kept free at the bottom for the card row (portrait; landscape uses a side column).
+  selectorReserve(l) {
+    if (!this.selector || this.selectorVertical(l)) return 0;
+    return (ToolSelector.extent(false).h + 6) * l.u;
+  }
+
+  refreshSelector(rebuild = false) {
+    if (!this.selector) return;
+    const fam = this.stage?.family;
+    if (!fam || this.state !== 'playing') {
+      if (this.selector.container.visible) this.selector.hide();
+      return;
+    }
+    const shop = this.services.toolShop;
+    const opts = shop.options(fam).map((o) => ({ ...o, affordable: shop.canAfford(o), busy: o.busy || (this.cardBusy && this.cardBusy === o.tool) }));
+    if (rebuild || this.selector.familyId !== fam || !this.selector.container.visible) this.selector.setOptions(fam, opts);
+    else this.selector.update(opts);
+  }
+
+  async onToolCard(toolId) {
+    const fam = this.stage?.family;
+    if (!fam || this.state !== 'playing' || !this.canInteract() || this.cardBusy || this.activePointerId !== null) return;
+    const shop = this.services.toolShop;
+    const opt = shop.options(fam).find((o) => o.tool === toolId);
+    if (!opt) return;
+    if (opt.equipped) {
+      this.selector.pop(toolId);
+      return;
+    }
+    this.services.audio.play('ui-tap');
+    if (opt.owned) {
+      if (shop.equip(fam, toolId).status === 'equipped') this.applyTool(toolId);
+      return;
+    }
+    if (opt.unlock.type === 'coins' || opt.unlock.type === 'diamonds') {
+      const r = shop.purchase(fam, toolId);
+      if (r.status === 'insufficient') {
+        this.selector.shake(toolId);
+        this.selector.toast(`Not enough ${r.currency}`);
+        return;
+      }
+      if (r.status === 'purchased') {
+        (r.currency === 'coins' ? this.coinsPill : this.diamondsPill).setValue(r.after);
+        (r.currency === 'coins' ? this.coinsPill : this.diamondsPill).pulse();
+      }
+      if (r.status === 'purchased' || r.status === 'equipped') {
+        this.applyTool(toolId);
+        this.selector.pop(toolId);
+      }
+      return;
+    }
+    // rewarded ad: unlock permanently + equip on a watched ad; anything else changes nothing
+    const idx = this.stageIndex;
+    this.cardBusy = toolId;
+    this.refreshSelector();
+    const r = await shop.unlockWithAd(fam, toolId);
+    this.cardBusy = null;
+    if (!this.alive) return;
+    if (r.status === 'unlocked' || r.status === 'equipped') {
+      if (this.stageIndex === idx && this.state === 'playing') {
+        this.applyTool(toolId);
+        this.selector.pop(toolId);
+      }
+    } else {
+      this.refreshSelector();
+      this.selector?.toast(r.status === 'not-earned' ? 'Ad closed early' : 'Ad not available');
+    }
+  }
+
+  // Mid-stage switch: same job, same progress; only the active tool (sprite, footprint) changes.
+  applyTool(toolId) {
+    this.endStroke();
+    this.selector?.clearToast(); // an older "Ad closed early" must not linger after success
+    const tool = getTool(toolId);
+    const mods = this.toolMods(this.stage, toolId);
+    this.tool = tool;
+    this.tools.toolScale = (this.stage.toolScale ?? 1) * mods.toolScale;
+    this.tools.setTool(tool, { animate: true });
+    const r = (this.stage.params?.radius ?? 100) * mods.radius;
+    this.tools.sprayRadius = r;
+    this.mechanic.setTool?.(tool, r, mods);
+    this.strip.setIndex(this.stageIndex);
+    this.hint.hide();
+    this.idleMs = 0;
+    this.refreshSelector();
+    refreshTextResolution(this);
+  }
+
   startStage(i) {
     this.stageIndex = i;
     this.stage = this.level.stages[i];
-    this.tool = getTool(this.stage.tool);
+    this.tool = this.toolFor(this.stage);
+    const mods = this.toolMods(this.stage, this.tool.id);
     this.mechanic?.dispose();
-    this.mechanic = createMechanic(this.stage, { stack: this.stack, tool: this.tool, scene: this });
+    this.mechanic = createMechanic(this.stage, { stack: this.stack, tool: this.tool, scene: this, radiusMul: mods.radius });
+    if (this.stage.mechanic === 'points') this.mechanic.setTool(this.tool, 0, mods);
     this.lastContacts = 0;
     this.family = gestureFamily(this.stage, this.tool);
     this.applyFit(i > 0);
-    this.tools.toolScale = this.stage.toolScale ?? 1;
+    this.tools.toolScale = (this.stage.toolScale ?? 1) * mods.toolScale;
     this.tools.setTool(this.tool, { animate: i > 0 });
-    this.tools.sprayRadius = this.stage.params?.radius ?? 100;
+    this.tools.sprayRadius = (this.stage.params?.radius ?? 100) * mods.radius;
+    this.tools.paintTint = this.stage.params?.paintTint; // spray-gun paint colour (Step 8)
+    // Step 8 large objects: dim the zones this stage does not work on
+    if (this.stage.dim && this.stage.region) this.stack.showZoneDim(this.stage.region);
+    else this.stack.hideZoneDim();
     // Dashed green outline only where the active part would otherwise be unclear (stage
     // `outline: true`: trophy ball / base, chair seat close-ups, sanding spots). Whole-object or
     // obvious targets (whole chair, black scuff marks) rely on the hand hint instead.
@@ -261,6 +417,7 @@ export class LevelScene extends Phaser.Scene {
     this.progressBar.set(0);
     this.stageStartedAt = this.time.now;
     this.state = 'playing';
+    this.refreshSelector(true); // tool cards for this stage's family (hidden otherwise)
   }
 
   canInteract() {
@@ -285,7 +442,10 @@ export class LevelScene extends Phaser.Scene {
     this.activePointerId = pointer.id;
     this.tools.press(w);
     this.lastWork = this.tools.workPointFor(w);
-    if (this.tool.kind === 'contact') this.mechanic.tap(this.lastWork);
+    if (this.tool.kind === 'contact') {
+      if (this.mechanic.mode === 'tap' && this.stage.mechanic === 'points') this.tools.strike();
+      this.mechanic.tap(this.lastWork);
+    }
   }
 
   onPointerMove(pointer) {
@@ -442,6 +602,13 @@ export class LevelScene extends Phaser.Scene {
       const a = m.nextItemLocal();
       if (!a) return;
       path = [finger(a), finger(m.targetLocal())];
+    } else if (this.family.startsWith('point-')) {
+      // point targets: press (and hold) on the next target
+      const t = m.nextTargetLocal();
+      if (!t) return;
+      const p = finger(t);
+      const up = { x: p.x, y: p.y - 30 * this.layout.u };
+      path = this.family === 'point-tap' ? [p, up, p, up, p] : [p, { x: p.x + 2, y: p.y }];
     } else if (this.family === 'spot') {
       const sp = m.nextSpotLocal();
       if (!sp) return;
@@ -461,6 +628,16 @@ export class LevelScene extends Phaser.Scene {
     } else {
       const strokes = this.areaHintPath().map((st2) => st2.map(finger));
       if (!strokes.length) return;
+      // a tool that needs paint first: dip into the source, then paint (Step 8)
+      if (m.needsLoad?.()) {
+        const t = m.sourceOpening();
+        const dip = [];
+        for (let i = 0; i <= 8; i++) {
+          const a = (i / 8) * Math.PI * 2;
+          dip.push(finger({ x: t.x + Math.cos(a) * t.r * 0.5, y: t.y + Math.sin(a) * t.r * 0.3 }));
+        }
+        strokes.unshift(dip);
+      }
       this.hint.showStrokes(strokes);
       return;
     }
@@ -469,11 +646,26 @@ export class LevelScene extends Phaser.Scene {
 
   emitContactFx(p) {
     const id = this.stage.id;
+    const fx = this.stage.fx ?? this.tool.fx; // Step 8: stage override (scraper chips, sanding dust)
     if (id === 'chisel' && Math.random() < 0.35) {
       this.fx.chips.setTexture(FX_CHUNKS[Math.floor(Math.random() * FX_CHUNKS.length)]);
       this.fx.chips.emitParticleAt(p.x, p.y, 1);
     } else if (id === 'dry-brush' && Math.random() < 0.5) this.fx.dust.emitParticleAt(p.x, p.y, 1);
     else if (id === 'scrub' && Math.random() < 0.3) this.fx.foam.emitParticleAt(p.x, p.y, 1);
+    else if (fx === 'sparks') this.fx.sparks.emitParticleAt(p.x, p.y, 3);
+    else if (fx === 'shine' && Math.random() < 0.25) this.fx.shine.emitParticleAt(p.x, p.y, 1);
+    else if (fx === 'sawdust' && Math.random() < 0.5) this.fx.sawdust.emitParticleAt(p.x, p.y, 1);
+    else if (fx === 'dust' && Math.random() < 0.5) this.fx.dust.emitParticleAt(p.x, p.y, 1);
+    else if (fx === 'chips' && Math.random() < 0.35) {
+      this.fx.chips.setTexture(FX_CHUNKS[Math.floor(Math.random() * FX_CHUNKS.length)]);
+      this.fx.chips.emitParticleAt(p.x, p.y, 1);
+    }
+  }
+
+  // Hammer blow on a point target (Step 8): a small burst at the hit point.
+  emitImpactFx(world) {
+    this.fx?.impact.emitParticleAt(world.x, world.y, 6);
+    this.services.audio.play('ui-tap');
   }
 
   update(time, delta) {
@@ -495,8 +687,13 @@ export class LevelScene extends Phaser.Scene {
       const before = this.mechanic.validContacts;
       this.mechanic.spray(impact, Math.min(delta, 50) / 1000);
       if (this.mechanic.validContacts > before && Math.random() < 0.5) {
-        (this.tool.jetStyle === 'foam' ? this.fx.foam : this.fx.mist).emitParticleAt(impact.x, impact.y, 1);
+        if (this.tool.jetStyle === 'paint' || this.tool.jetStyle === 'air') this.emitContactFx(impact);
+        else (this.tool.jetStyle === 'foam' ? this.fx.foam : this.fx.mist).emitParticleAt(impact.x, impact.y, 1);
       }
+    }
+    // Step 8 point targets: holding the tool on a screw / keycap works over time
+    if (this.activePointerId !== null && this.tool.kind === 'contact' && this.mechanic.hold && this.canInteract() && this.tools.pointerWorld) {
+      this.mechanic.hold(this.tools.workPointFor(this.tools.pointerWorld), Math.min(delta, 50) / 1000);
     }
     if (this.state === 'playing') {
       this.progressBar.set(this.mechanic.progress);
@@ -513,10 +710,12 @@ export class LevelScene extends Phaser.Scene {
     if (this.state !== 'playing') return;
     this.state = 'pendingRelease';
     this.tools.inert = true; // the tool stays in the hand but no longer sprays / works
+    this.refreshSelector(); // stage done: the tool cards go away
     const stage = this.stage;
     this.stageLog.push({ id: stage.id, seconds: (this.time.now - this.stageStartedAt) / 1000, contacts: this.mechanic.validContacts, autoCompleted: (this.mechanic.grid?.progress ?? 1) < 0.999 });
     this.hint.hide();
     this.stack.hideRegionOutline();
+    this.stack.hideZoneDim();
     const from = this.progressBar.value;
     this.tweens.addCounter({ from, to: 1, duration: 450, ease: 'Sine.easeOut', onUpdate: (tw) => this.progressBar.set(tw.getValue()) });
     this.finishing = this.mechanic.finish(500);
@@ -608,7 +807,8 @@ export class LevelScene extends Phaser.Scene {
       onOpenChest: () => this.openChestOffer(),
       onHome: () => this.goMenu(),
       onReplay: () => this.replay(),
-      onNext: next ? () => this.goLevel(next) : null,
+      // the last object for now: Next returns to the object list (Step 8, until more batches)
+      onNext: next ? () => this.goLevel(next) : () => this.goMenu(),
     });
     // Level chest: the bar runs +20 % for this completion; a full chest is offered right away
     // (and stays offered from the bar if the player chooses "Later").
@@ -837,6 +1037,8 @@ export class LevelScene extends Phaser.Scene {
     this.settingsModal?.destroy();
     this.hudTimedChest?.destroy();
     this.hudProgressChest?.destroy();
+    this.selector?.destroy();
+    this.selector = null;
     this.chestOffer?.destroy();
     this.chestOffer = null;
     this.settingsModal = null;

@@ -9,6 +9,18 @@ const COMPLETION_REWARDS = {
   'golden-trophy': 20,
   chair: 20,
   sneaker: 20,
+  // Step 8 Batch A — provisional (Step 10 balance): early levels pay a little more than levels 1–5,
+  // by stage count (6–8 stages → 20–25)
+  'rain-boots': 20,
+  'frying-pan': 20,
+  'wooden-crate': 20,
+  toolbox: 25,
+  'bathroom-sink': 20,
+  'desk-fan': 25,
+  'garden-bench': 25,
+  keyboard: 25,
+  'watering-can': 25,
+  'porcelain-vase': 25,
 };
 
 export const REWARDS = {

@@ -144,3 +144,40 @@ Reused: icon-ad, ui-tile-large (level cards), ui-pill, ui-progress-fill, ui-resu
 **Update 2026-10-06 (x3 button v4):** `ui-btn-purple` (Nano Banana 2 job 289f1b77-80b8-422c-9af6-a3d84c1a32de, Background Remover d6f050dc-6e7e-48a2-a18c-217eb57ad7e0, style reference ui-buttons-sheet) and `icon-ad-clapper` (job 0029610a-533d-4c89-886c-9e582987dc17, Background Remover 7e58dce9-a0f2-4eda-81a1-a4922a8c95c6; direction from the designer's reference icon, own render). Export: `python scripts/prepare_levels.py rewards`.
 
 **Update 2026-10-07 (UI / reward pass 3):** Nano Banana 2 + Background Remover: `ui-btn-pink` (57fa2b2d… / a59e30bf…, boost button), `icon-replay` (27411073… / b107bdd5…), `icon-next` (7c21b2bd… / 430b76a7…), `icon-vip` (c86a58bc… / 60132c39…, VIP mini-games reward card). Clean hub previews (`thumb-clean*.webp`) are derived from the existing clean layers (`prepare_levels.py thumbs`). Full record: `project/asset-manifest.json` → `step6.uiRewards`.
+
+## Step 7 — alternative tools (2026-10-07)
+
+Nano Banana 2 + Background Remover (full record: `project/asset-manifest.json` → `step7`; export `python scripts/prepare_levels.py tools`):
+
+| Asset | Nano Banana 2 job | Background Remover job | Working point |
+|---|---|---|---|
+| tool-scrub-brush-oval (orange oval hand brush) | 8e1f4464-46f2-45d4-b824-43712e8b8832 | 039a9e67-2f58-46db-b1c7-15000a3a0b7e | bristle tips |
+| tool-foam-gun (yellow foam gun, nozzle up) | c180f9a1-5b82-4ace-b39e-c4ec9fc5093e | 2f9d7b89-d17d-4527-bae8-e32a7e5b399c | nozzle tip |
+| tool-foam-cannon (premium foam cannon, nozzle up) | b9f4a9f2-6b64-4756-854a-a28022869ee7 | e272fc22-ebd4-4e91-a2f7-4a4418560e96 | nozzle tip |
+
+Reused approved art: drill brush (scrub, diamonds), stain sponge as the drying sponge, eraser as the magic eraser.
+
+## Step 8 Batch A — levels 6–15 (2026-10-08)
+
+Model: **Nano Banana Pro** (`nano_banana_pro`, 2k) by designer instruction (the service reports these jobs as `nano_banana_2`); transparency by Higgsfield Background Remover. Full per-asset record (prompt, reference job, job ID, removal job, SHA-256): `project/asset-manifest.json` → `batchA` (generator: `python scripts/write_batch_a_manifest.py`; raw logs `reference/batch-a/prompts.json`, `bgremoval.txt`). Export: `python scripts/prepare_batch_a.py`.
+
+| Group | Generated (Nano Banana Pro) | Rejected / superseded |
+|---|---|---|
+| Rain Boots | clean, wet, stained, muddy, mudcrust, clean-v2 | clean master (pose differed from all edits; clean re-derived from the wet edit) |
+| Frying Pan | clean (seasoned), matte, wet, rusty, greasy, crust | first clean (style-reference ball leaked in) |
+| Wooden Crate | clean (varnished), painted, sanded, sawdust, rough, flaking | first clean (posts sticking out) |
+| Toolbox | clean, painted, bright, stained, rusty, junk sheet | — |
+| Bathroom Sink | clean, dull, wet, limescale, scummy, junk sheet | first clean (reference leaked in) |
+| Desk Fan | clean (no front guard), grimy, dusty, wet (unused), front guard, parts sheet (screw, tub) | — |
+| Garden Bench | clean, painted, bare, dusty, rusty, weathered, flaking, leaves sheet, paint tray, paint can | — |
+| Keyboard | clean, smudged, dusty, dirty, removed-clean, removed-gunk, removed-crumbs | — |
+| Watering Can | clean (painted), bare, wet, grimy, rusty, dents sheet | first dents sheet (reference can leaked in) |
+| Porcelain Vase | clean, wet, grimy, grimy-wet, chips sheet | first chips sheet (reference vase leaked in) |
+| Backgrounds | bg-wash, bg-studio, bg-workshop, bg-yard (portrait masters; landscape cropped) | — |
+| Materials (foam) | rubber, degreaser, rust (pink), ceramic, plastic | — |
+| Tools (base) | steel wool, wide scraper, paint brush, wire brush, angle grinder, spray gun, polisher, screwdriver, paint roller, keycap puller, air blower, cotton swab, hammer | — |
+| Tools (cards) | turbo lance, gold washer, wire wheel, pro scraper, sanding block, orbital sander, gold grinder, airbrush, gold spray gun, orbital polisher, gold polisher, power driver, gold screwdriver, wide roller, foam roller, rubber mallet, gold hammer | — |
+
+**Totals: 108 Nano Banana Pro generations (5 rejected + 1 superseded), 93 background removals.**
+
+Derived in `prepare_batch_a.py` (registration / masks / compositing only): zone masks from colour or state differences (pan cooking surface + rust, crate slats / posts, sink faucet / basin, bench slats / frame, keyboard keycap cells + spill), dust films for the crate / toolbox / vase / fan guard from the approved `materials/dust-wood` texture, keycap cut-outs from the clean and dirty keyboard, vase repair patches from the clean vase, per-material foams, thumbnails and result pictures (object over its background family).

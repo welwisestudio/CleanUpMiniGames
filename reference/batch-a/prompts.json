@@ -1,0 +1,876 @@
+{
+ "rain-boots/clean": {
+  "key": "rain-boots/clean",
+  "job": "fe630292-bf93-4aec-9474-adec3539563c",
+  "ref": "5ff2b8e2-c11f-4ac0-9504-61eba0b243f9",
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Match the rendering style of the attached reference image exactly (semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines) but do NOT include the reference object. Subject: a pair of brand-new glossy sunny-yellow rubber rain boots (wellingtons) standing side by side, the left boot slightly behind the right one, both seen from a front three-quarter view, chunky dark navy rubber soles with deep tread, a navy rubber band around each top rim, smooth shiny yellow rubber with soft reflections, generic design with no logos. Centered, both boots fit in the frame with 12% clear padding on every side, nothing cropped. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no logos, no extra objects.",
+  "status": "superseded",
+  "note": "master pose differs from every edit made from it; the clean state was re-derived from rain-boots/wet (rain-boots/clean-v2)"
+ },
+ "frying-pan/clean": {
+  "key": "frying-pan/clean",
+  "job": "a9af204a-d37b-4859-aad9-8cef87fc8bf3",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: one heavy round cast-iron frying pan (skillet) seen from a high three-quarter angle from above, so the whole round cooking surface is visible as a wide ellipse, a thick rounded rim and a long solid cast-iron handle with a hanging hole pointing to the lower right; freshly seasoned: deep satin-black iron with a subtle oily sheen and soft highlights. The pan is the only object in the image. Centered, the entire pan including the handle fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no logos, no food, no other objects.",
+  "status": "completed"
+ },
+ "wooden-crate/clean": {
+  "key": "wooden-crate/clean",
+  "job": "e8fdf522-ea0c-4dcb-934b-d3e70b68fb5e",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: one small sturdy open-top wooden storage crate shaped like a simple box, front three-quarter view from slightly above so a little of the inside is visible. Each side is made of three wide horizontal wooden slats with small even gaps between them, nailed to four square wooden corner posts that are exactly as tall as the crate (flush with the top edge, nothing sticking out). Freshly painted and varnished: all slats in glossy mint-teal paint, the four corner posts in glossy creamy-white paint, smooth even satin gloss. The crate is the only object in the image. Centered, the entire crate fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no stencils, no logos, nothing inside the crate, no other objects.",
+  "status": "completed"
+ },
+ "toolbox/clean": {
+  "key": "toolbox/clean",
+  "job": "182e24cb-405e-4468-b424-e54aa1c38f20",
+  "ref": "5ff2b8e2-c11f-4ac0-9504-61eba0b243f9",
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Match the rendering style of the attached reference image exactly (semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines) but do NOT include the reference object. Subject: one classic rectangular metal toolbox with a closed hinged lid and a sturdy top carry handle, two front latches, front three-quarter view from slightly above; freshly restored: glossy bright fire-engine red paint on the whole box and lid, polished steel latches and hinges, a black rubber grip on the handle. Centered, the entire toolbox fits in the frame with 12% clear padding on every side, nothing cropped. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no labels, no logos, no extra objects.",
+  "status": "completed"
+ },
+ "bathroom-sink/clean": {
+  "key": "bathroom-sink/clean",
+  "job": "bc1f4455-12af-41f9-b34b-158e1f012920",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: one white glossy ceramic bathroom washbasin (a wide rounded rectangular sink bowl with a flat back ledge, no pedestal, no cabinet, no wall, nothing below it) with a tall shiny chrome single-lever mixer faucet standing on the back ledge, seen from a front three-quarter view from above so the whole inside of the bowl and the round chrome drain are visible. Brand-new, sparkling clean. The basin is the only object in the image. Centered, the entire basin and faucet fit in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no wall, no cast shadow. No text, no logos, no soap, no other objects.",
+  "status": "completed"
+ },
+ "desk-fan/clean": {
+  "key": "desk-fan/clean",
+  "job": "a3f7a8a1-1902-4337-a596-20ce347f1480",
+  "ref": "5ff2b8e2-c11f-4ac0-9504-61eba0b243f9",
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Match the rendering style of the attached reference image exactly (semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines) but do NOT include the reference object. Subject: one retro electric desk fan seen in a perfectly straight front view, perfectly symmetric: four wide glossy pale-mint plastic fan blades arranged in a circle with a round chrome spinner cap in the middle, a thin chrome rear wire guard behind the blades, a short mint neck below, and a round mint plastic base with two small white push buttons. The FRONT guard is removed: the blades are fully exposed in front. Brand-new and spotless. Centered, the entire fan fits in the frame with 12% clear padding on every side, nothing cropped. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no logos, no extra objects.",
+  "status": "completed"
+ },
+ "garden-bench/clean": {
+  "key": "garden-bench/clean",
+  "job": "b57da982-7b5e-462d-9492-03b54e2af6bb",
+  "ref": "5ff2b8e2-c11f-4ac0-9504-61eba0b243f9",
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Match the rendering style of the attached reference image exactly (semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines) but do NOT include the reference object. Subject: one classic park garden bench seen from a front three-quarter view: the seat and the backrest made of wide horizontal wooden slats in warm honey-brown wood with a fresh glossy varnish, and two ornate cast-iron side frames with curved armrests and legs in glossy fresh black paint. Restored and spotless. Centered, the entire bench fits in the frame with 12% clear padding on every side, nothing cropped. Background: plain uniform flat light gray background, no gradient, no ground, no grass, no cast shadow. No text, no plaque, no logos, no extra objects.",
+  "status": "completed"
+ },
+ "keyboard/clean": {
+  "key": "keyboard/clean",
+  "job": "b09eb166-0ca9-4c32-bee7-938bd3332ebb",
+  "ref": "5ff2b8e2-c11f-4ac0-9504-61eba0b243f9",
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Match the rendering style of the attached reference image exactly (semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, no outlines) but do NOT include the reference object. Subject: one compact mechanical computer keyboard lying flat, seen from a high front three-quarter angle from above, five rows of keys in a standard compact layout with a long space bar, a soft pastel lavender-gray aluminium case, glossy cream-white keycaps that are completely BLANK (no letters, no numbers, no symbols printed on any key), and a few soft lilac accent keycaps (the large key at the top left, the large enter key and the space bar). Brand-new and spotless. No cable. Centered, the entire keyboard fits in the frame with 12% clear padding on every side, nothing cropped. Background: plain uniform flat light gray background, no gradient, no desk, no cast shadow. Absolutely no text, no letters, no legends, no logos, no extra objects.",
+  "status": "completed"
+ },
+ "watering-can/clean": {
+  "key": "watering-can/clean",
+  "job": "e56b5382-953c-47f4-9bc8-82b4e465a8c6",
+  "ref": "5ff2b8e2-c11f-4ac0-9504-61eba0b243f9",
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Match the rendering style of the attached reference image exactly (semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines) but do NOT include the reference object. Subject: one classic metal garden watering can seen from the side, slightly from the front: a round barrel-shaped body, an arched handle over the top, a long thin spout rising to the right and ending in a round sprinkler rose; freshly painted in glossy bright leaf-green paint with smooth even gloss. Centered, the entire can including the spout fits in the frame with 12% clear padding on every side, nothing cropped. Background: plain uniform flat light gray background, no gradient, no ground, no cast shadow. No water, no text, no logos, no extra objects.",
+  "status": "completed"
+ },
+ "porcelain-vase/clean": {
+  "key": "porcelain-vase/clean",
+  "job": "ed766b62-7700-48b8-a2b6-ad07769513bd",
+  "ref": "5ff2b8e2-c11f-4ac0-9504-61eba0b243f9",
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Match the rendering style of the attached reference image exactly (semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines) but do NOT include the reference object. Subject: one elegant porcelain vase standing upright, front view: a wide round belly, a narrow neck and a flared lip, glossy white porcelain hand-painted with cobalt-blue flowers and leaves, raised embossed relief bands of small scrolls around the neck and around the foot. Brand-new and spotless. Centered, the entire vase fits in the frame with 12% clear padding on every side, nothing cropped. Background: plain uniform flat light gray background, no gradient, no table, no cast shadow. No flowers inside, no text, no logos, no extra objects.",
+  "status": "completed"
+ },
+ "backgrounds/bg-wash": {
+  "key": "backgrounds/bg-wash",
+  "job": "d5186ff1-1de4-4ca4-adaa-b719a9617c88",
+  "ref": "758073a2-92d8-41f6-aad1-2fc4daedfb41",
+  "aspect": "9:16",
+  "prompt": "Premium mobile game gameplay background, portrait 9:16, for a casual cleaning game. Match the attached reference background's rendering quality and mood exactly (semi-realistic polished 3D render, soft depth of field, calm, a brighter clean central area for the game object, slightly darker top band behind the HUD) but show a different place: a bright clean wash room: pale aqua-mint glossy wall tiles in the upper part with a softly blurred white wall shelf, a white countertop edge running across the middle, and a light warm-gray terrazzo floor in the lower half seen in perspective, soft window light from the left. Empty, no objects on the floor, no people, no text, no logos, no UI.",
+  "status": "completed"
+ },
+ "backgrounds/bg-studio": {
+  "key": "backgrounds/bg-studio",
+  "job": "ac49b487-e518-43a8-99b9-531c7d457101",
+  "ref": "758073a2-92d8-41f6-aad1-2fc4daedfb41",
+  "aspect": "9:16",
+  "prompt": "Premium mobile game gameplay background, portrait 9:16, for a casual cleaning game. Match the attached reference background's rendering quality and mood exactly (semi-realistic polished 3D render, soft depth of field, calm, a brighter clean central area for the game object, slightly darker top band behind the HUD) but show a different place: a light airy cleaning studio: a soft blue-gray painted wall with a far, heavily blurred white shelf holding a few plain cleaning bottles and folded towels without labels, and a smooth very light gray studio floor in the lower half seen in perspective, a soft overhead light pool in the center. Empty floor, no people, no text, no labels, no logos, no UI.",
+  "status": "completed"
+ },
+ "backgrounds/bg-workshop": {
+  "key": "backgrounds/bg-workshop",
+  "job": "972d7c36-bf79-4f9c-b004-b38517e9fe47",
+  "ref": "758073a2-92d8-41f6-aad1-2fc4daedfb41",
+  "aspect": "9:16",
+  "prompt": "Premium mobile game gameplay background, portrait 9:16, for a casual cleaning game. Match the attached reference background's rendering quality and mood exactly (semi-realistic polished 3D render, soft depth of field, calm, a brighter clean central area for the game object, slightly darker top band behind the HUD) but show a different place: a warm cozy workshop: a softly blurred pegboard wall with hanging hand tool silhouettes and a warm hanging lamp in the upper part, and a large clean light oak workbench top running across the lower half seen in perspective, warm golden light. Empty workbench, no objects on it, no people, no text, no logos, no UI.",
+  "status": "completed"
+ },
+ "backgrounds/bg-yard": {
+  "key": "backgrounds/bg-yard",
+  "job": "b875bfe6-b339-419b-b25c-4d605a1018ea",
+  "ref": "758073a2-92d8-41f6-aad1-2fc4daedfb41",
+  "aspect": "9:16",
+  "prompt": "Premium mobile game gameplay background, portrait 9:16, for a casual cleaning game. Match the attached reference background's rendering quality and mood exactly (semi-realistic polished 3D render, soft depth of field, calm, a brighter clean central area for the game object, slightly darker top band behind the HUD) but show a different place: a sunny backyard garden: a bright blue sky with soft white clouds at the top, a softly blurred white wooden picket fence and round green hedges in the middle, and a smooth sunlit green lawn with a light stone patio area in the lower half seen in perspective. Empty, no furniture, no people, no animals, no text, no logos, no UI.",
+  "status": "completed"
+ },
+ "frying-pan/clean@rejected-1": {
+  "key": "frying-pan/clean",
+  "job": "de8cecb3-7552-4207-b256-9bdcb4d3dc36",
+  "ref": "5ff2b8e2-c11f-4ac0-9504-61eba0b243f9",
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Match the rendering style of the attached reference image exactly (semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, no outlines) but do NOT include the reference object. Subject: one heavy round cast-iron frying pan (skillet) seen from a high three-quarter angle from above, so the whole round cooking surface is visible as a wide ellipse, with a thick rim and a long solid cast-iron handle pointing to the lower right; freshly seasoned: deep satin-black iron with a subtle oily sheen and soft highlights. Centered, the entire pan including the handle fits in the frame with 12% clear padding on every side, nothing cropped. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no logos, no food, no extra objects.",
+  "status": "rejected",
+  "note": "part of the style-reference soccer ball leaked into the image"
+ },
+ "bathroom-sink/clean@rejected-1": {
+  "key": "bathroom-sink/clean",
+  "job": "bb67f995-5f90-4e8d-834b-a11213979cd0",
+  "ref": "5ff2b8e2-c11f-4ac0-9504-61eba0b243f9",
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Match the rendering style of the attached reference image exactly (semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, no outlines) but do NOT include the reference object. Subject: one white glossy ceramic bathroom washbasin (a wide rounded rectangular sink bowl, no pedestal, no cabinet, no wall) with a tall shiny chrome single-lever mixer faucet standing at the back edge, seen from a front three-quarter view from above so the whole inside of the bowl and the chrome drain are visible. Brand-new, sparkling clean. Centered, the entire basin and faucet fit in the frame with 12% clear padding on every side, nothing cropped. Background: plain uniform flat light gray background, no gradient, no wall, no cast shadow. No text, no logos, no soap, no extra objects.",
+  "status": "rejected",
+  "note": "part of the style-reference soccer ball leaked into the image"
+ },
+ "wooden-crate/clean@rejected-1": {
+  "key": "wooden-crate/clean",
+  "job": "283ca163-884a-4827-b672-95047f08cee1",
+  "ref": "5ff2b8e2-c11f-4ac0-9504-61eba0b243f9",
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Match the rendering style of the attached reference image exactly (semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, gentle ambient occlusion, crisp highlights, saturated clean colors, no outlines) but do NOT include the reference object. Subject: one small sturdy open-top wooden storage crate, front three-quarter view from slightly above so a little of the inside is visible: wide horizontal wooden slats on every side with small gaps between them, thick square wooden corner posts at all four corners; freshly painted and varnished: all slats in glossy mint-teal paint, all four corner posts in glossy creamy-white paint, smooth even satin gloss. Centered, the entire crate fits in the frame with 12% clear padding on every side, nothing cropped. Background: plain uniform flat light gray background, no gradient, no floor, no cast shadow. No text, no stencils, no logos, nothing inside the crate, no extra objects.",
+  "status": "rejected",
+  "note": "corner posts stick out above the crate, an extra post in the middle"
+ },
+ "rain-boots/wet": {
+  "key": "rain-boots/wet",
+  "job": "7e5aafa0-d970-4b5e-a4c1-ed3e07f678cd",
+  "ref": "fe630292-bf93-4aec-9474-adec3539563c",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same pair of rain boots: identical size, position, silhouette, soles, rims, camera and framing, and the same plain flat light gray background. Change only the surface: the boots are freshly washed and wet: bright clean yellow rubber and navy soles covered with many clear water droplets and short water streaks, strong wet gloss. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "rain-boots/stained": {
+  "key": "rain-boots/stained",
+  "job": "d3075823-ebc7-4d6d-b2d7-86a6ce093262",
+  "ref": "fe630292-bf93-4aec-9474-adec3539563c",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same pair of rain boots: identical size, position, silhouette, soles, rims, camera and framing, and the same plain flat light gray background. Change only the surface: the boots are dirty and stained: smeared green grass stains and gray-brown grime streaks all over the yellow rubber, dirt packed into the sole tread, dull and matte, no thick mud, no water. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "rain-boots/muddy": {
+  "key": "rain-boots/muddy",
+  "job": "c03f6669-e763-4113-93e6-40e1b6242fa1",
+  "ref": "fe630292-bf93-4aec-9474-adec3539563c",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same pair of rain boots: identical size, position, silhouette, soles, rims, camera and framing, and the same plain flat light gray background. Change only the surface: the boots are covered with wet dark brown mud: thick wet mud smeared over the lower two thirds and splashed up to the rims, the sole tread packed with mud, glossy wet sheen, the yellow rubber only faintly visible through the mud near the top. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "rain-boots/mudcrust": {
+  "key": "rain-boots/mudcrust",
+  "job": "cbf741a2-fc53-4516-884d-e1401811df43",
+  "ref": "fe630292-bf93-4aec-9474-adec3539563c",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the same position, size, camera angle and framing, and the same plain flat light gray background. Both boots are now completely encased from the soles to the rims in a thick layer of dried, cracked light-brown mud crust with chunky volume, deep cracks, small pebbles and bits of dry grass; no yellow rubber is visible. The silhouette stays the same, only slightly lumpy at the edge. Semi-realistic glossy casual mobile game render, soft studio light from the upper left. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "toolbox/painted": {
+  "key": "toolbox/painted",
+  "job": "4ad990ca-ace0-4b9c-ac5d-28f55a91cd88",
+  "ref": "182e24cb-405e-4468-b424-e54aa1c38f20",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same toolbox: identical size, position, silhouette, lid, handle, latches, hinges, camera and framing, and the same plain flat light gray background. Change only the surface: the box was just spray-painted red but not wiped yet: the red paint is matte and flat with a fine powdery pale overspray haze and a few dull dusty streaks, no gloss; latches, hinges and handle unchanged. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "toolbox/bright": {
+  "key": "toolbox/bright",
+  "job": "02374e26-6255-413b-af3d-798a89a5c27f",
+  "ref": "182e24cb-405e-4468-b424-e54aa1c38f20",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same toolbox: identical size, position, silhouette, lid, handle, latches, hinges, camera and framing, and the same plain flat light gray background. Change only the surface: there is no paint at all: the whole box and lid are bare freshly ground steel, bright silvery brushed metal with fine swirling grinding marks and crisp highlights; latches, hinges and handle grip unchanged. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "toolbox/stained": {
+  "key": "toolbox/stained",
+  "job": "b2bd0802-10d7-4d52-b153-02d73e79a32e",
+  "ref": "182e24cb-405e-4468-b424-e54aa1c38f20",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same toolbox: identical size, position, silhouette, lid, handle, latches, hinges, camera and framing, and the same plain flat light gray background. Change only the surface: the paint is gone and the loose rust was brushed off: the box and lid are dull dark gray-brown bare metal with blotchy orange-brown rust stains and small pits, no flakes, matte; the latches and hinges dull gray and grimy. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "toolbox/rusty": {
+  "key": "toolbox/rusty",
+  "job": "0d3c40fb-5ad2-4193-a153-4eb55d1f37f7",
+  "ref": "182e24cb-405e-4468-b424-e54aa1c38f20",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same toolbox: identical size, position, silhouette, lid, handle, latches, hinges, camera and framing, and the same plain flat light gray background. Change only the surface: the toolbox is old and badly rusted: thick flaky orange-brown rust with scaly blisters and peeling patches over the whole box and lid, only tiny traces of faded red paint, the latches, hinges and handle rusty and grimy. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "desk-fan/grimy": {
+  "key": "desk-fan/grimy",
+  "job": "9eb1c4cd-c63f-4a79-9649-016e7f418a15",
+  "ref": "a3f7a8a1-1902-4337-a596-20ce347f1480",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same desk fan: identical size, position, silhouette, blades, spinner cap, rear guard, neck, base and buttons, camera and framing, and the same plain flat light gray background. Change only the surface: the fan is old and grimy: sticky yellowed brown grime and greasy smudges on the mint blades, the base and the neck, the chrome spinner cap and rear guard dull and grimy. No dust, no text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "desk-fan/wet": {
+  "key": "desk-fan/wet",
+  "job": "2d7b1649-ec4b-42dc-a9de-5a77620cf713",
+  "ref": "a3f7a8a1-1902-4337-a596-20ce347f1480",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same desk fan: identical size, position, silhouette, blades, spinner cap, rear guard, neck, base and buttons, camera and framing, and the same plain flat light gray background. Change only the surface: the fan is freshly washed and wet: clean bright mint plastic and shiny chrome covered with many clear water droplets and a wet sheen. No text, no cast shadow on the background.",
+  "status": "completed",
+  "note": "not used: the matrix fan sequence has no rinse (wiped with the cloth)"
+ },
+ "desk-fan/dusty": {
+  "key": "desk-fan/dusty",
+  "job": "e35a2267-95be-4379-9bfc-8ff966c28b19",
+  "ref": "a3f7a8a1-1902-4337-a596-20ce347f1480",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same desk fan: identical size, position, silhouette, blades, spinner cap, rear guard, neck, base and buttons, camera and framing, and the same plain flat light gray background. Change only the surface: the fan is old and neglected: a thick fuzzy matte layer of gray dust and lint covers the blades (especially their front faces), the spinner cap, the base and the neck, over sticky yellowed grime. No cobwebs, no text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "garden-bench/painted": {
+  "key": "garden-bench/painted",
+  "job": "6420d3c5-b004-4d03-90a9-53a91d68df56",
+  "ref": "b57da982-7b5e-462d-9492-03b54e2af6bb",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same bench: identical size, position, silhouette, every slat, the cast-iron side frames, camera and framing, and the same plain flat light gray background. Change only the wooden slats: they have a fresh even honey-brown wood stain that is completely matte and flat, with no varnish and no gloss at all. The cast-iron frames stay glossy black exactly as now. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "rain-boots/clean-v2": {
+  "key": "rain-boots/clean-v2",
+  "job": "6dfaecb9-51e3-48c3-94e7-35486be5d015",
+  "ref": "7e5aafa0-d970-4b5e-a4c1-ed3e07f678cd",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same pair of rain boots: identical size, position, silhouette, soles, rims, camera and framing, and the same plain flat light gray background. Change only the surface: the boots are completely dry, brand-new and spotless: smooth glossy sunny-yellow rubber with soft clean reflections, clean navy soles and rims, no water droplets at all. No text, no cast shadow on the background.",
+  "status": "completed",
+  "note": "clean state re-derived from rain-boots/wet (the first master had a different pose than all its edits)"
+ },
+ "frying-pan/matte": {
+  "key": "frying-pan/matte",
+  "job": "9c71966d-ce06-4435-8fd9-19fc9676b55a",
+  "ref": "a9af204a-d37b-4859-aad9-8cef87fc8bf3",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same frying pan: identical size, position, silhouette, rim, handle, camera and framing, and the same plain flat light gray background. Change only the surface: the cast iron is clean but completely dry and dull: flat matte charcoal-gray bare iron with no oil sheen at all, slightly lighter and powdery looking. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "frying-pan/wet": {
+  "key": "frying-pan/wet",
+  "job": "6b5f315a-e8e3-42c6-864a-8da644c89293",
+  "ref": "a9af204a-d37b-4859-aad9-8cef87fc8bf3",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same frying pan: identical size, position, silhouette, rim, handle, camera and framing, and the same plain flat light gray background. Change only the surface: the pan is freshly washed and wet: clean dark charcoal-gray bare iron covered with many clear water droplets and a wet sheen, no oil. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "frying-pan/rusty": {
+  "key": "frying-pan/rusty",
+  "job": "86164ca8-c5f0-4c0b-a3ce-a6b84bddb82c",
+  "ref": "a9af204a-d37b-4859-aad9-8cef87fc8bf3",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same frying pan: identical size, position, silhouette, rim, handle, camera and framing, and the same plain flat light gray background. Change only the surface: the pan is clean and wet with water droplets, but there are several patches of bright orange-brown rust on the outer rim and along the handle (the cooking surface inside has no rust). No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "frying-pan/greasy": {
+  "key": "frying-pan/greasy",
+  "job": "23e8a304-d5c5-49c6-b7f4-ec0e02ddeb2f",
+  "ref": "a9af204a-d37b-4859-aad9-8cef87fc8bf3",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same frying pan: identical size, position, silhouette, rim, handle, camera and framing, and the same plain flat light gray background. Change only the surface: the pan is old and dirty: the inside cooking surface is coated with thick sticky brown-black burnt grease and dark oily residue, and there are several patches of bright orange-brown rust on the outer rim and along the handle. No text, no food, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "frying-pan/crust": {
+  "key": "frying-pan/crust",
+  "job": "d764ce24-02fb-4411-950e-bfa22390e5e0",
+  "ref": "a9af204a-d37b-4859-aad9-8cef87fc8bf3",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the same position, size, camera angle and framing, and the same plain flat light gray background. The whole inside cooking surface of the pan is now filled with a thick cracked crust of burnt black-brown carbonized food residue with chunky volume, deep cracks and charred crumbs, while the rim, the outside and the handle are as before. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "bathroom-sink/dull": {
+  "key": "bathroom-sink/dull",
+  "job": "61d159fe-4d09-4a01-99b3-beb9bbeada77",
+  "ref": "bc1f4455-12af-41f9-b34b-158e1f012920",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same washbasin and faucet: identical size, position, silhouette, bowl, drain, faucet shape, camera and framing, and the same plain flat light gray background. Change only the chrome faucet: it is dull and cloudy with white water spots and dried streaks, no shine; the white basin stays clean and dry. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "bathroom-sink/wet": {
+  "key": "bathroom-sink/wet",
+  "job": "7a4863b6-a0c3-4b82-b9e6-55a7fb531d31",
+  "ref": "bc1f4455-12af-41f9-b34b-158e1f012920",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same washbasin and faucet: identical size, position, silhouette, bowl, drain, faucet shape, camera and framing, and the same plain flat light gray background. Change only the surface: everything is freshly rinsed and wet: clean white ceramic and the chrome faucet covered with many clear water droplets, a little water around the drain, wet gloss; the faucet chrome still slightly dull with white water spots. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "bathroom-sink/limescale": {
+  "key": "bathroom-sink/limescale",
+  "job": "7245950f-1935-4a71-8295-296652d8b864",
+  "ref": "bc1f4455-12af-41f9-b34b-158e1f012920",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same washbasin and faucet: identical size, position, silhouette, bowl, drain, faucet shape, camera and framing, and the same plain flat light gray background. Change only the surface: the chrome faucet is crusted with thick chalky white-beige limescale deposits around its base, spout and lever, and the white basin is clean. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "bathroom-sink/scummy": {
+  "key": "bathroom-sink/scummy",
+  "job": "3585518c-5f56-4eb8-828e-1dcfbbd974e2",
+  "ref": "bc1f4455-12af-41f9-b34b-158e1f012920",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same washbasin and faucet: identical size, position, silhouette, bowl, drain, faucet shape, camera and framing, and the same plain flat light gray background. Change only the surface: the basin is very dirty: a dull gray soap-scum film, yellow-brown grime streaks, dried toothpaste smears and a dirty brown ring around the drain inside the bowl and on its rim, and the chrome faucet is crusted with chalky white limescale. No text, no hair, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "wooden-crate/painted": {
+  "key": "wooden-crate/painted",
+  "job": "4c9bf372-8cfc-4a0d-a6dc-aaf2dc10327c",
+  "ref": "e8fdf522-ea0c-4dcb-934b-d3e70b68fb5e",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same crate: identical size, position, silhouette, every slat and corner post, camera and framing, and the same plain flat light gray background. Change only the paint finish: the mint-teal slats and the creamy-white posts are freshly painted but completely matte and flat, no varnish and no gloss at all. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "wooden-crate/sanded": {
+  "key": "wooden-crate/sanded",
+  "job": "31501626-874b-46e9-a963-758ee67dcc38",
+  "ref": "e8fdf522-ea0c-4dcb-934b-d3e70b68fb5e",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same crate: identical size, position, silhouette, every slat and corner post, camera and framing, and the same plain flat light gray background. Change only the surface: there is no paint at all: the whole crate (slats and posts) is raw, freshly sanded, smooth pale beige unfinished pine wood with a soft natural grain, matte. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "wooden-crate/sawdust": {
+  "key": "wooden-crate/sawdust",
+  "job": "79b699b4-5d71-4951-9b02-882a92282a67",
+  "ref": "e8fdf522-ea0c-4dcb-934b-d3e70b68fb5e",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same crate: identical size, position, silhouette, every slat and corner post, camera and framing, and the same plain flat light gray background. Change only the surface: there is no paint: the whole crate is raw freshly sanded pale beige pine wood, matte, covered with a fine layer of pale sawdust and sanding powder, especially along the edges and in the corners. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "wooden-crate/rough": {
+  "key": "wooden-crate/rough",
+  "job": "3fd7d219-7eab-4e9a-a320-6c830cfece10",
+  "ref": "e8fdf522-ea0c-4dcb-934b-d3e70b68fb5e",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same crate: identical size, position, silhouette, every slat and corner post, camera and framing, and the same plain flat light gray background. Change only the surface: the whole crate is old rough weathered silver-gray wood with dark grain lines, small cracks, grime and a few small leftover specks of old faded blue paint, matte. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "wooden-crate/flaking": {
+  "key": "wooden-crate/flaking",
+  "job": "07134972-a71e-4e8d-868c-5e545757eae2",
+  "ref": "e8fdf522-ea0c-4dcb-934b-d3e70b68fb5e",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same crate: identical size, position, silhouette, every slat and corner post, camera and framing, and the same plain flat light gray background. Change only the surface: the whole crate is covered with a thick layer of old cracked and peeling faded sky-blue paint: large curling paint flakes, crackled paint, chips showing gray wood underneath, grimy and weathered. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "garden-bench/bare": {
+  "key": "garden-bench/bare",
+  "job": "c270b84f-aec5-4931-8ddd-1ba857aaa1d9",
+  "ref": "b57da982-7b5e-462d-9492-03b54e2af6bb",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same bench: identical size, position, silhouette, every slat, the cast-iron side frames, camera and framing, and the same plain flat light gray background. Change only the surface: the wooden slats are raw, freshly sanded, smooth pale beige bare wood with no stain and no varnish, matte; the cast-iron frames have no paint: bare clean dull dark-gray iron, matte. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "garden-bench/dusty": {
+  "key": "garden-bench/dusty",
+  "job": "fdd043fc-3a72-4ee7-8604-6ed3d6d64e4c",
+  "ref": "b57da982-7b5e-462d-9492-03b54e2af6bb",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same bench: identical size, position, silhouette, every slat, the cast-iron side frames, camera and framing, and the same plain flat light gray background. Change only the surface: the wooden slats are raw freshly sanded pale beige wood covered with fine pale sawdust, and the cast-iron frames are bare dull dark-gray iron dusted with fine orange-brown rust powder and dirt. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "garden-bench/rusty": {
+  "key": "garden-bench/rusty",
+  "job": "41c95625-f464-4729-ac04-f2d7136228b4",
+  "ref": "b57da982-7b5e-462d-9492-03b54e2af6bb",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same bench: identical size, position, silhouette, every slat, the cast-iron side frames, camera and framing, and the same plain flat light gray background. Change only the surface: the wooden slats are raw freshly sanded pale beige wood, and the cast-iron frames are heavily rusted: thick flaky orange-brown rust with scaly patches over all the iron, no black paint left. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "garden-bench/weathered": {
+  "key": "garden-bench/weathered",
+  "job": "174cfb2f-9ff4-4ca3-a38f-19d948f75585",
+  "ref": "b57da982-7b5e-462d-9492-03b54e2af6bb",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same bench: identical size, position, silhouette, every slat, the cast-iron side frames, camera and framing, and the same plain flat light gray background. Change only the surface: the wooden slats are old weathered silver-gray wood with dark cracks, dirt, lichen spots and a few small leftover bits of old green paint, and the cast-iron frames are heavily rusted with flaky orange-brown rust. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "garden-bench/flaking": {
+  "key": "garden-bench/flaking",
+  "job": "861e3f56-746e-43be-9c7d-0886dcc8dbcf",
+  "ref": "b57da982-7b5e-462d-9492-03b54e2af6bb",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same bench: identical size, position, silhouette, every slat, the cast-iron side frames, camera and framing, and the same plain flat light gray background. Change only the surface: every wooden slat is covered with a thick layer of old cracked and peeling faded forest-green paint with large curling flakes and crackle, and the cast-iron frames are heavily rusted with flaky orange-brown rust. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "keyboard/removed-clean": {
+  "key": "keyboard/removed-clean",
+  "job": "4dc16cdd-568a-408a-9453-702f5911482d",
+  "ref": "b09eb166-0ca9-4c32-bee7-938bd3332ebb",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same keyboard: identical size, position, outline, case, camera angle and framing, every other key in place, and the same plain flat light gray background. Remove exactly eight cream-white keycaps: the four keycaps in the middle of the second row from the top and the four keycaps directly below them in the middle of the third row. Where those eight keycaps were, show the bare mechanical key switches on the plate: small square switch housings with a cross-shaped stem, clean. All other keycaps stay exactly as they are. No text, no letters, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "keyboard/smudged": {
+  "key": "keyboard/smudged",
+  "job": "ad440f19-82ca-422e-a60a-0d9ce0bcce58",
+  "ref": "b09eb166-0ca9-4c32-bee7-938bd3332ebb",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same keyboard: identical size, position, outline, every key, camera angle and framing, and the same plain flat light gray background. Change only the surface: the keyboard is clean but slightly smudged: faint greasy fingerprint marks and a light dull film on the keycaps and the case, a little less glossy. No text, no letters, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "keyboard/dusty": {
+  "key": "keyboard/dusty",
+  "job": "1bf93fb3-70ff-465c-97a8-b6ebeda74db4",
+  "ref": "b09eb166-0ca9-4c32-bee7-938bd3332ebb",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same keyboard: identical size, position, outline, every key, camera angle and framing, and the same plain flat light gray background. Change only the surface: the keyboard is dusty and dull: a layer of gray dust and lint on the keycaps and the case, slightly yellowed keycaps, a few crumbs between the keys, no stains. No text, no letters, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "keyboard/dirty": {
+  "key": "keyboard/dirty",
+  "job": "a0bc2a85-8cff-4db0-bcec-ad9ddbb04bbf",
+  "ref": "b09eb166-0ca9-4c32-bee7-938bd3332ebb",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same keyboard: identical size, position, outline, every key, camera angle and framing, and the same plain flat light gray background. Change only the surface: the keyboard is very dirty: grimy yellowed keycaps with gray dust and lint, crumbs between the keys, and a large dried sticky dark-brown cola spill stain with drip marks across the right third of the keyboard (on the keycaps and the case). No text, no letters, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "watering-can/bare": {
+  "key": "watering-can/bare",
+  "job": "3c99cfce-1baa-4ca5-a1a7-2d41bbe5c9cc",
+  "ref": "e56b5382-953c-47f4-9bc8-82b4e465a8c6",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same watering can: identical size, position, silhouette, handle, spout, rose, camera and framing, and the same plain flat light gray background. Change only the surface: there is no paint: the whole can is bare clean galvanized steel, light silvery-gray metal with a soft crystalline spangle pattern, matte satin, dry. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "watering-can/wet": {
+  "key": "watering-can/wet",
+  "job": "e5b781ed-39be-4bcd-a3fd-1d7f38309b6e",
+  "ref": "e56b5382-953c-47f4-9bc8-82b4e465a8c6",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same watering can: identical size, position, silhouette, handle, spout, rose, camera and framing, and the same plain flat light gray background. Change only the surface: there is no paint: the whole can is bare clean galvanized steel, freshly washed and wet, covered with many clear water droplets and a wet sheen. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "watering-can/grimy": {
+  "key": "watering-can/grimy",
+  "job": "20c707ed-b446-49ad-810c-9cacac29e800",
+  "ref": "e56b5382-953c-47f4-9bc8-82b4e465a8c6",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same watering can: identical size, position, silhouette, handle, spout, rose, camera and framing, and the same plain flat light gray background. Change only the surface: there is no paint: the whole can is dull gray galvanized steel covered with dirty brown-gray grime, dried mud splashes and dark water stains, matte, no rust. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "watering-can/rusty": {
+  "key": "watering-can/rusty",
+  "job": "b6555930-7138-4acd-8034-4a03835cde01",
+  "ref": "e56b5382-953c-47f4-9bc8-82b4e465a8c6",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same watering can: identical size, position, silhouette, handle, spout, rose, camera and framing, and the same plain flat light gray background. Change only the surface: there is no paint: the whole can is old dull gray galvanized steel with dirty grime and many large crusty orange-brown rust patches and streaks, especially on the body, the seams and the rose. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "porcelain-vase/wet": {
+  "key": "porcelain-vase/wet",
+  "job": "8957b569-4ef0-4eb0-a86e-4d92c1f2f90e",
+  "ref": "ed766b62-7700-48b8-a2b6-ad07769513bd",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same vase: identical size, position, silhouette, painted pattern, relief bands, camera and framing, and the same plain flat light gray background. Change only the surface: the vase is freshly rinsed and wet: clean glossy white and cobalt-blue porcelain covered with many clear water droplets and short streaks, strong wet gloss. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "porcelain-vase/grimy": {
+  "key": "porcelain-vase/grimy",
+  "job": "621f88b2-fc54-4a75-ba6d-b736a4f277a1",
+  "ref": "ed766b62-7700-48b8-a2b6-ad07769513bd",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same vase: identical size, position, silhouette, painted pattern, relief bands, camera and framing, and the same plain flat light gray background. Change only the surface: the vase is grimy and old: a dull yellow-brown film of grime over the porcelain, dark dirt packed into the raised relief bands at the neck and the foot, faded dull colors, no shine, dry. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "porcelain-vase/grimy-wet": {
+  "key": "porcelain-vase/grimy-wet",
+  "job": "5b975331-de56-4606-a69e-c42b6da83568",
+  "ref": "ed766b62-7700-48b8-a2b6-ad07769513bd",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same vase: identical size, position, silhouette, painted pattern, relief bands, camera and framing, and the same plain flat light gray background. Change only the surface: the vase is grimy and wet: a dull yellow-brown film of grime over the porcelain, dark dirt packed into the raised relief bands, and the whole surface misted with water: many small clear droplets and a wet sheen over the grime. No text, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "desk-fan/guard": {
+  "key": "desk-fan/guard",
+  "job": "f1702bf2-b193-4969-a170-30103a652f7e",
+  "ref": "a3f7a8a1-1902-4337-a596-20ce347f1480",
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game, matching the chrome material and rendering of the attached desk fan exactly. Subject: only the round FRONT wire guard that fits this fan, seen in a perfectly straight front view: a polished chrome outer rim ring, several concentric thin chrome wire rings and straight thin radial chrome wire spokes, a small round mint plastic center badge with no text, and four small round chrome screw tabs on the outer rim at the 12, 3, 6 and 9 o'clock positions. Open gaps between the wires. The guard is the only object in the image, no fan behind it. Centered, the entire guard fits in the frame with 10% clear padding on every side. Background: plain uniform flat medium gray background, no gradient, no cast shadow. No text, no logos.",
+  "status": "completed"
+ },
+ "desk-fan/parts-sheet": {
+  "key": "desk-fan/parts-sheet",
+  "job": "e8557261-6e17-4bcd-9973-2d822210bce1",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Casual mobile game sprite sheet, separate elements arranged in a loose row with very wide empty spacing between them, none touching, each fully visible: (1) one shiny chrome screw seen exactly from the top: a round domed head with a cross-shaped Phillips slot; (2) the same chrome screw seen from the side, lying horizontally, with its threaded shank; (3) one round shallow white plastic soaking tub filled with light blue soapy water and white foam bubbles, seen from the front and slightly above. Semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, no outlines. Background: plain uniform flat medium gray background, no gradient, no cast shadow. No text, no logos, no labels.",
+  "status": "completed"
+ },
+ "toolbox/junk-sheet": {
+  "key": "toolbox/junk-sheet",
+  "job": "c10fd947-ac59-4c13-aea8-65a20c8afc84",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Casual mobile game sprite sheet of five separate pieces of workshop junk, arranged in a loose grid with very wide empty spacing between them, none touching, each fully visible: (1) an oily crumpled gray shop rag; (2) a rusty bent bolt with a nut on it; (3) a crumpled brown paper bag; (4) an old greasy torn work glove; (5) a tangled rusty wire coil. Semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, no outlines. Background: plain uniform flat medium gray background, no gradient, no cast shadow. No text, no logos, no labels.",
+  "status": "completed"
+ },
+ "bathroom-sink/junk-sheet": {
+  "key": "bathroom-sink/junk-sheet",
+  "job": "8ba604f3-1533-4a6c-ab4e-1c4cc59da6c5",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Casual mobile game sprite sheet of five separate pieces of bathroom junk, arranged in a loose grid with very wide empty spacing between them, none touching, each fully visible: (1) an old worn toothbrush with splayed bristles; (2) a small cracked used bar of soap; (3) a squeezed empty toothpaste tube with no text; (4) two used dirty cotton swabs; (5) a crumpled used tissue. Semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, no outlines. Background: plain uniform flat medium gray background, no gradient, no cast shadow. No text, no logos, no labels.",
+  "status": "completed"
+ },
+ "garden-bench/leaves-sheet": {
+  "key": "garden-bench/leaves-sheet",
+  "job": "a1a2a512-4858-4a18-868e-7084881ebbad",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Casual mobile game sprite sheet of five separate fallen autumn leaves and twigs, arranged in a loose grid with very wide empty spacing between them, none touching, each fully visible: (1) a big orange maple leaf; (2) a brown curled oak leaf; (3) a yellow birch leaf; (4) a red maple leaf; (5) a small dry twig with two brown leaves. Semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, no outlines. Background: plain uniform flat medium gray background, no gradient, no cast shadow. No text, no logos.",
+  "status": "completed"
+ },
+ "shared/tool-steel-wool": {
+  "key": "shared/tool-steel-wool",
+  "job": "ac12a831-1638-4bcc-b297-a396d1e071c1",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one fluffy pad of fine silver steel wool, a rounded oval wad of tangled shiny steel fibers, three-quarter view from slightly above. Centered. The entire pad fits in the frame with 14% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-wide-scraper": {
+  "key": "shared/tool-wide-scraper",
+  "job": "156d4337-71f9-426a-9622-985908f37224",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one wide paint scraper standing perfectly vertical: a very wide flat stiff stainless steel scraper blade at the top with a sharp straight edge at the very top, a short neck and a chunky orange and black ergonomic plastic handle going straight down. Straight front view, centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-paint-brush": {
+  "key": "shared/tool-paint-brush",
+  "job": "abf009d3-07d8-4cb4-a3c5-eebd8ab07797",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one clean flat paint brush standing perfectly vertical: a flat wide head of soft cream-colored bristles at the very top with the bristle tips pointing straight up, a shiny silver metal ferrule below it, and a natural light wood handle going straight down. Straight front view (the wide side of the brush facing the viewer), centered. The entire brush fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No paint, no text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-wire-brush": {
+  "key": "shared/tool-wire-brush",
+  "job": "b8812d51-6714-42c6-8ecc-e55f37ddce92",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one hand wire brush seen exactly from the side, lying horizontally: a long curved natural wood handle on the right and a rectangular wooden head on the left with dense stiff silver steel wire bristles pointing straight DOWN along its whole underside (bristle tips at the bottom). Centered. The entire brush fits in the frame with 14% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-angle-grinder": {
+  "key": "shared/tool-angle-grinder",
+  "job": "7865abf5-0b15-4618-aab2-2caaa085cdcb",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual cleaning and restoration mobile game. Subject: one cordless angle grinder held upright, seen from the front: a round dark gray abrasive grinding disc at the very top facing the viewer (its flat round face fully visible as a circle), a half-moon steel safety guard behind the lower half of the disc, the compact gear head below it, and a long straight teal and black motor body with a battery at the bottom, all on one vertical line. Centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No sparks, no text, no logos, no brand names, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-spray-gun": {
+  "key": "shared/tool-spray-gun",
+  "job": "6ae53d4b-21ee-4256-9918-e0e02d5533e8",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual restoration mobile game. Subject: one professional paint spray gun held so that its brass air cap and nozzle point STRAIGHT UP at the very top of the image: a polished chrome gun body below the nozzle, a small clear paint cup attached on the right side, a black trigger, and the chrome pistol handle going straight down at the bottom. Side view, centered, nozzle aligned on the vertical axis. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No paint spray, no text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-polisher": {
+  "key": "shared/tool-polisher",
+  "job": "2ddae8db-4ecc-4023-8ed3-68e3b438f28c",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one rotary polishing machine held upright, seen from the front: a round fluffy white wool polishing pad at the very top facing the viewer (its round face fully visible as a circle), a short gear head below it, and a long straight bright yellow and black motor body with a side grip and a cord-free handle at the bottom, all on one vertical line. Centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no brand names, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-screwdriver": {
+  "key": "shared/tool-screwdriver",
+  "job": "52fd17ec-bd4e-4b7a-91be-e80c3c259d18",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual repair mobile game. Subject: one Phillips screwdriver standing perfectly vertical: a shiny chrome steel shaft with a cross-shaped tip at the very top pointing straight up, and a chunky transparent red and black ergonomic handle at the bottom. Straight front view, centered. The entire screwdriver fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-paint-roller": {
+  "key": "shared/tool-paint-roller",
+  "job": "eff89575-8843-4a04-8750-ceac5702b18b",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual restoration mobile game. Subject: one paint roller standing upright: a horizontal fluffy white paint roller cover at the very top (seen from the front as a wide short cylinder), a bent chrome wire frame going down from its right end, and a blue plastic handle going straight down at the bottom. Straight front view, centered. The entire roller fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No paint, no text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-keycap-puller": {
+  "key": "shared/tool-keycap-puller",
+  "job": "589078cf-f628-40cc-bf3c-48515063dc82",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one wire keycap puller standing perfectly vertical: two thin bent chrome steel wire loops with small hooked ends forming the gripping prongs at the very top, joined into a short round lavender plastic grip handle at the bottom. Straight front view, centered. The entire tool fits in the frame with 14% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-air-blower": {
+  "key": "shared/tool-air-blower",
+  "job": "b1407d84-16cd-4a88-b267-dde1d4f2f379",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one compact cordless electric air duster blower for electronics standing perfectly vertical: a thin straight black air nozzle pointing straight up at the very top, a rounded glossy white and sky-blue body with small vent slots below it, and a short handle with a trigger at the bottom. Straight side view, centered, nozzle on the vertical axis. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-cotton-swab": {
+  "key": "shared/tool-cotton-swab",
+  "job": "f4adfa32-6611-4076-bf77-c5e9fb8bcf12",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one long cotton swab standing perfectly vertical: a fluffy white cotton tip at the very top, a thin straight pale wooden stick going straight down, and a second cotton tip at the bottom. Straight front view, centered. The entire swab fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-hammer": {
+  "key": "shared/tool-hammer",
+  "job": "93161e16-b5ca-4e8f-acf6-946769af0244",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual repair mobile game. Subject: one claw hammer standing upright: a polished steel hammer head lying horizontally at the very top (the round flat striking face on the LEFT end, the curved claw on the right end), and a straight glossy natural wood handle going straight down from the middle of the head. Straight side view, centered. The entire hammer fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "garden-bench/paint-tray": {
+  "key": "garden-bench/paint-tray",
+  "job": "b198fb0a-a341-404e-8d6e-edce6762de6c",
+  "ref": null,
+  "aspect": "4:3",
+  "prompt": "Create a production 2D game sprite for a casual restoration mobile game. Subject: one plastic paint roller tray seen from the front and slightly above, with a ribbed sloped ramp at the back and a deep well at the front filled with glossy honey-brown wood stain paint. Centered. The entire tray fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No roller, no text, no logos, no extra objects.",
+  "status": "completed"
+ },
+ "garden-bench/paint-can": {
+  "key": "garden-bench/paint-can",
+  "job": "6b38379d-f9c4-4bdc-9e80-3603c8331abb",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual restoration mobile game. Subject: one small open metal paint can with a wire handle, seen from the front and slightly above so the round opening filled with glossy jet-black paint is clearly visible, plain silver can with no label. Centered. The entire can fits in the frame with 14% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No brush, no text, no logos, no extra objects.",
+  "status": "completed"
+ },
+ "watering-can/dents-sheet": {
+  "key": "watering-can/dents-sheet",
+  "job": "5bec9ea8-ee0f-42e2-b758-92876ce8b53c",
+  "ref": null,
+  "aspect": "1:1",
+  "status": "completed",
+  "note": "regenerated without a reference image (the referenced can leaked into the first sheet)",
+  "prompt": "Casual mobile game sprite sheet of three separate round dent decals arranged in a row with very wide empty spacing between them, none touching, each fully visible: each decal is a small round patch of old dull gray galvanized sheet metal with orange-brown rust spots and grime, with a deep round dent pressed into its center (a shallow crater with dark shading on the upper left inside, a bright highlight on the lower right rim), seen straight from the front, all three about the same size, each with soft irregular edges. Semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, no outlines. Background: plain uniform flat medium gray-blue background, no gradient, no cast shadow. No text, no logos, no other objects."
+ },
+ "porcelain-vase/chips-sheet": {
+  "key": "porcelain-vase/chips-sheet",
+  "job": "185a1252-d4d6-4f70-badf-d981bf05bf24",
+  "ref": null,
+  "aspect": "1:1",
+  "status": "completed",
+  "note": "regenerated without a reference image (the referenced vase leaked into the first sheet)",
+  "prompt": "Casual mobile game sprite sheet of three separate chipped-porcelain damage decals arranged in a row with very wide empty spacing between them, none touching, each fully visible: each decal is a small irregular round patch of glossy white porcelain with a few thin cobalt-blue painted brush lines, with an irregular chip broken out of its center showing rough matte off-white unglazed ceramic with sharp broken edges and a little gray grime, seen straight from the front, all three about the same size, with soft irregular outer edges. Semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, no outlines. Background: plain uniform flat medium gray-blue background, no gradient, no cast shadow. No text, no logos, no vase, no other objects."
+ },
+ "keyboard/removed-crumbs": {
+  "key": "keyboard/removed-crumbs",
+  "job": "6c88802b-8de8-43c7-ae60-4a7253df18e0",
+  "ref": "4dc16cdd-568a-408a-9453-702f5911482d",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same keyboard: identical size, position, outline, every key and every empty switch place, camera angle and framing, and the same plain flat light gray background. Change only the eight empty places where keycaps were removed: the bare key switches and the plate around them are buried under lots of food crumbs, cookie crumbs, gray dust bunnies, lint and a few hairs. Everything else stays exactly as it is. No text, no letters, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "keyboard/removed-gunk": {
+  "key": "keyboard/removed-gunk",
+  "job": "f2d2aad8-a95c-45b8-a651-61b117b2fad9",
+  "ref": "4dc16cdd-568a-408a-9453-702f5911482d",
+  "aspect": "1:1",
+  "prompt": "Edit the reference image. Keep the exact same keyboard: identical size, position, outline, every key and every empty switch place, camera angle and framing, and the same plain flat light gray background. Change only the eight empty places where keycaps were removed: the bare key switches and the plate around them are coated with sticky dark brown grime, greasy dirt and dried gunk packed around the switch housings, no crumbs. Everything else stays exactly as it is. No text, no letters, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "materials/foam-rubber": {
+  "key": "materials/foam-rubber",
+  "job": "b58f8ee2-9926-4427-80fb-93e1727dab3e",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Seamless tileable top-down game texture of thick white soapy foam on glossy yellow rubber: dense white lather with medium and small bubbles, a few glossy wet streaks with a faint warm yellow tint showing between the foam clumps, filling the entire frame evenly from edge to edge. Flat even lighting, no vignette, no objects, no text. Semi-realistic glossy casual mobile game render.",
+  "status": "completed"
+ },
+ "materials/foam-degreaser": {
+  "key": "materials/foam-degreaser",
+  "job": "3c134738-17a2-4604-a753-41f68f2dd878",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Seamless tileable top-down game texture of degreaser foam on a greasy black cast-iron surface: creamy off-white foam with a light amber-brown tint from dissolved grease, small and medium bubbles, brownish streaks of loosened oily dirt mixed into the foam, filling the entire frame evenly from edge to edge. Flat even lighting, no vignette, no objects, no text. Semi-realistic glossy casual mobile game render.",
+  "status": "completed"
+ },
+ "materials/foam-rust": {
+  "key": "materials/foam-rust",
+  "job": "298f8805-9592-4481-a575-b6c0561b3bd0",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Seamless tileable top-down game texture of thick bright pink rust-remover foam on rusty metal: dense glossy bubblegum-pink foam with small and medium bubbles, a few orange-brown rust streaks dissolving into the pink foam, filling the entire frame evenly from edge to edge. Flat even lighting, no vignette, no objects, no text. Semi-realistic glossy casual mobile game render.",
+  "status": "completed"
+ },
+ "materials/foam-ceramic": {
+  "key": "materials/foam-ceramic",
+  "job": "931d579a-1ba4-4c86-ac1d-3a1bc65044d8",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Seamless tileable top-down game texture of light airy bathroom cleaning foam on glossy white ceramic: soft pure white foam with many tiny bubbles and a few larger shiny bubbles, a faint cool aqua tint, glossy wet ceramic sheen showing in thin gaps, filling the entire frame evenly from edge to edge. Flat even lighting, no vignette, no objects, no text. Semi-realistic glossy casual mobile game render.",
+  "status": "completed"
+ },
+ "materials/foam-plastic": {
+  "key": "materials/foam-plastic",
+  "job": "841767ce-d662-44b6-a5a5-de0f4dee3aa4",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Seamless tileable top-down game texture of fresh light-blue tinted cleaning spray foam on glossy mint plastic: fluffy white foam with a soft pale blue tint, small round bubbles, a few glossy mint-green plastic patches showing through, filling the entire frame evenly from edge to edge. Flat even lighting, no vignette, no objects, no text. Semi-realistic glossy casual mobile game render.",
+  "status": "completed"
+ },
+ "shared/tool-turbo-lance": {
+  "key": "shared/tool-turbo-lance",
+  "job": "528bd00a-356e-4fc5-b701-1417a5c3609c",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one pressure washer turbo lance standing perfectly vertical: a chunky black rotating turbo nozzle with an orange tip ring at the very top pointing straight up, a long straight brushed chrome wand going down, and a bright orange and black trigger gun grip at the bottom. Straight side view, centered, all parts on one vertical line. The entire tool fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No water, no text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-gold-washer": {
+  "key": "shared/tool-gold-washer",
+  "job": "48fa841b-de74-43f4-b22b-66eb0079e902",
+  "ref": "42692379-3210-4013-80c8-7ed6bda96c35",
+  "aspect": "9:16",
+  "prompt": "Edit the reference image. Keep the exact same pressure washer lance: identical shape, size, position, orientation, camera and framing, and the same plain flat light gray background. Turn it into a premium special edition: polished shiny gold metal on the wand and nozzle, the gun body in glossy royal purple with gold trim, sparkling specular highlights. No text, no logos, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "shared/tool-wire-wheel": {
+  "key": "shared/tool-wire-wheel",
+  "job": "4f27b7f9-0ccd-455d-84ab-8e65d5829e3b",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual restoration mobile game. Subject: one cordless power drill held upright, seen from the front: a round steel wire cup brush attachment at the very top facing the viewer (a circular ring of stiff silver steel wire bristles seen face-on), the drill chuck below it, a compact red and black drill body and the battery pack at the bottom, all on one vertical line. Centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no brand names, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-pro-scraper": {
+  "key": "shared/tool-pro-scraper",
+  "job": "c96dc1da-90e3-468c-b1a1-aaecd163caaa",
+  "ref": "156d4337-71f9-426a-9622-985908f37224",
+  "aspect": "9:16",
+  "prompt": "Edit the reference image. Keep the exact same wide paint scraper: identical shape, blade, size, position, orientation, camera and framing, and the same plain flat light gray background. Turn it into a premium pro edition: a polished dark carbide blade with a bright mirror edge, and the handle in glossy royal purple with gold trim and a gold end cap. No text, no logos, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "shared/tool-sanding-block": {
+  "key": "shared/tool-sanding-block",
+  "job": "8f5d452e-03b9-4c5f-a21d-35ac463c3109",
+  "ref": null,
+  "aspect": "1:1",
+  "prompt": "Create a production 2D game sprite for a casual restoration mobile game. Subject: one rubber sanding block: a chunky rounded rectangular dark blue rubber block with a comfortable grip groove, its flat bottom wrapped in coarse orange-brown sandpaper, three-quarter view from slightly above. Centered. The entire block fits in the frame with 14% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-orbital-sander": {
+  "key": "shared/tool-orbital-sander",
+  "job": "23b3dab6-1e21-4eb9-ad4b-747b136069c2",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual restoration mobile game. Subject: one random orbital sander held upright, seen from the front: a round sanding disc with orange-brown sandpaper and small dust holes at the very top facing the viewer (its round face fully visible as a circle), a short body below it, and a lime-green and gray motor body with a rounded palm grip at the bottom, all on one vertical line. Centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No dust, no text, no logos, no brand names, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-gold-grinder": {
+  "key": "shared/tool-gold-grinder",
+  "job": "2077896a-7a4b-428b-b6b9-ee442e9f5f8c",
+  "ref": "7865abf5-0b15-4618-aab2-2caaa085cdcb",
+  "aspect": "9:16",
+  "prompt": "Edit the reference image. Keep the exact same angle grinder: identical shape, disc, guard, size, position, orientation, camera and framing, and the same plain flat light gray background. Turn it into a premium special edition: the motor body and battery in polished shiny gold with glossy black accents, a gold safety guard, the disc a dark diamond-grit disc with a gold center. No text, no logos, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "shared/tool-airbrush": {
+  "key": "shared/tool-airbrush",
+  "job": "6dc6af08-edf2-40cf-8340-1eef642bb558",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual restoration mobile game. Subject: one slim chrome airbrush standing perfectly vertical: a fine needle nozzle cap pointing straight up at the very top, a slender polished chrome pen-shaped body with a small round paint cup on top near the front and a small trigger button, and a short air hose connector at the bottom. Straight side view, centered, the nozzle on the vertical axis. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No paint spray, no text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-gold-spray-gun": {
+  "key": "shared/tool-gold-spray-gun",
+  "job": "b5827648-292b-4b52-be45-7304e1cbda2d",
+  "ref": "6ae53d4b-21ee-4256-9918-e0e02d5533e8",
+  "aspect": "9:16",
+  "prompt": "Edit the reference image. Keep the exact same paint spray gun: identical shape, nozzle, cup, handle, size, position, orientation, camera and framing, and the same plain flat light gray background. Turn it into a premium special edition: the gun body in polished shiny gold with glossy royal purple accents, a purple-tinted paint cup, gold nozzle. No text, no logos, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "shared/tool-orbital-polisher": {
+  "key": "shared/tool-orbital-polisher",
+  "job": "f2d5995e-8cbc-4450-a9f0-6d848c3cee53",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual cleaning mobile game. Subject: one dual-action orbital car polisher held upright, seen from the front: a round sky-blue foam polishing pad at the very top facing the viewer (its round face fully visible as a circle), a short gear head below it, and a long straight white and sky-blue motor body with a rubber grip at the bottom, all on one vertical line. Centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no brand names, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-gold-polisher": {
+  "key": "shared/tool-gold-polisher",
+  "job": "f57f3bd3-8a5b-4735-9909-bfa4c6f2e6b3",
+  "ref": "2ddae8db-4ecc-4023-8ed3-68e3b438f28c",
+  "aspect": "9:16",
+  "prompt": "Edit the reference image. Keep the exact same rotary polishing machine: identical shape, pad, size, position, orientation, camera and framing, and the same plain flat light gray background. Turn it into a premium special edition: the motor body in polished shiny gold with glossy black accents, and the polishing pad in soft royal purple wool. No text, no logos, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "shared/tool-e-screwdriver": {
+  "key": "shared/tool-e-screwdriver",
+  "job": "65dd98de-39d4-4d14-9d14-70f361ae7419",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual repair mobile game. Subject: one compact cordless electric screwdriver standing perfectly vertical: a short chrome Phillips bit at the very top pointing straight up, a small chuck below it, and a straight glossy orange and dark gray body with a small battery and a rubber grip at the bottom, all on one vertical line. Straight side view, centered. The entire tool fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no brand names, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-gold-screwdriver": {
+  "key": "shared/tool-gold-screwdriver",
+  "job": "43075d9d-2f64-4d10-91a0-52f640e597f6",
+  "ref": "52fd17ec-bd4e-4b7a-91be-e80c3c259d18",
+  "aspect": "9:16",
+  "prompt": "Edit the reference image. Keep the exact same Phillips screwdriver: identical shape, shaft, tip, handle, size, position, orientation, camera and framing, and the same plain flat light gray background. Turn it into a premium special edition: a polished shiny gold shaft and tip, and a glossy royal purple handle with gold rings. No text, no logos, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "shared/tool-wide-roller": {
+  "key": "shared/tool-wide-roller",
+  "job": "406e83e5-64f8-407c-b50f-0f20d7b06c42",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual restoration mobile game. Subject: one extra-wide paint roller standing upright: a very wide horizontal fluffy cream paint roller cover at the very top (seen from the front as a wide short cylinder, about twice as wide as a normal roller), a sturdy chrome frame going down from its middle, and a bright yellow plastic handle going straight down at the bottom. Straight front view, centered. The entire roller fits in the frame with 10% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No paint, no text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-foam-roller": {
+  "key": "shared/tool-foam-roller",
+  "job": "c5f90066-8b61-43b2-87af-34fdf6f45cd3",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual restoration mobile game. Subject: one premium smooth foam paint roller standing upright: a horizontal smooth dense magenta-pink foam roller cover at the very top (seen from the front as a wide short cylinder), a polished gold frame going down from its right end, and a glossy royal purple handle with a gold end cap going straight down at the bottom. Straight front view, centered. The entire roller fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No paint, no text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-mallet": {
+  "key": "shared/tool-mallet",
+  "job": "a3751560-ff51-46b3-a72e-713dc7968a92",
+  "ref": null,
+  "aspect": "9:16",
+  "prompt": "Create a production 2D game sprite for a casual repair mobile game. Subject: one rubber mallet standing upright: a chunky black rubber cylindrical mallet head lying horizontally at the very top (round striking faces at its left and right ends), and a straight glossy natural wood handle going straight down from the middle of the head. Straight side view, centered. The entire mallet fits in the frame with 12% clear padding on every side, nothing cropped. Style: semi-realistic glossy premium casual mobile game 3D render, soft studio key light from the upper left, crisp specular highlights, no outlines. Background: plain uniform flat light gray background, no gradient, no cast shadow. No text, no logos, no hands, no extra objects.",
+  "status": "completed"
+ },
+ "shared/tool-gold-hammer": {
+  "key": "shared/tool-gold-hammer",
+  "job": "20bfb9cb-3e18-42cf-8d47-09c64432399c",
+  "ref": "93161e16-b5ca-4e8f-acf6-946769af0244",
+  "aspect": "9:16",
+  "prompt": "Edit the reference image. Keep the exact same claw hammer: identical shape, head, claw, handle, size, position, orientation, camera and framing, and the same plain flat light gray background. Turn it into a premium special edition: a polished shiny gold hammer head with sparkling highlights and a glossy royal purple handle with a gold end cap. No text, no logos, no cast shadow on the background.",
+  "status": "completed"
+ },
+ "watering-can/dents-sheet@rejected-1": {
+  "key": "watering-can/dents-sheet",
+  "job": "527a1c1f-b545-47f1-84e8-81dc5783a1b7",
+  "ref": "b6555930-7138-4acd-8034-4a03835cde01",
+  "aspect": "1:1",
+  "prompt": "Casual mobile game sprite sheet matching the old rusty galvanized steel of the attached watering can exactly (same gray metal, same orange-brown rust, same lighting). Three separate round dent decals arranged in a row with very wide empty spacing between them, none touching, each fully visible: each one is a close-up of a deep round dent pressed into the can's dull gray galvanized metal with rust spots, a shallow crater with dark shading on the upper left inside and a bright rim highlight, seen straight from the front, each about the same size. Background: plain uniform flat medium gray background, no gradient, no cast shadow. No text, no logos, no can, no other objects.",
+  "status": "rejected",
+  "note": "the referenced watering can leaked into the sheet"
+ },
+ "porcelain-vase/chips-sheet@rejected-1": {
+  "key": "porcelain-vase/chips-sheet",
+  "job": "686953a9-a025-4a3c-9375-d1091b5b948b",
+  "ref": "ed766b62-7700-48b8-a2b6-ad07769513bd",
+  "aspect": "1:1",
+  "prompt": "Casual mobile game sprite sheet matching the glossy white and cobalt-blue porcelain of the attached vase exactly (same glaze, same blue, same lighting). Three separate chipped-porcelain damage decals arranged in a row with very wide empty spacing between them, none touching, each fully visible: each one is a small round patch of the vase's glossy white porcelain with blue painted lines, with an irregular chip broken out of its center showing rough matte off-white unglazed ceramic with sharp edges and a little gray grime, seen straight from the front. Background: plain uniform flat medium gray background, no gradient, no cast shadow. No text, no logos, no vase, no other objects.",
+  "status": "rejected",
+  "note": "the referenced vase leaked into the sheet"
+ }
+}

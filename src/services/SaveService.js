@@ -21,6 +21,9 @@ export function createDefaultState() {
     lastCompletion: null, // { id, levelId, amount, boost: 0 | locked multiplier once claimed }
     timedChest: { readyAt: 0 }, // epoch ms when the next timed chest opens (0 = not started)
     progressChest: { steps: 0, opened: 0, forfeited: 0 }, // steps 0..max; chests claimed / skipped
+    // Step 7 alternative tools: permanently owned tool ids (base tools are implicit), the equipped
+    // tool per family, and a purchase / unlock counter (audit)
+    tools: { owned: [], equipped: {}, purchases: 0 },
   };
 }
 
@@ -55,6 +58,12 @@ export function parseSave(serialized) {
   // `boost` = multiplier claimed for that completion (0 = not yet); older saves stored `x3: true`
   state.lastCompletion = lc && typeof lc === 'object' && typeof lc.levelId === 'string' ? { id: toNonNegativeInt(lc.id), levelId: lc.levelId, amount: toNonNegativeInt(lc.amount), boost: toNonNegativeInt(lc.boost ?? (lc.x3 ? 3 : 0)) } : null;
   state.timedChest = { readyAt: toNonNegativeInt(raw.timedChest?.readyAt) };
+  const tl = raw.tools && typeof raw.tools === 'object' ? raw.tools : {};
+  state.tools = {
+    owned: [...new Set((Array.isArray(tl.owned) ? tl.owned : []).filter((x) => typeof x === 'string'))],
+    equipped: Object.fromEntries(Object.entries(tl.equipped && typeof tl.equipped === 'object' ? tl.equipped : {}).filter(([, v]) => typeof v === 'string')),
+    purchases: toNonNegativeInt(tl.purchases),
+  };
   state.progressChest = { steps: toNonNegativeInt(raw.progressChest?.steps), opened: toNonNegativeInt(raw.progressChest?.opened), forfeited: toNonNegativeInt(raw.progressChest?.forfeited) };
   for (const [id, entry] of Object.entries(raw.levels ?? {})) {
     state.levels[id] = {

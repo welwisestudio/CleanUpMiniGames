@@ -41,6 +41,19 @@ async function dragPath(page, drv, pts, wait = 0) {
   await drv.up();
 }
 
+// Step 8 paint source: circles inside the tray / can opening until the tool is loaded.
+async function dip(page, drv, L) {
+  const t = L.targets.source;
+  const c = toCss(L.xf, t.x, t.y);
+  const r = t.r * 0.45 * L.xf.k;
+  const path = [];
+  for (let i = 0; i <= 30; i++) {
+    const a = (i / 30) * Math.PI * 4;
+    path.push(finger(L.tool, { x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r * 0.6 }));
+  }
+  await dragPath(page, drv, path);
+}
+
 async function areaPass(page, drv, L, pass) {
   const { xf, tool, targets, brush } = L;
   const wide = brush.aspect > 1;
@@ -74,7 +87,18 @@ async function areaPass(page, drv, L, pass) {
     }
     dir = -dir;
   }
-  await dragPath(page, drv, path, tool.kind === 'jet' ? 16 : 0);
+  if (!targets.source) {
+    await dragPath(page, drv, path, tool.kind === 'jet' ? 16 : 0);
+    return;
+  }
+  // a tool that runs out of paint: dip, paint a section, check the load again
+  for (let i = 0; i < path.length; i += 30) {
+    const cur = await snap(page);
+    if (cur.level.state !== 'playing') return;
+    if (cur.level.targets?.needsLoad) await dip(page, drv, cur.level);
+    await dragPath(page, drv, path.slice(i, i + 31));
+    if (opts.held) return;
+  }
 }
 
 export async function playStage5(page, drv, { maxPasses = 14, hold = false, mid = null } = {}) {
@@ -91,11 +115,41 @@ export async function playStage5(page, drv, { maxPasses = 14, hold = false, mid 
       for (const it of L.targets.items) {
         if (opts.held) break;
         const a = toCss(L.xf, it.x, it.y);
-        const b = toCss(L.xf, L.targets.target.x, L.targets.target.y);
+        const b = toCss(L.xf, it.tx ?? L.targets.target.x, it.ty ?? L.targets.target.y);
         const path = [];
         for (let i = 0; i <= 12; i++) path.push({ x: a.x + ((b.x - a.x) * i) / 12, y: a.y + ((b.y - a.y) * i) / 12 });
         await dragPath(page, drv, path);
         await page.waitForTimeout(380);
+      }
+    } else if (L.targets.kind === 'points') {
+      // Step 8 point targets: press-and-hold (screw, keycap) or separate taps (hammer)
+      for (const pt of L.targets.points) {
+        if (opts.held) break;
+        const c = finger(L.tool, toCss(L.xf, pt.x, pt.y));
+        if (L.targets.mode === 'tap') {
+          for (let k = 0; k < 6; k++) {
+            const cur = await snap(page);
+            if (!cur.level.targets?.points?.some((q) => q.x === pt.x && q.y === pt.y) || cur.level.state !== 'playing') break;
+            await drv.down(c.x, c.y);
+            await page.waitForTimeout(60);
+            await drv.up();
+            await page.waitForTimeout(170);
+          }
+        } else {
+          await drv.down(c.x, c.y);
+          for (let k = 0; k < 14; k++) {
+            await page.waitForTimeout(100);
+            await drv.move(c.x + (k % 2), c.y);
+            const cur = await snap(page);
+            if (!cur.level.targets?.points?.some((q) => q.x === pt.x && q.y === pt.y) || cur.level.state !== 'playing') break;
+          }
+          if (opts.hold && (await snap(page)).level.state !== 'playing') {
+            opts.held = c;
+            break;
+          }
+          await drv.up();
+          await page.waitForTimeout(150);
+        }
       }
     } else if (L.targets.kind === 'spots') {
       for (const sp of L.targets.spots) {

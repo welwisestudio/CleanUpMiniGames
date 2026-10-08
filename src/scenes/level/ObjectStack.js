@@ -201,6 +201,61 @@ export class ObjectStack {
     this._rt(id).stamp(key, null, local.x, local.y, { scale: size / Math.max(f.width, f.height), alpha });
   }
 
+  // Step 8 parts: cut a part's exact shape (its texture alpha) out of a layer, or bake a part into
+  // a layer, centred at an object-local point with a given longest side and rotation.
+  eraseTexture(id, key, local, size, angle = 0) {
+    const f = this.scene.textures.getFrame(key);
+    this._rt(id).stamp(key, null, local.x, local.y, { erase: true, scale: size / Math.max(f.width, f.height), angle });
+  }
+
+  stampTextureAt(id, key, local, size, alpha = 1, angle = 0) {
+    const f = this.scene.textures.getFrame(key);
+    this._rt(id).stamp(key, null, local.x, local.y, { scale: size / Math.max(f.width, f.height), alpha, angle });
+  }
+
+  // Step 8 large objects (CONTENT-MATRIX §4.3 E3): while a stage works on one zone, the rest of the
+  // object is dimmed slightly so the active zone reads at a glance (no zoom; whole object visible).
+  showZoneDim(regionId) {
+    this.hideZoneDim();
+    const key = `zdim-${this.levelId}-${regionId}`;
+    if (!this.scene.textures.exists(key)) {
+      const R = 256;
+      const k = this.size / R;
+      const c = document.createElement('canvas');
+      c.width = R;
+      c.height = R;
+      const ctx = c.getContext('2d');
+      const img = ctx.createImageData(R, R);
+      for (let y = 0; y < R; y++) {
+        for (let x = 0; x < R; x++) {
+          const lx = (x + 0.5) * k;
+          const ly = (y + 0.5) * k;
+          if (!this.isInside(lx, ly) || this._regionTest(regionId, lx, ly)) continue;
+          img.data[(y * R + x) * 4 + 3] = 255;
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+      const big = document.createElement('canvas');
+      big.width = this.size;
+      big.height = this.size;
+      const bctx = big.getContext('2d');
+      bctx.filter = 'blur(3px)';
+      bctx.drawImage(c, 0, 0, this.size, this.size);
+      this.scene.textures.addCanvas(key, big);
+    }
+    const o = this.scene.add.image(0, 0, key).setTint(0x101828).setAlpha(0);
+    this.container.addAt(o, this.container.getIndex(this.overlay));
+    this.scene.tweens.add({ targets: o, alpha: 0.38, duration: 300 });
+    this.zoneDim = o;
+  }
+
+  hideZoneDim() {
+    const o = this.zoneDim;
+    if (!o) return;
+    this.zoneDim = null;
+    this.scene.tweens.add({ targets: o, alpha: 0, duration: 250, onComplete: () => o.destroy() });
+  }
+
   clipToObject(id, clipKey) {
     this._rt(id).stamp(clipKey ?? this.def.outsideMask ?? 'mask-outside', null, this.size / 2, this.size / 2, { erase: true });
   }

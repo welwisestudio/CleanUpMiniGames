@@ -76,7 +76,7 @@ export class ToolStrip {
       const size = large ? UI.tile : UI.tileSmall;
       const tile = this.scene.add.container(offset * UI.tileGap, 0);
       tile.add(fitImage(this.scene, large ? 'ui-tile-large' : 'ui-tile-small', size * 1.08));
-      tile.add(fitImage(this.scene, this.getTool(this.stages[i].tool).texture, size * 0.7));
+      tile.add(fitImage(this.scene, this.getTool(this.stages[i].tool, this.stages[i]).texture, size * 0.7));
       if (large) tile.add(frame(this.scene, size));
       if (i < index) tile.add(fitImage(this.scene, 'icon-check', size * 0.42, size / 2 - 4, -size / 2 + 4));
       this.inner.add(tile);
