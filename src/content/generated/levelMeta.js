@@ -1645,11 +1645,11 @@ export const LEVEL_META = {
    "points": {
     "dents": [
      [
-      383,
-      556
+      314,
+      512
      ],
      [
-      615,
+      486,
       671
      ]
     ]
@@ -1916,16 +1916,16 @@ export const LEVEL_META = {
     ],
     "dents": [
      [
-      467,
-      585
+      250,
+      588
      ],
      [
-      616,
-      560
+      335,
+      622
      ],
      [
-      529,
-      646
+      441,
+      665
      ]
     ]
    },
@@ -3137,12 +3137,12 @@ export const LEVEL_META = {
     ],
     "dents": [
      [
-      524,
-      427
+      617,
+      400
      ],
      [
-      617,
-      450
+      776,
+      425
      ]
     ]
    },
@@ -3220,15 +3220,15 @@ export const LEVEL_META = {
     "dents": [
      [
       336,
-      512
+      539
      ],
      [
       556,
-      525
+      545
      ],
      [
       732,
-      512
+      539
      ]
     ]
    },
@@ -3771,15 +3771,15 @@ export const LEVEL_META = {
     "dents": [
      [
       512,
-      335
+      318
      ],
      [
-      470,
-      511
+      474,
+      652
      ],
      [
-      547,
-      616
+      549,
+      652
      ]
     ]
    },
@@ -4767,6 +4767,36 @@ export const LEVEL_META = {
    "workingPoint": [
     0.4998,
     0.129
+   ]
+  },
+  "tool-pool-brush": {
+   "size": [
+    336,
+    768
+   ],
+   "workingPoint": [
+    0.4998,
+    0.1103
+   ]
+  },
+  "tool-wash-mitt": {
+   "size": [
+    536,
+    768
+   ],
+   "workingPoint": [
+    0.4982,
+    0.1616
+   ]
+  },
+  "tool-crevice-brush": {
+   "size": [
+    115,
+    768
+   ],
+   "workingPoint": [
+    0.4883,
+    0.0482
    ]
   }
  },

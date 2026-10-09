@@ -67,13 +67,20 @@ def to_img(rgb, a):
 
 def dull(img, a, amount=0.42):
     """Matte / unpolished: less contrast and saturation, a light haze."""
+    # Step 9: reads clearly as a dull, hazy film (so polishing visibly brings the shine back) but
+    # keeps the material's hue (gold stays gold): moderate desaturation, flattened contrast, a
+    # milky haze and blotchy streaks from the approved dust material.
     c = rgbf(img)
     lum = c.mean(2, keepdims=True)
     inside = a > 0.5
     mean = float(lum[..., 0][inside].mean()) if inside.any() else 0.5
-    d = c * (1 - amount) + lum * amount
-    d = (d - mean) * (1 - amount * 0.45) + mean
-    d = d * (1 - 0.14 * amount) + 0.12 * amount
+    d = c * (1 - amount * 0.55) + lum * amount * 0.55
+    d = (d - mean) * (1 - amount * 0.7) + mean
+    tex = _dust_tex()
+    streak = ndimage.gaussian_filter(tex, 6)
+    streak = (streak - streak.min()) / max(1e-6, streak.max() - streak.min())
+    h = np.clip(amount * (0.75 + 0.6 * streak), 0, 0.6)[..., None]
+    d = d * (1 - h) + np.array([0.86, 0.86, 0.84], np.float32) * h
     return to_img(d, a)
 
 

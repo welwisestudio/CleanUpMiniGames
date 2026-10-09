@@ -8,11 +8,11 @@ const F = ['foam', 'scrubbed'];
 export const BATCH_B_LEVELS = [
   // 16 · Swimming pool — skim the leaves, pump it dry, scrub the tiles, refill with the hose
   makeLevel('swimming-pool', 'Swimming Pool', [
-    S.trash('leaves', { leaves: true, target: 'skimmer-net', id: 'skim' }),
+    S.skim('leaves'),
     S.drain('murky', 'water'),
     S.mop(['deck-dirty'], 'deck'),
     S.foam('water'),
-    S.scrub(['empty-dirty'], 'water'),
+    S.poolScrub(['empty-dirty'], 'water'),
     S.rinse([...F, 'empty-dirty'], 'water'),
     S.fill('empty-clean', 'water'),
   ]),
@@ -35,7 +35,7 @@ export const BATCH_B_LEVELS = [
     S.sharpen(['edge-dull'], 'edge'),
     S.stain(['bare'], 'handle'),
     S.wipe(['smudge']),
-  ]),
+  ], { maxLong: 0.92 }),
   // 19 · Toaster — dust, knock the dents out, degrease, mist-rinse, dry, polish the chrome
   makeLevel('toaster', 'Toaster', [
     S.dust(),
@@ -59,14 +59,14 @@ export const BATCH_B_LEVELS = [
   // 21 · Garden grill — junk out, scrape the carbon, wire-brush the grate, laser the body, wash
   makeLevel('garden-grill', 'Garden Grill', [
     S.trash('junk'),
-    S.chunks('crust', { seed: 2101, count: 8, tip: 80 }),
+    S.scrapeCrust(['crust'], 'grate'),
     S.wire(['rusty'], 'grate'),
     S.laser(['rusty'], 'body'),
     S.foam(),
     S.scrub(['grime']),
     S.rinse([...F, 'grime']),
     S.dry(),
-  ]),
+  ], { init: { crust: 'full' } }),
   // 22 · Bathtub — toys out, drain, scrub, rinse, dry, polish the chrome, run a fresh bath
   makeLevel('bathtub', 'Bathtub', [
     S.trash('junk'),
@@ -110,7 +110,7 @@ export const BATCH_B_LEVELS = [
   ]),
   // 26 · Aquarium — skim, drain, scrub the decor, scrape the glass, rinse, glass cleaner, dust, refill
   makeLevel('aquarium', 'Aquarium', [
-    S.trash('leaves', { leaves: true, target: 'skimmer-net', id: 'skim' }),
+    S.skim('leaves'),
     S.drain('murky', 'tank'),
     S.detail(['empty-dirty'], 'decor', 'decor-brush'),
     S.scrape(['empty-dirty'], 'glass', 'algae-scrape'),
@@ -181,7 +181,7 @@ export const BATCH_B_LEVELS = [
     S.rinse(['grime']),
     S.blow(['wet-dirty']),
     S.sand(['dirty']),
-    S.wipe(['sawdust']),
+    S.mitt(['sawdust'], null, 'wipe'),
     S.roll(['bare'], null, TINT.white),
     S.stain(['dull']),
   ]),
@@ -189,7 +189,7 @@ export const BATCH_B_LEVELS = [
   makeLevel('game-controller', 'Game Controller', [
     S.trash('junk'),
     S.blow(['dusty']),
-    S.detail(['lint'], 'detail'),
+    S.crevice(['lint'], 'detail'),
     S.swab(['gunk'], 'detail'),
     S.eraser(['scuff'], 'grips'),
     S.mist(['dirty']),
@@ -220,11 +220,11 @@ export const BATCH_B_LEVELS = [
   ]),
   // 36 · Stone fountain — skim, drain, scrape moss, foam, scrub, rinse, dry, polish the spout, refill
   makeLevel('stone-fountain', 'Stone Fountain', [
-    S.trash('leaves', { leaves: true, target: 'skimmer-net', id: 'skim' }),
+    S.skim('leaves'),
     S.drain('murky', 'water'),
     S.detail(['moss'], 'moss', 'moss-brush'),
     S.foam(),
-    S.scrub(['empty-dirty']),
+    S.poolScrub(['empty-dirty']),
     S.rinse([...F, 'empty-dirty']),
     S.blow(['wet']),
     S.polish(['spout-dull'], 'spout'),
@@ -239,7 +239,7 @@ export const BATCH_B_LEVELS = [
     S.foam(),
     S.scrub(['grime']),
     S.rinse([...F, 'grime']),
-    S.dry(),
+    S.mitt(['wet'], null, 'dry'),
     S.polish(['dull']),
   ]),
   // 38 · Pocket watch — blow, glass cleaner, polish compound, foam, scrub, wipe, swab the chain, buff
@@ -258,7 +258,7 @@ export const BATCH_B_LEVELS = [
     S.trash('junk'),
     S.dust(),
     S.blow(['lint'], 'keys'),
-    S.swab(['grime'], 'keys'),
+    S.crevice(['grime'], 'keys'),
     S.eraser(['old'], 'keys'),
     S.mist(['old'], 'body'),
     S.dry(['wet'], 'body'),
@@ -308,7 +308,7 @@ export const BATCH_B_LEVELS = [
     S.foam(),
     S.scrub(['grime']),
     S.rinse([...F, 'grime']),
-    S.dry(),
+    S.mitt(['wet'], null, 'dry'),
     S.polish(['dull']),
     S.screws('bolts', 'install'),
   ]),
@@ -353,7 +353,7 @@ export const BATCH_B_LEVELS = [
     S.trash('leaves', { leaves: true }),
     S.detail(['moss'], 'moss', 'moss-brush'),
     S.foam('slabs'),
-    S.scrub(['dirty'], 'slabs'),
+    S.poolScrub(['dirty'], 'slabs'),
     S.rinse([...F, 'dirty'], 'slabs'),
     S.mop(['wet'], 'slabs'),
     S.roll(['unsealed'], 'slabs', TINT.gray),
@@ -393,7 +393,7 @@ export const BATCH_B_LEVELS = [
     S.hammer('dents'),
     S.sand(['dirty'], 'body'),
     S.laser(['dirty'], 'chrome'),
-    S.wipe(['sawdust'], 'body'),
+    S.mitt(['sawdust'], 'body', 'wipe'),
     S.spray(['primer'], 'body', TINT.turquoise),
     S.polish(['dull'], 'body'),
     S.wipe(['primer'], 'chrome', 'chrome-shine'),

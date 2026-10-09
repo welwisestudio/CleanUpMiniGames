@@ -145,7 +145,9 @@ export const BATCH_B_ASSETS = {
   "toaster-mask-outside": "assets/toaster/mask-outside.png",
   "toaster-result-picture": "assets/toaster/result-picture.webp",
   "bg-wash-portrait": "assets/backgrounds/bg-wash-portrait.webp",
-  "bg-wash-landscape": "assets/backgrounds/bg-wash-landscape.webp"
+  "bg-wash-landscape": "assets/backgrounds/bg-wash-landscape.webp",
+  "toaster-dent-1": "assets/toaster/dent-1.webp",
+  "toaster-dent-2": "assets/toaster/dent-2.webp"
  },
  "coir-doormat": {
   "garden-bench-leaf-1": "assets/garden-bench/leaf-1.webp",
@@ -519,7 +521,10 @@ export const BATCH_B_ASSETS = {
   "lawn-mower-mask-outside": "assets/lawn-mower/mask-outside.png",
   "lawn-mower-result-picture": "assets/lawn-mower/result-picture.webp",
   "bg-garage-portrait": "assets/backgrounds/bg-garage-portrait.webp",
-  "bg-garage-landscape": "assets/backgrounds/bg-garage-landscape.webp"
+  "bg-garage-landscape": "assets/backgrounds/bg-garage-landscape.webp",
+  "lawn-mower-dent-1": "assets/lawn-mower/dent-1.webp",
+  "lawn-mower-dent-2": "assets/lawn-mower/dent-2.webp",
+  "lawn-mower-dent-3": "assets/lawn-mower/dent-3.webp"
  },
  "street-sign": {
   "garden-bench-leaf-1": "assets/garden-bench/leaf-1.webp",
@@ -941,7 +946,10 @@ export const BATCH_B_ASSETS = {
   "knight-armor-mask-outside": "assets/knight-armor/mask-outside.png",
   "knight-armor-result-picture": "assets/knight-armor/result-picture.webp",
   "bg-vip-portrait": "assets/backgrounds/bg-vip-portrait.webp",
-  "bg-vip-landscape": "assets/backgrounds/bg-vip-landscape.webp"
+  "bg-vip-landscape": "assets/backgrounds/bg-vip-landscape.webp",
+  "knight-armor-dent-1": "assets/knight-armor/dent-1.webp",
+  "knight-armor-dent-2": "assets/knight-armor/dent-2.webp",
+  "knight-armor-dent-3": "assets/knight-armor/dent-3.webp"
  },
  "cannon": {
   "garden-bench-leaf-1": "assets/garden-bench/leaf-1.webp",
@@ -1306,7 +1314,9 @@ export const BATCH_B_ASSETS = {
   "vintage-tractor-mask-outside": "assets/vintage-tractor/mask-outside.png",
   "vintage-tractor-result-picture": "assets/vintage-tractor/result-picture.webp",
   "bg-garage-portrait": "assets/backgrounds/bg-garage-portrait.webp",
-  "bg-garage-landscape": "assets/backgrounds/bg-garage-landscape.webp"
+  "bg-garage-landscape": "assets/backgrounds/bg-garage-landscape.webp",
+  "vintage-tractor-dent-1": "assets/vintage-tractor/dent-1.webp",
+  "vintage-tractor-dent-2": "assets/vintage-tractor/dent-2.webp"
  },
  "vintage-car": {
   "garden-bench-leaf-1": "assets/garden-bench/leaf-1.webp",
@@ -1342,7 +1352,10 @@ export const BATCH_B_ASSETS = {
   "vintage-car-mask-outside": "assets/vintage-car/mask-outside.png",
   "vintage-car-result-picture": "assets/vintage-car/result-picture.webp",
   "bg-garage-portrait": "assets/backgrounds/bg-garage-portrait.webp",
-  "bg-garage-landscape": "assets/backgrounds/bg-garage-landscape.webp"
+  "bg-garage-landscape": "assets/backgrounds/bg-garage-landscape.webp",
+  "vintage-car-dent-1": "assets/vintage-car/dent-1.webp",
+  "vintage-car-dent-2": "assets/vintage-car/dent-2.webp",
+  "vintage-car-dent-3": "assets/vintage-car/dent-3.webp"
  }
 };
 export const BATCH_B_BOOT = {
@@ -1448,5 +1461,8 @@ export const BATCH_B_BOOT = {
  "rider-statue-thumb": "assets/rider-statue/thumb.webp",
  "rider-statue-thumb-clean": "assets/rider-statue/thumb-clean.webp",
  "chandelier-thumb": "assets/chandelier/thumb.webp",
- "chandelier-thumb-clean": "assets/chandelier/thumb-clean.webp"
+ "chandelier-thumb-clean": "assets/chandelier/thumb-clean.webp",
+ "tool-pool-brush": "assets/shared/tool-pool-brush.webp",
+ "tool-wash-mitt": "assets/shared/tool-wash-mitt.webp",
+ "tool-crevice-brush": "assets/shared/tool-crevice-brush.webp"
 };

@@ -73,7 +73,7 @@ spec('rusty-cleaver', 'workshop', ['rusty', 'bare'],
 # 19 · toaster (WASH)
 spec('toaster', 'wash', ['greasy'],
      [L('smudge', ('dull', 'clean', 0.35)), L('wet', ('wet', 'clean')), L('greasy', ('edit', 'greasy')), FOAM, L('dusty', ('dusty', 'greasy', 0.45))],
-     foam='degreaser', points={'dents': ([(0.35, 0.55), (0.62, 0.68)], None)})
+     foam='degreaser', points={'dents': ([(0.27, 0.5), (0.47, 0.68)], None)})
 # 20 · coir doormat (YARD)
 spec('coir-doormat', 'yard', ['dirty'],
      [L('wet', ('wet', 'clean')), L('dirty', ('edit', 'dirty')), L('crust', ('edit', 'dirty'), 'crust', 'chunks'), FOAM, L('dusty', ('dusty', 'dirty', 0.65))],
@@ -131,7 +131,7 @@ spec('kitchen-stove', 'wash', ['greasy', 'crust'],
 spec('lawn-mower', 'garage', ['muddy', 'rusty'],
      [L('dull', ('dull', 'clean', 0.4)), L('grime', ('grime', 'clean', 0.5)), L('rusty', ('edit', 'rusty')), FOAM, L('mud', ('edit', 'muddy'), 'mud', 'chunks')],
      regions=[('mud', ('diff', 'rusty', 'muddy', 0.16, 4))], foam='metal',
-     points={'leaves': ([(0.55, 0.45), (0.7, 0.5), (0.4, 0.6)], None), 'dents': ([(0.45, 0.62), (0.62, 0.58), (0.52, 0.72)], None)})
+     points={'leaves': ([(0.55, 0.45), (0.7, 0.5), (0.4, 0.6)], None), 'dents': ([(0.16, 0.6), (0.3, 0.68), (0.42, 0.75)], None)})
 # 30 · street sign (PLAZA)
 spec('street-sign', 'plaza', ['rusty', 'bare'],
      [L('dull', ('dull', 'clean', 0.3), 'plate'), L('bare', ('edit', 'bare')), L('rusty', ('edit', 'rusty')), L('dusty', ('dusty', 'rusty', 0.5))],
@@ -194,7 +194,7 @@ spec('knight-armor', 'vip', ['rusty'],
      [L('straps-dry', ('dull', 'clean', 0.6), 'straps'), L('dull', ('dull', 'clean', 0.4), 'steel'), L('wet', ('wet', 'clean')), L('grime', ('grime', 'clean', 0.5)),
       L('rusty', ('edit', 'rusty')), FOAM, L('dusty', ('dusty', 'rusty', 0.45))],
      regions=[('straps', ('hue', 12, 40, 0.38, 0.15)), ('steel', ('not', 'straps'))], foam='metal',
-     points={'dents': ([(0.5, 0.3), (0.38, 0.5), (0.6, 0.62)], None)})
+     points={'dents': ([(0.5, 0.28), (0.43, 0.66), (0.57, 0.66)], None)})
 # 41 · cannon (SHORE)
 spec('cannon', 'shore', ['rusty', 'bare'],
      [L('dull', ('dull', 'clean', 0.4)), L('bare', ('edit', 'bare')), L('sawdust', ('dusty', 'bare', 0.55), 'wood'), L('rusty', ('edit', 'rusty')), L('dusty', ('dusty', 'rusty', 0.45))],
@@ -248,12 +248,12 @@ spec('carousel-horse', 'plaza', ['old', 'primer'],
 spec('vintage-tractor', 'garage', ['muddy', 'bare'],
      [L('dull', ('dull', 'clean', 0.4)), L('bare', ('edit', 'bare'), 'body'), L('grime', ('grime', 'clean', 0.5), 'tires'), FOAM, L('muddy', ('edit', 'muddy'))],
      regions=[('tires', ('dark', 0.24)), ('tiresg', ('grow', 'tires', 2)), ('body', ('not', 'tiresg'))], foam='rubber', foam_region='tires',
-     points={'leaves': ([(0.4, 0.25), (0.6, 0.3), (0.5, 0.45)], None), 'dents': ([(0.45, 0.35), (0.62, 0.4)], 'body')})
+     points={'leaves': ([(0.4, 0.25), (0.6, 0.3), (0.5, 0.45)], None), 'dents': ([(0.62, 0.32), (0.8, 0.36)], 'body')})
 # 50 · vintage car (GARAGE, finale)
 spec('vintage-car', 'garage', ['dirty', 'primer'],
      [L('dull', ('dull', 'clean', 0.4), 'body'), L('primer', ('edit', 'primer')), L('sawdust', ('dusty', 'primer', 0.5), 'body'), L('dirty', ('edit', 'dirty')), L('dusty', ('dusty', 'dirty', 0.5))],
      regions=[('chrome', ('gray', 0.14, 0.55, 1.0)), ('chromeg', ('grow', 'chrome', 2)), ('body', ('not', 'chromeg'))],
-     points={'junk': ([(0.35, 0.35), (0.6, 0.3)], None), 'dents': ([(0.3, 0.5), (0.55, 0.55), (0.75, 0.5)], 'body')})
+     points={'junk': ([(0.35, 0.35), (0.6, 0.3)], None), 'dents': ([(0.3, 0.6), (0.55, 0.62), (0.75, 0.6)], 'body')})
 
 BG = {'plaza', 'garage', 'vip', 'shore'}
 
@@ -294,6 +294,40 @@ def build(src, imgs, a):
     if kind == 'grime':
         return K.grime(base, a, src[2] if len(src) > 2 else 0.55)
     raise ValueError(kind)
+
+
+DENT_SIZE = 112  # object units (= the hammer stage target size in kit.js)
+
+
+def dent_decal(src, x, y, size, seed=0):
+    """A dent made from the surface itself: the patch under (x, y), darkened in a crescent on the
+    upper-left inner wall (shadow), brightened on the lower-right rim (light catches the far wall),
+    softly squeezed toward the centre, with a soft round alpha."""
+    s = int(size)
+    x0, y0 = int(x - s / 2), int(y - s / 2)
+    patch = np.array(src.crop((x0, y0, x0 + s, y0 + s)).convert('RGBA')).astype(np.float32)
+    yy, xx = np.mgrid[0:s, 0:s].astype(np.float32)
+    cx = cy = (s - 1) / 2
+    dx, dy = (xx - cx) / (s / 2), (yy - cy) / (s / 2)
+    r = np.sqrt(dx * dx + dy * dy)
+    # radial pinch: sample closer to the centre inside the dent (the surface looks pushed in)
+    k = np.clip(1 - r, 0, 1) * 0.18
+    sx = np.clip(cx + (xx - cx) * (1 - k), 0, s - 1).astype(int)
+    sy = np.clip(cy + (yy - cy) * (1 - k), 0, s - 1).astype(int)
+    rgb = patch[sy, sx, :3] / 255
+    side = (dx * -0.7 + dy * -0.7)  # +1 toward the upper-left
+    inner = r < 0.72
+    # inner wall: deep shadow on the upper-left (the light comes from the upper left), lit lower-right
+    wall = np.clip(r / 0.72, 0, 1) ** 1.5
+    shade = np.where(inner, 1 - 0.62 * wall * np.clip(side + 0.35, 0, 1.3) - 0.12 * (1 - r), 1.0)
+    lit = np.where(inner, 0.32 * wall * np.clip(-side + 0.1, 0, 1), 0.0)
+    # crease: a thin dark ring where the metal bends, and a bright outer rim lower-right
+    crease = np.clip(1 - np.abs(r - 0.72) / 0.06, 0, 1)
+    rim = 0.45 * np.clip(1 - np.abs(r - 0.82) / 0.08, 0, 1) * np.clip(-side + 0.2, 0, 1)
+    rgb = rgb * (shade * (1 - 0.45 * crease))[..., None] + (lit + rim)[..., None]
+    rgb = np.clip(rgb, 0, 1)
+    a = np.clip((0.98 - r) / 0.12, 0, 1) * (patch[:, :, 3] / 255)
+    return Image.fromarray(np.dstack([rgb * 255, a * 255]).astype(np.uint8), 'RGBA')
 
 
 _fam_bg = {}
@@ -398,6 +432,14 @@ def run_level(level):
     for lid, init, _ in stack:
         if init != 'empty':
             first.alpha_composite(out[lid])
+    # Step 9: dent decals made from the object's OWN starting surface (a patch of the first visible
+    # state with concave shading: dark crescent toward the light, highlight on the far rim), so a
+    # dent reads on every material; hammering fades the decal and reveals the untouched surface
+    if 'dents' in pts:
+        for i, (x, y) in enumerate(pts['dents']):
+            d = dent_decal(first, x, y, DENT_SIZE, seed=i)
+            PL.save_webp(d, PUB / level / f'dent-{i + 1}.webp', 92)
+            reg_key(level, f'dent-{i + 1}', f'assets/{level}/dent-{i + 1}.webp')
     PL.save_webp(PL.fit(PL.crop_padded(first, 0.02), THUMB), PUB / level / 'thumb.webp', 84)
     PL.save_webp(PL.fit(PL.crop_padded(imgs['clean'], 0.02), THUMB), PUB / level / 'thumb-clean.webp', 84)
     boot[f'{level}-thumb'] = f'assets/{level}/thumb.webp'
@@ -448,7 +490,9 @@ def run_backgrounds():
 
 # ---- tools and skins -----------------------------------------------------------------------
 NEW_TOOLS = [('tool-laser', 'top'), ('tool-spray-bottle', 'top'), ('tool-steam-cleaner', 'top'), ('tool-pump', 'top'), ('tool-hose', 'top'),
-             ('tool-skimmer-net', 'top-center'), ('tool-whetstone', 'top-center'), ('tool-carpet-beater', 'top-center'), ('tool-mop', 'top-center')]
+             ('tool-skimmer-net', 'top-center'), ('tool-whetstone', 'top-center'), ('tool-carpet-beater', 'top-center'), ('tool-mop', 'top-center'),
+             # Step 9 polish pass
+             ('tool-pool-brush', 'top-center'), ('tool-wash-mitt', 'top-center'), ('tool-crevice-brush', 'top')]
 
 
 def run_tools():

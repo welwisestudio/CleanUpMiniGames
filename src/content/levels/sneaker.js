@@ -36,6 +36,6 @@ export const sneaker = {
     { id: 'scrub', tool: 'drill-brush', mechanic: 'brush', toolScale: 1.3, params: { mode: 'scrub', from: 'foam', under: 'scrubbed', clear: ['stained'], radius: 70, threshold: 0.96 }, targetSeconds: [6, 9] },
     { id: 'rinse', tool: 'washer-lance', mechanic: 'brush', params: { mode: 'reveal', layers: ['foam', 'scrubbed', 'stained'], radius: 85, threshold: 0.96 }, targetSeconds: [6, 9] },
     { id: 'dry', family: 'wipe', tool: 'cloth', mechanic: 'brush', params: { mode: 'reveal', layers: ['wet'], radius: 120, threshold: 0.96 }, targetSeconds: [4, 6] },
-    { id: 'erase', tool: 'eraser', mechanic: 'brush', region: 'scuffs', params: { mode: 'reveal', layers: ['scuffed'], radius: 60, threshold: 0.96 }, targetSeconds: [4, 6] },
+    { id: 'erase', tool: 'eraser', mechanic: 'brush', outline: false, region: 'scuffs', params: { mode: 'reveal', layers: ['scuffed'], radius: 60, threshold: 0.96 }, targetSeconds: [4, 6] },
   ],
 };

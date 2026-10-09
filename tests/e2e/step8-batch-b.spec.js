@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitFor, mouseDriver, touchDriver, pressButton, snap } from './helpers.js';
+import { waitFor, mouseDriver, touchDriver, pressButton, snap, openFromMenu } from './helpers.js';
 import { playStage5 } from './level-play.js';
 
 // Step 8 Batch B (levels 16–50): every level played through with REAL mouse / touch input (no
@@ -16,26 +16,6 @@ const ALL = [
 const ONLY = process.env.BATCH_B ? process.env.BATCH_B.split(',') : ALL;
 const SHOTS = process.env.SHOTS !== '0';
 
-export async function openFromMenu(page, drv, id) {
-  for (let i = 0; i < 80; i++) {
-    const s = await waitFor(page, (x) => x.scene === 'Menu' && x.buttons?.[`menu-level-${id}`]);
-    const b = s.buttons[`menu-level-${id}`];
-    if (b.visible && b.y > s.layout.H * 0.2 && b.y < s.layout.H * 0.85) break;
-    const dir = b.y > s.layout.H / 2 ? 1 : -1;
-    const far = Math.abs(b.y - s.layout.H / 2) > s.layout.H;
-    if (drv.kind === 'touch') {
-      const y0 = s.layout.H * (dir > 0 ? 0.82 : 0.32);
-      await drv.down(s.layout.W / 2, y0);
-      for (let k = 1; k <= 8; k++) await drv.move(s.layout.W / 2, y0 - dir * k * (far ? 50 : 25));
-      await drv.up();
-    } else {
-      await page.mouse.move(s.layout.W / 2, s.layout.H * 0.7);
-      await page.mouse.wheel(0, dir * (far ? 900 : 220));
-    }
-    await page.waitForTimeout(far ? 250 : 450);
-  }
-  await pressButton(page, drv, `menu-level-${id}`);
-}
 
 for (const id of ONLY) {
   const n = ALL.indexOf(id) + 16;

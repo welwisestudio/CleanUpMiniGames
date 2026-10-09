@@ -176,3 +176,9 @@ bg backgrounds/bg-plaza 193b5ede-3045-4a32-b8bc-59085d1c6f86
 bg backgrounds/bg-garage aa93ec14-928e-4c91-b442-caad900bf663
 bg backgrounds/bg-vip ec91c5e1-40b8-4b64-9481-61f36b5be555
 bg backgrounds/bg-shore 80603158-4fd3-41b5-8ae0-c5449489d24d
+tool shared/tool-pool-brush 7835da60-c8ee-4c87-b1a3-9cf088627e4a
+tool shared/tool-wash-mitt e0b15617-75c0-4bf4-ab5f-4401f4996608
+tool shared/tool-crevice-brush c05c33b1-61dd-4635-a0a6-95b39a3367a3
+removal shared/tool-pool-brush 88769d04-765d-4762-9118-abd3aa60a760
+removal shared/tool-wash-mitt 26aec35e-ece2-4ded-95f2-6034b0a3f1e3
+removal shared/tool-crevice-brush 6bbab0be-0761-4185-a0c5-6720c2f5c4be

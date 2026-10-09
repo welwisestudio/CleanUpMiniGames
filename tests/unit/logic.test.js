@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { CoverageGrid } from '../../src/mechanics/CoverageGrid.js';
 import { buildChunkMap } from '../../src/mechanics/chunkMap.js';
-import { BrushMechanic } from '../../src/mechanics/BrushMechanic.js';
+import { BrushMechanic, PAINT_LOAD_MUL } from '../../src/mechanics/BrushMechanic.js';
+import { CollectMechanic } from '../../src/mechanics/CollectMechanic.js';
 import { ChunkBreakMechanic } from '../../src/mechanics/ChunkBreakMechanic.js';
 import { SaveService, parseSave, SaveCorruptError, createDefaultState } from '../../src/services/SaveService.js';
 import { RewardService } from '../../src/services/RewardService.js';
@@ -812,7 +813,7 @@ describe('Step 8: paint source (BrushMechanic extension)', () => {
     stack.overlay = { add() {}, addAt() {} };
     stack.childPos = (x, y) => ({ x, y });
     stack.scene = partScene();
-    const source = { texture: 'tray', x: 100, y: 720, size: 200, opening: { dx: 0, dy: 0, r: 0.3 }, capacity: 900 };
+    const source = { texture: 'tray', x: 100, y: 720, size: 200, opening: { dx: 0, dy: 0, r: 0.3 }, capacity: 900 / PAINT_LOAD_MUL };
     const m = new BrushMechanic({ stack, params: { mode: 'reveal', layers: ['bare'], radius: 40, threshold: 0.95, source }, tool: {} });
     sweep(m);
     expect(m.progress).toBe(0); // not loaded
@@ -824,7 +825,7 @@ describe('Step 8: paint source (BrushMechanic extension)', () => {
     expect(m.needsLoad()).toBe(false);
     sweep(m);
     expect(m.progress).toBeGreaterThan(0);
-    expect(m.needsLoad()).toBe(true); // 900 units of paint are used up by a full sweep
+    expect(m.needsLoad()).toBe(true); // 900 units of paint (one dip) are used up by a full sweep
   });
 });
 
@@ -840,12 +841,13 @@ describe('Step 8 Batch A content (CONTENT-MATRIX levels 6–15)', () => {
     expect(tools('bathroom-sink')).toEqual(['trash-bin', 'foam-sprayer', 'scrub-brush', 'detail-brush', 'mist-nozzle', 'cloth', 'polisher']);
     expect(tools('desk-fan')).toEqual(['screwdriver', 'soak-tub', 'duster', 'foam-sprayer', 'scrub-brush', 'cloth', 'fan-guard', 'screwdriver']);
     expect(tools('garden-bench')).toEqual(['trash-bin', 'wide-scraper', 'sandpaper', 'wire-brush', 'cloth', 'paint-roller', 'paint-brush', 'stain-sponge']);
-    expect(tools('keyboard')).toEqual(['keycap-puller', 'air-blower', 'detail-brush', 'cotton-swab', 'cloth', 'new-keycaps', 'cloth']);
+    // Step 9 polish: the keyboard is cleaned in place (no keycap removal)
+    expect(tools('keyboard')).toEqual(['air-blower', 'crevice-brush', 'cotton-swab', 'cloth', 'spray-bottle']);
     expect(tools('watering-can')).toEqual(['hammer', 'wire-brush', 'foam-sprayer', 'scrub-brush', 'washer-lance', 'cloth', 'spray-gun']);
     expect(tools('porcelain-vase')).toEqual(['duster', 'mist-nozzle', 'foam-sprayer', 'detail-brush', 'mist-nozzle', 'cloth', 'paint-brush']);
     for (const id of DISPLAY_ORDER.slice(5, 15)) {
       const n = getLevel(id).stages.length;
-      expect(n).toBeGreaterThanOrEqual(6);
+      expect(n).toBeGreaterThanOrEqual(id === 'keyboard' ? 5 : 6);
       expect(n).toBeLessThanOrEqual(8);
       expect(economy.completionReward(id)).toBeGreaterThan(0);
     }
@@ -917,7 +919,7 @@ describe('Step 8 Batch B content (levels 16–50)', () => {
   });
 
   it('levels 1–15 are unchanged by the expansion (stage counts)', () => {
-    expect(DISPLAY_ORDER.slice(0, 15).map((id) => getLevel(id).stages.length)).toEqual([6, 6, 8, 9, 7, 6, 7, 7, 7, 7, 8, 8, 7, 7, 7]);
+    expect(DISPLAY_ORDER.slice(0, 15).map((id) => getLevel(id).stages.length)).toEqual([6, 6, 8, 9, 7, 6, 7, 7, 7, 7, 8, 8, 5, 7, 7]); // keyboard simplified in Step 9
   });
 });
 
@@ -932,9 +934,11 @@ describe('FillLevelMechanic (drain / fill)', () => {
       toLocal: (w) => w,
       childPos: (x, y) => ({ x, y }),
       eraseRect: (id, x0, y0, x1, y1) => rects.push([id, Math.round(y0), Math.round(y1)]),
+      toWorld: (l) => l,
     };
   }
-  const scene = { add: { graphics: () => ({ clear() { return this; }, lineStyle() { return this; }, lineBetween() { return this; }, destroy() {} }) } };
+  const fx = () => ({ emitParticleAt() {}, setDepth() { return this; }, destroy() {} });
+  const scene = { add: { particles: fx, image: () => ({ setDepth() { return this; }, setTint() { return this; }, setAlpha() { return this; }, setScale() { return this; }, destroy() {} }) }, tweens: { add() {} } };
   it('holding inside the water drains from the top; outside does nothing; completes after its seconds', () => {
     const st = stack();
     const m = new FillLevelMechanic({ stack: st, params: { layer: 'murky', mode: 'drain', region: 'water', seconds: 2 }, scene });
@@ -1031,5 +1035,46 @@ describe('Cosmetic tool skins (Step 8)', () => {
     expect(save.get('tools.equipped').rinse).toBeUndefined();
     const st = parseSave(JSON.stringify({ version: 2, tools: { skins: { owned: ['washer-red', 'washer-red', 3], equipped: { rinse: 'washer-red', foam: 9 } } } }));
     expect(st.tools.skins).toEqual({ owned: ['washer-red'], equipped: { rinse: 'washer-red' } });
+  });
+});
+
+describe('Step 9 polish pass (shared systems)', () => {
+  it('collect: only the net head catches debris it passes over; far taps and empty sweeps catch nothing', () => {
+    const stack = fakeStack();
+    stack.overlay = { add() {} };
+    stack.childPos = (x, y) => ({ x, y });
+    const img = () => ({ setAngle() { return this; }, setScale() { return this; }, scale: 1, angle: 0, destroy() {}, width: 100, height: 100 });
+    const scene = { add: { image: () => img() }, tweens: { add: () => ({ stop() {} }) } };
+    const items = [{ texture: 'leaf', x: 200, y: 300, size: 78 }, { texture: 'leaf', x: 420, y: 320, size: 78 }];
+    const m = new CollectMechanic({ stack, params: { catch: 70, items }, scene });
+    const w = (x, y) => ({ x: x + 540 - SIZE / 2, y: y + 860 - SIZE / 2 });
+    m.tap(w(600, 600));
+    m.stroke(w(50, 500), w(600, 520));
+    expect(m.progress).toBe(0);
+    m.stroke(w(120, 300), w(260, 300)); // sweeps through the first leaf
+    expect(m.progress).toBe(0.5);
+    m.stroke(w(260, 300), w(430, 330));
+    expect(m.completed).toBe(true);
+  });
+
+  it('paint: one dip carries 3.5× the configured capacity', () => {
+    expect(PAINT_LOAD_MUL).toBe(3.5);
+  });
+
+  it('a stage on a small zone caps the brush so it cannot finish in one stroke', () => {
+    const stack = fakeStack();
+    stack.regionBounds = () => [100, 100, 400, 140]; // a thin edge band (40 px tall)
+    stack.inRegion = (x, y) => x >= 100 && x <= 400 && y >= 100 && y <= 140;
+    const m = new BrushMechanic({ stack, params: { mode: 'reveal', layers: ['dull'], radius: 80, threshold: 0.95, region: 'edge' }, tool: {} });
+    expect(m.radius).toBe(16);
+  });
+
+  it('hammer family: the strike point is on the head and lands where the player points', () => {
+    for (const id of ['hammer', 'mallet', 'gold-hammer']) {
+      const t = TOOLS[id];
+      expect(t.workingPoint.y).toBeLessThan(0.25); // inside the head (top quarter of the sprite)
+      expect(Math.hypot(t.workOffset.x, t.workOffset.y)).toBeLessThan(40);
+    }
+    expect(TOOLS.hose.jetAngle).toBeLessThan(-100); // water leaves the outlet up-left, not straight up
   });
 });

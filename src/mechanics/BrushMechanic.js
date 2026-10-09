@@ -20,6 +20,10 @@ import { CoverageGrid } from './CoverageGrid.js';
 const SPRAY_RATE = 45; // stamps per second while a jet is held
 const OUTLINE = 0x00f010;
 const DIP_DISTANCE = 70; // movement inside the paint source needed to load the tool
+// Step 9: one dip carries much more paint (a normal paint stage needs only a few reloads)
+export const PAINT_LOAD_MUL = 3.5;
+// Step 9: on a small zone the footprint is capped so the stage cannot finish in one stroke
+const ZONE_RADIUS_SHARE = 0.3;
 
 // Soft auto-complete (Step 6): from SOFT_MIN progress, a stage completes when only small scattered
 // remnants are left (largest uncovered patch ≤ max(SOFT_BLOB_MIN cells, SOFT_BLOB_SHARE of the
@@ -34,9 +38,11 @@ export class BrushMechanic {
     this.params = params;
     this.tool = tool;
     this.mode = params.mode;
-    this.radius = params.radius;
     this.threshold = params.threshold;
     this.region = params.region ?? null;
+    const rb = this.region && stack.regionBounds ? stack.regionBounds(this.region) : null;
+    this.radiusCap = rb ? Math.max(16, Math.min(rb[2] - rb[0], rb[3] - rb[1]) * ZONE_RADIUS_SHARE) : Infinity;
+    this.radius = Math.min(params.radius, this.radiusCap);
     this.aspect = params.aspect ?? 1;
     // fluffy tips are sparse: the effective length is 90 % of the measured head
     this.aspectY = params.aspectY ?? (tool?.head ? (tool.head[1] / tool.head[0]) * 0.9 : 1);
@@ -98,7 +104,7 @@ export class BrushMechanic {
 
   _setLoaded(on) {
     this.loaded = on;
-    this.charge = on ? this.source.capacity ?? 2600 : 0;
+    this.charge = on ? (this.source.capacity ?? 2600) * PAINT_LOAD_MUL : 0;
     this.dipped = 0;
     this._drawSourceRing(!on && !this.completed);
     const tools = this.stack.scene.tools;
@@ -128,7 +134,7 @@ export class BrushMechanic {
   // and every layer stay exactly as they are (no progress lost).
   setTool(tool, radius) {
     this.tool = tool;
-    this.radius = radius;
+    this.radius = Math.min(radius, this.radiusCap ?? Infinity);
     if (this.params.aspectY == null) this.aspectY = tool?.head ? (tool.head[1] / tool.head[0]) * 0.9 : 1;
   }
 
@@ -182,13 +188,13 @@ export class BrushMechanic {
     if (!this.stack.touchesObject(local.x, local.y, reach, this.region)) return;
     const p = this.params;
     if (this.mode === 'reveal') {
-      for (const id of p.layers) this.stack.erase(id, local, r, this.aspect, 0, this.aspectY);
+      for (const id of p.layers) this.stack.erase(id, local, r, this.aspect, 0, this.aspectY, this.region);
     } else if (this.mode === 'apply') {
       this.stack.paint(p.layer, p.stamp, local, r);
       this._paintedSinceClip = true;
     } else if (this.mode === 'scrub') {
-      this.stack.erase(p.from, local, r, this.aspect, 0, this.aspectY);
-      for (const id of p.clear ?? []) this.stack.erase(id, local, r, this.aspect, 0, this.aspectY);
+      this.stack.erase(p.from, local, r, this.aspect, 0, this.aspectY, this.region);
+      for (const id of p.clear ?? []) this.stack.erase(id, local, r, this.aspect, 0, this.aspectY, this.region);
     }
     let added = 0;
     if (this.aspect > 1) {

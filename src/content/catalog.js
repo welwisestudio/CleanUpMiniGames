@@ -48,7 +48,7 @@ export const DISPLAY_ORDER = [
   ...BATCH_B_LEVELS.map((l) => l.id),
 ];
 
-export const KNOWN_MECHANICS = ['chunkBreak', 'brush', 'dragToTarget', 'spots', 'points', 'fill'];
+export const KNOWN_MECHANICS = ['chunkBreak', 'brush', 'dragToTarget', 'spots', 'points', 'fill', 'collect'];
 export const POINT_MODES = ['hold', 'tap', 'pull', 'screw', 'place', 'repeatedTap'];
 export const BRUSH_MODES = ['reveal', 'apply', 'scrub'];
 
@@ -119,6 +119,7 @@ export function validateCatalog() {
         for (const it of p.items ?? []) if (it.fromLayer && !layerIds.has(it.fromLayer)) errors.push(`${level.id}/${st.id}: unknown layer ${it.fromLayer}`);
         for (const k of ['stamp', 'erase']) if (p.onPlace?.[k] && !layerIds.has(p.onPlace[k])) errors.push(`${level.id}/${st.id}: unknown layer ${p.onPlace[k]}`);
       }
+      if (st.mechanic === 'collect' && !(p.items?.length && p.items.every((it) => it.texture))) errors.push(`${level.id}/${st.id}: collect needs items with textures`);
       if (st.mechanic === 'spots') {
         if (!layerIds.has(p.layer)) errors.push(`${level.id}/${st.id}: unknown layer ${p.layer}`);
         if (!(level.object.regions?.[p.region]?.circles?.length)) errors.push(`${level.id}/${st.id}: spots need a circles region`);

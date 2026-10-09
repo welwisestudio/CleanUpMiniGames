@@ -170,13 +170,16 @@ export class ToolController {
   }
 
   // Step 8: hammer / mallet blow — a quick swing around the working point (visual only).
+  // Step 9: the head is the working point, so the swing lifts the head and drops it straight onto
+  // the target (a short tilt-back too); the hit lands exactly where the player pointed.
   strike() {
     const s = this.sprite;
     if (!s) return;
     const base = this.tool.holdAngle ?? 0;
+    const y = s.y;
     this.scene.tweens.killTweensOf(s);
-    s.setAngle(base - 28);
-    this.scene.tweens.add({ targets: s, angle: base, duration: 90, ease: 'Quad.easeIn' });
+    s.setAngle(base + 14).setY(y - 46 * this.objScale);
+    this.scene.tweens.add({ targets: s, angle: base, y, duration: 95, ease: 'Quad.easeIn' });
   }
 
   // Per-frame jet visuals (code-drawn stream between nozzle and impact).

@@ -17,3 +17,10 @@ TOOLS = {
 def prompt(key):
     g, s, n, p, h, x = TOOLS[key]
     return T.format(G=g, S=s, N=n, P=p, H=h, X=x)
+
+# Step 9 polish pass: three reusable tools for large surfaces / narrow gaps (same template)
+TOOLS.update({
+    'shared/tool-pool-brush': ('cleaning', "one telescopic pool and deck brush standing upright: a wide rectangular blue brush head with dense white bristles pointing straight up at the very top, mounted on a long straight white aluminium telescopic pole going straight down. Straight front view, centered, the brush head wide and horizontal.", 'brush', 10, 'crisp highlights', 'No water, no text, no logos, no hands, no extra objects.'),
+    'shared/tool-wash-mitt': ('cleaning', "one large car wash mitt standing upright with the fluffy microfiber chenille noodle side at the very top: a thick plush light-blue chenille mitt with a dark blue elastic cuff at the bottom. Straight front view, centered.", 'mitt', 12, 'soft highlights', 'No hand inside, no text, no logos, no extra objects.'),
+    'shared/tool-crevice-brush': ('cleaning', "one narrow crevice cleaning brush standing perfectly vertical: a thin pointed tip of stiff dark gray bristles at the very top, a slim angled neck, and a slender orange and gray plastic handle going straight down. Straight side view, centered, the bristle tip on the vertical axis.", 'brush', 12, 'crisp highlights', 'No text, no logos, no hands, no extra objects.'),
+})

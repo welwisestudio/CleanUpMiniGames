@@ -234,7 +234,9 @@ export class LevelScene extends Phaser.Scene {
     // (Step 6: the chair and the rug were framed too small), the reach constraint still keeps
     // room below for the finger / jet tools.
     const share = 0.78; // same height share for every object (Soccer Ball included since the Step 6 UI pass)
-    const fit = fitObject(l, t.bounds, { reach: t.reach, jetReach: t.jetReach, jetPx: t.jetPx, canvasSize: this.level.object.canvasSize, share, bottomReserve: this.selectorReserve(l) });
+    // `object.maxLong` (Step 9): very elongated objects (the cleaver) are limited by their LONG side
+    // too, so they do not look huge next to the other objects and leave room for the tool
+    const fit = fitObject(l, t.bounds, { reach: t.reach, jetReach: t.jetReach, jetPx: t.jetPx, canvasSize: this.level.object.canvasSize, share, bottomReserve: this.selectorReserve(l), maxLong: this.level.object.maxLong });
     const changed = this.fitKey !== null && this.fitKey !== t.key;
     this.fitKey = t.key;
     this.objFit = fit;
@@ -461,12 +463,12 @@ export class LevelScene extends Phaser.Scene {
     // Step 8 large objects: dim the zones this stage does not work on
     if (this.stage.dim && this.stage.region) this.stack.showZoneDim(this.stage.region);
     else this.stack.hideZoneDim();
-    // Dashed green outline only where the active part would otherwise be unclear (stage
-    // `outline: true`: trophy ball / base, chair seat close-ups, sanding spots). Whole-object or
-    // obvious targets (whole chair, black scuff marks) rely on the hand hint instead.
+    // Step 9 rule: every localized stage (a `region`) shows the green outline around the exact
+    // active zone; dimming is only a secondary effect. Stages approved without it in Step 6
+    // (trophy ball, sneaker scuffs, whole-chair frame) opt out with `outline: false`.
     const region = this.stage.region;
     if (region && this.stage.outline === 'circles') this.stack.showCircleTargets(region);
-    else if (region && this.stage.outline) this.stack.showRegionOutline(region);
+    else if (region && this.stage.outline !== false) this.stack.showRegionOutline(region);
     else this.stack.hideRegionOutline();
     this.idleMs = 0;
     this.hint.hide();

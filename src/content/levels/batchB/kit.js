@@ -31,7 +31,7 @@ export function makeLevel(id, title, stageFns, opts = {}) {
   }
   const layers = [
     { id: 'clean', texture: `${id}-clean`, initial: 'full', static: true },
-    ...M.stack.map(([lid, initial, tex]) => ({ id: lid, texture: `${id}-${tex}`, initial })),
+    ...M.stack.map(([lid, initial, tex]) => ({ id: lid, texture: `${id}-${tex}`, initial: opts.init?.[lid] ?? initial })),
     ...ctx.decals,
   ];
   return {
@@ -53,9 +53,9 @@ export function makeLevel(id, title, stageFns, opts = {}) {
         gems: [bx0 - W * 0.04, by0 - H * 0.04, bx1 + W * 0.42, by1 + 20],
       },
       layers,
+      ...(opts.maxLong ? { maxLong: opts.maxLong } : {}),
     },
     stages,
-    ...opts,
   };
 }
 
@@ -96,6 +96,20 @@ export const S = {
   paint: (layers, region, tint, id = 'paint') => (c) => ({ ...brush(id, 'paint-brush', { mode: 'reveal', layers, radius: 32, aspect: 1.8, threshold: 0.94, source: can(c, tint) }, { focus: 'paint', ...zone(region) })() }),
   stain: (layers, region, id = 'varnish') => brush(id, 'stain-sponge', { mode: 'reveal', layers, radius: 90 }, zone(region)),
   scrape: (layers, region, id = 'scrape') => brush(id, 'wide-scraper', { mode: 'reveal', layers, radius: 60 }, { family: 'scrape', ...zone(region) }),
+  // Step 9: hold the skimmer net and sweep its head through the floating debris (collect mechanic)
+  skim: (pointsKey = 'leaves') => (c) => ({
+    id: 'skim',
+    tool: 'skimmer-net',
+    mechanic: 'collect',
+    params: { catch: 70, items: (c.P[pointsKey] ?? []).map(([x, y], i) => ({ texture: LEAVES[i % LEAVES.length], x, y, size: 78, angle: (i * 47) % 360 })) },
+    targetSeconds: [5, 8],
+  }),
+  // Step 9 large surfaces: the telescopic pool brush scrubs basins and paving (scrub mode)
+  poolScrub: (clear, region) => brush('scrub', 'pool-brush', { mode: 'scrub', from: 'foam', under: 'scrubbed', clear, radius: 120, aspect: 1.6, threshold: 0.96 }, zone(region)),
+  mitt: (layers, region, id = 'wash-mitt') => brush(id, 'wash-mitt', { mode: 'reveal', layers, radius: 120 }, zone(region)),
+  crevice: (layers, region, id = 'crevice-brush') => brush(id, 'crevice-brush', { mode: 'reveal', layers, radius: 30 }, zone(region)),
+  // scraping a crust with strokes (no chip hunting) — used where chips were tediously long
+  scrapeCrust: (layers, region) => brush('scrape', 'wide-scraper', { mode: 'reveal', layers, radius: 48, aspect: 2.0, threshold: 0.94 }, { family: 'scrape', fx: 'chips', ...zone(region) }),
   steam: (layers, region) => brush('steam', 'steam-cleaner', { mode: 'reveal', layers, radius: 72 }, { fx: 'steam', ...zone(region) }),
   mist: (layers, region, id = 'spray-clean') => brush(id, 'spray-bottle', { mode: 'reveal', layers, radius: 88 }, zone(region)),
   blow: (layers, region) => brush('blow', 'air-blower', { mode: 'reveal', layers, radius: 80 }, zone(region)),
@@ -118,13 +132,14 @@ export const S = {
   // hammer the dents out (watering-can dent decals, approved art)
   hammer: (pointsKey = 'dents') => (c) => {
     const pts = c.P[pointsKey] ?? [];
-    if (!c.decals.some((d) => d.id === 'dents')) c.decals.push({ id: 'dents', initial: 'decals', decals: pts.map(([x, y], i) => ({ texture: `watering-can-dent-${(i % 3) + 1}`, x, y, size: DENT })) });
+    const tex = (i) => `${c.id}-dent-${i + 1}`; // Step 9: dents made from this object's own surface
+    if (!c.decals.some((d) => d.id === 'dents')) c.decals.push({ id: 'dents', initial: 'decals', decals: pts.map(([x, y], i) => ({ texture: tex(i), x, y, size: DENT })) });
     return {
       id: 'hammer',
       family: 'hammer',
       tool: 'hammer',
       mechanic: 'points',
-      params: { mode: 'repeatedTap', action: 'remove', taps: 3, outline: false, targets: pts.map(([x, y], i) => ({ x, y, r: DENT * 0.55, texture: `watering-can-dent-${(i % 3) + 1}`, size: DENT, layer: 'dents' })) },
+      params: { mode: 'repeatedTap', action: 'remove', taps: 3, outline: false, targets: pts.map(([x, y], i) => ({ x, y, r: DENT * 0.6, texture: tex(i), size: DENT, layer: 'dents' })) },
       targetSeconds: [4, 7],
     };
   },

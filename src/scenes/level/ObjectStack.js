@@ -185,9 +185,44 @@ export class ObjectStack {
     return entry.display;
   }
 
-  erase(id, local, r, aspect = 1, angle = 0, aspectY = 1) {
+  erase(id, local, r, aspect = 1, angle = 0, aspectY = 1, regionId = null) {
     const scale = (2 * r) / 128 / 0.82; // brush-soft is fully opaque to ~65 % of its radius
-    this._rt(id).stamp('brush-soft', null, local.x, local.y, { erase: true, scaleX: scale * aspect, scaleY: scale * aspectY, angle });
+    if (!regionId) {
+      this._rt(id).stamp('brush-soft', null, local.x, local.y, { erase: true, scaleX: scale * aspect, scaleY: scale * aspectY, angle });
+      return;
+    }
+    // Step 9: a zone stage changes pixels only inside its zone (the laser on the blade must not
+    // clean the wooden handle next to it): the brush is drawn into a small scratch texture, the
+    // part outside the zone is cut away, and only the rest erases the layer.
+    const half = Math.ceil(r * Math.max(aspect, aspectY) * 1.25) + 2;
+    const size = Math.min(1024, 2 * half);
+    if (!this._clipRT || this._clipRT.width < size) {
+      this._clipRT?.destroy();
+      this._clipRT = this.scene.make.renderTexture({ width: Math.max(size, 256), height: Math.max(size, 256) }, false);
+    }
+    const t = this._clipRT;
+    const c = t.width / 2;
+    t.clear();
+    t.stamp('brush-soft', null, c, c, { scaleX: scale * aspect, scaleY: scale * aspectY, angle });
+    t.erase(this.regionOutsideKey(regionId), c - local.x, c - local.y);
+    this._rt(id).erase(t, local.x - c, local.y - c);
+  }
+
+  // Inverse of the region mask (white OUTSIDE the zone) on the object canvas, built once.
+  regionOutsideKey(regionId) {
+    const key = `rout-${this.levelId}-${regionId}`;
+    if (this.scene.textures.exists(key)) return key;
+    const src = this.scene.textures.get(this.regionMaskKey(regionId)).getSourceImage();
+    const c = document.createElement('canvas');
+    c.width = this.size;
+    c.height = this.size;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, this.size, this.size);
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.drawImage(src, 0, 0, this.size, this.size);
+    this.scene.textures.addCanvas(key, c);
+    return key;
   }
 
   paint(id, stampKey, local, r) {
@@ -213,6 +248,14 @@ export class ObjectStack {
     if (!this._eraser) this._eraser = this.scene.make.graphics({}, false);
     const g = this._eraser;
     g.clear().fillStyle(0xffffff, 1).fillRect(0, 0, Math.max(1, x1 - x0), Math.max(1, y1 - y0));
+    this._rt(id).erase(g, x0, y0);
+  }
+
+  // Step 9: a soft partial erase of a band (water edge feather: alpha < 1 thins the layer there)
+  eraseRectSoft(id, x0, y0, x1, y1, alpha) {
+    if (!this._eraser) this._eraser = this.scene.make.graphics({}, false);
+    const g = this._eraser;
+    g.clear().fillStyle(0xffffff, alpha).fillRect(0, 0, Math.max(1, x1 - x0), Math.max(1, y1 - y0));
     this._rt(id).erase(g, x0, y0);
   }
 
@@ -655,6 +698,7 @@ export class ObjectStack {
 
   destroy() {
     this._eraser?.destroy();
+    this._clipRT?.destroy();
     this.container.destroy(true);
   }
 }

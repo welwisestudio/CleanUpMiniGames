@@ -50,7 +50,7 @@ export function computeLayout(W, H, dpr = 1) {
 // second, separate finger-room requirement; the tighter of the two limits the scale. The jet is
 // capped at 30 % of the play height (short landscape screens).
 // `bottomReserve` (device px) keeps a band above the bottom free (Step 7 tool cards).
-export function fitObject(layout, target, { reach = 540, jetReach = 0, jetPx = 0, canvasSize = 1024, share = null, bottomReserve = 0 } = {}) {
+export function fitObject(layout, target, { reach = 540, jetReach = 0, jetPx = 0, canvasSize = 1024, share = null, bottomReserve = 0, maxLong = null } = {}) {
   const b = typeof target === 'number' ? [canvasSize / 2 - target, canvasSize / 2 - target, canvasSize / 2 + target, canvasSize / 2 + target] : target;
   const objW = b[2] - b[0];
   const objH = b[3] - b[1];
@@ -64,7 +64,8 @@ export function fitObject(layout, target, { reach = 540, jetReach = 0, jetPx = 0
   // vertically in the space left after the finger room they need below them (was top-aligned).
   const jp = Math.min(jetPx, playH * 0.3);
   const jetLimit = jp > 0 ? (playH * 0.97 - jp) / (objH + jetReach) : Infinity;
-  const scale = Math.max(minScale, Math.min((playW * 0.96) / objW, (playH * hShare) / objH, (playH * 0.97) / (objH + reach), jetLimit));
+  const longLimit = maxLong ? (Math.min(playW, playH) * maxLong) / Math.max(objW, objH) : Infinity;
+  const scale = Math.max(minScale, Math.min((playW * 0.96) / objW, (playH * hShare) / objH, (playH * 0.97) / (objH + reach), jetLimit, longLimit));
   const spare = playH - objH * scale - Math.max(reach * scale, jp > 0 ? jetReach * scale + jp : 0);
   const boundsTop = top + Math.max(playH * 0.05, spare / 2);
   const cx = layout.W / 2 - ((b[0] + b[2]) / 2 - canvasSize / 2) * scale;

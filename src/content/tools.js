@@ -143,8 +143,10 @@ export const TOOLS = {
   'keycap-puller': { id: 'keycap-puller', name: 'Keycap puller', kind: 'contact', texture: 'tool-keycap-puller', workingPoint: wp('keycap-puller'), displayLength: 320, workOffset: { x: 0, y: -110 }, tiltWithMotion: 3 },
   'air-blower': { id: 'air-blower', name: 'Air blower', kind: 'jet', texture: 'tool-air-blower', workingPoint: wp('air-blower'), displayLength: 360, workOffset: { x: 0, y: -60 }, jetLength: 360, jetUi: 110, jetStyle: 'air' },
   'cotton-swab': { id: 'cotton-swab', name: 'Cotton swab', kind: 'contact', texture: 'tool-cotton-swab', workingPoint: wp('cotton-swab'), displayLength: 360, workOffset: { x: 0, y: -110 }, tiltWithMotion: 6 },
-  // the striking face is the working point; the hand holds the handle below and to the right
-  hammer: { id: 'hammer', name: 'Hammer', kind: 'contact', texture: 'tool-hammer', workingPoint: wp('hammer'), displayLength: 360, workOffset: { x: -70, y: -150 }, tiltWithMotion: 2 },
+  // Step 9: the STRIKE point is the centre of the hammer's striking head (left block of the head,
+  // measured on the sprite; skins share the geometry) and it lands where the player points — the
+  // head comes down on the dent, the handle hangs below (strike = head drop, ToolController)
+  hammer: { id: 'hammer', name: 'Hammer', kind: 'contact', texture: 'tool-hammer', workingPoint: { x: 0.26, y: 0.145 }, displayLength: 360, workOffset: { x: 0, y: -26 }, tiltWithMotion: 2, strike: true },
   // drop targets / parts shown in the tool strip (not held)
   'soak-tub': { id: 'soak-tub', name: 'Soak tub', kind: 'target', texture: 'desk-fan-tub', displayLength: 300 },
   'fan-guard': { id: 'fan-guard', name: 'Fan guard', kind: 'target', texture: 'desk-fan-guard', displayLength: 300 },
@@ -168,8 +170,8 @@ export const TOOLS = {
   'gold-screwdriver': { id: 'gold-screwdriver', name: 'Gold screwdriver', kind: 'contact', texture: 'tool-gold-screwdriver', workingPoint: wp('gold-screwdriver'), displayLength: 380, workOffset: { x: 0, y: -110 }, tiltWithMotion: 3 },
   'wide-roller': { id: 'wide-roller', name: 'Wide roller', kind: 'contact', texture: 'tool-wide-roller', workingPoint: wp('wide-roller'), displayLength: 420, workOffset: { x: 0, y: -150 }, tiltWithMotion: 3 },
   'foam-roller': { id: 'foam-roller', name: 'Foam roller', kind: 'contact', texture: 'tool-foam-roller', workingPoint: wp('foam-roller'), displayLength: 400, workOffset: { x: 0, y: -150 }, tiltWithMotion: 3 },
-  mallet: { id: 'mallet', name: 'Rubber mallet', kind: 'contact', texture: 'tool-mallet', workingPoint: wp('mallet'), displayLength: 360, workOffset: { x: -70, y: -150 }, tiltWithMotion: 2 },
-  'gold-hammer': { id: 'gold-hammer', name: 'Gold hammer', kind: 'contact', texture: 'tool-gold-hammer', workingPoint: wp('gold-hammer'), displayLength: 360, workOffset: { x: -70, y: -150 }, tiltWithMotion: 2 },
+  mallet: { id: 'mallet', name: 'Rubber mallet', kind: 'contact', texture: 'tool-mallet', workingPoint: { x: 0.5, y: 0.2 }, displayLength: 360, workOffset: { x: 0, y: -26 }, tiltWithMotion: 2, strike: true },
+  'gold-hammer': { id: 'gold-hammer', name: 'Gold hammer', kind: 'contact', texture: 'tool-gold-hammer', workingPoint: { x: 0.26, y: 0.155 }, displayLength: 360, workOffset: { x: 0, y: -26 }, tiltWithMotion: 2, strike: true },
 
   // ---- Step 8 Batch B (levels 16–50): new base tools, each with one clear physical job ----
   // laser cleaner: a short hot beam strips rust / patina / old paint (jetStyle + fx 'laser')
@@ -177,16 +179,23 @@ export const TOOLS = {
   // spray bottle: a fine mist of cleaner / conditioner / glass cleaner
   'spray-bottle': { id: 'spray-bottle', name: 'Spray bottle', kind: 'jet', texture: 'tool-spray-bottle', workingPoint: wp('spray-bottle'), displayLength: 380, workOffset: { x: 0, y: -60 }, jetLength: 360, jetUi: 115, jetStyle: 'mist' },
   // steam cleaner: hot steam lifts stains, grease and mould
-  'steam-cleaner': { id: 'steam-cleaner', name: 'Steam cleaner', kind: 'jet', texture: 'tool-steam-cleaner', workingPoint: wp('steam-cleaner'), displayLength: 420, workOffset: { x: 0, y: -60 }, jetLength: 340, jetUi: 110, jetStyle: 'steam', fx: 'steam' },
+  'steam-cleaner': { id: 'steam-cleaner', name: 'Steam cleaner', kind: 'jet', texture: 'tool-steam-cleaner', workingPoint: wp('steam-cleaner'), displayLength: 420, workOffset: { x: 0, y: -60 }, jetLength: 340, jetUi: 110, jetAngle: -112, jetStyle: 'steam', fx: 'steam' },
   // pump: hold its intake in the water to drain a basin (fill mechanic, mode drain)
   pump: { id: 'pump', name: 'Water pump', kind: 'contact', texture: 'tool-pump', workingPoint: wp('pump'), displayLength: 340, workOffset: { x: 0, y: -120 } },
   // garden hose: hold the jet in the basin to fill it (fill mechanic, mode fill)
-  hose: { id: 'hose', name: 'Garden hose', kind: 'jet', texture: 'tool-hose', workingPoint: wp('hose'), displayLength: 360, workOffset: { x: 0, y: -60 }, jetLength: 380, jetUi: 120, jetStyle: 'water' },
+  // Step 9: working point = centre of the outlet face (measured); the gun is held tilted 30° and the
+  // water leaves the outlet along its axis (up-left), not straight up out of the top of the ring
+  hose: { id: 'hose', name: 'Garden hose', kind: 'jet', texture: 'tool-hose', workingPoint: { x: 0.133, y: 0.189 }, displayLength: 360, holdAngle: 30, workOffset: { x: 40, y: -40 }, jetAngle: -132, jetLength: 380, jetUi: 120, jetStyle: 'water' },
   whetstone: { id: 'whetstone', name: 'Whetstone', kind: 'contact', texture: 'tool-whetstone', workingPoint: wp('whetstone'), displayLength: 300, workOffset: { x: 0, y: -120 }, tiltWithMotion: 6, fx: 'sparks' },
   'carpet-beater': { id: 'carpet-beater', name: 'Carpet beater', kind: 'contact', texture: 'tool-carpet-beater', workingPoint: wp('carpet-beater'), displayLength: 460, workOffset: { x: 0, y: -170 }, tiltWithMotion: 3 },
   mop: { id: 'mop', name: 'Mop', kind: 'contact', texture: 'tool-mop', workingPoint: wp('mop'), displayLength: 520, workOffset: { x: 0, y: -200 }, tiltWithMotion: 3 },
   // drop targets
-  'skimmer-net': { id: 'skimmer-net', name: 'Skimmer net', kind: 'target', texture: 'tool-skimmer-net', displayLength: 300 },
+  // Step 9: the skimmer net is held; its net head collects floating debris (collect mechanic)
+  'skimmer-net': { id: 'skimmer-net', name: 'Skimmer net', kind: 'contact', texture: 'tool-skimmer-net', workingPoint: wp('skimmer-net'), displayLength: 620, workOffset: { x: 0, y: -260 }, tiltWithMotion: 4 },
+  // Step 9 reusable tools for large surfaces / narrow gaps
+  'pool-brush': { id: 'pool-brush', name: 'Pool brush', kind: 'contact', texture: 'tool-pool-brush', workingPoint: wp('pool-brush'), displayLength: 640, workOffset: { x: 0, y: -280 }, tiltWithMotion: 3 },
+  'wash-mitt': { id: 'wash-mitt', name: 'Wash mitt', kind: 'contact', texture: 'tool-wash-mitt', workingPoint: wp('wash-mitt'), displayLength: 300, workOffset: { x: 0, y: -130 }, tiltWithMotion: 5, squash: true },
+  'crevice-brush': { id: 'crevice-brush', name: 'Crevice brush', kind: 'contact', texture: 'tool-crevice-brush', workingPoint: wp('crevice-brush'), displayLength: 360, workOffset: { x: 0, y: -110 }, tiltWithMotion: 8 },
   'gem-set': { id: 'gem-set', name: 'Gems', kind: 'target', texture: 'royal-throne-gem-1', displayLength: 200 },
 };
 
