@@ -339,12 +339,16 @@ def run_desk_fan():
     x0, y0, x1, y1 = bounds(clean_a)
     # the round blade guard is the widest part at the top: its diameter = the max width of the
     # upper 70 % of the silhouette; the circle touches the top of the silhouette
-    widths = (clean_a > 0.5).sum(1)
-    top = widths[y0:int(y0 + (y1 - y0) * 0.7)]
-    d = int(top.max())
+    # Step 9 fix: the ring is a thin wire, so the width is the row's EXTENT (leftmost → rightmost
+    # opaque pixel), not its pixel count (that undercounted the ring: the guard came out too small)
+    best = (0, y0, x0, x1)
+    for y in range(y0, int(y0 + (y1 - y0) * 0.7)):
+        cols = np.where(clean_a[y] > 0.5)[0]
+        if len(cols) and cols.max() - cols.min() > best[0]:
+            best = (int(cols.max() - cols.min() + 1), y, int(cols.min()), int(cols.max()))
+    d = best[0]
     cy = y0 + d / 2
-    cols = np.where((clean_a[int(cy)] > 0.5))[0]
-    cx = (cols.min() + cols.max()) / 2
+    cx = (best[2] + best[3]) / 2
     guard_src = Image.open(C / L / 'guard.png').convert('RGBA')
     guard = PL.fit(PL.crop_padded(guard_src, 0.0), 512)
     guard_d = d * 1.02

@@ -33,10 +33,13 @@ export const RIBBON_Y = -0.346;
 const PILL_FACE = -0.06;
 // Inner white panel of the card (fractions of card width / height from the centre).
 export const PANEL = { cx: -0.011, w: 0.627 };
-// Result card rows (fractions of the card height from its centre), top to bottom: picture ·
-// reward pill · level-chest bar · boost meter · boost button · Home + Replay · Next (rowW = share
-// of the panel width used by the meter, the boost button and both button rows).
-const RESULT = { picY: -0.18, picW: 0.46, rewardY: -0.055, rewardH: 0.062, chestY: 0.016, meterY: 0.078, meterH: 0.052, markerH: 0.024, boostY: 0.178, boostH: 0.098, row1Y: 0.28, row2Y: 0.374, rowH: 0.086, rowW: 0.86 };
+// Result card rows (fractions of the card height from its centre), top to bottom, in three groups
+// (UI polish 2026-10-10: less packed, one accent colour per role):
+//   info     - picture · reward pill · level-chest bar (quiet)
+//   boost    - multiplier bar (light track, purple x5) · purple Claim button (the rewarded accent)
+//   navigate - one row: Home + Replay (white icon buttons, secondary) · Next (green, primary)
+// rowW = share of the panel width used by the meter, the Claim button and the button row.
+const RESULT = { picY: -0.172, picW: 0.52, picMaxH: 0.228, rewardY: -0.012, rewardH: 0.056, chestY: 0.058, chestH: 0.05, meterY: 0.138, meterH: 0.048, markerH: 0.022, boostY: 0.232, boostH: 0.09, row1Y: 0.352, rowH: 0.084, rowW: 0.86 };
 
 export function titleText(scene, cw, ch, str) {
   return makeText(scene, 0, ch * RIBBON_Y, str, {
@@ -52,7 +55,7 @@ export function titleText(scene, cw, ch, str) {
 
 // "Completed" result card (reference: Soccer_ball_completed_reward.PNG, video 01:01.75) with the
 // level-progress chest bar and the post-level boost: a multiplier meter (x2…x5) whose highlight
-// travels back and forth; the player taps the pink button to lock the current multiplier, then
+// travels back and forth; the player taps the purple button to lock the current multiplier, then
 // the rewarded ad plays. The base reward is already credited when the card opens. Layout, top to
 // bottom: picture · reward pill · chest bar · boost meter · boost button · Home + Replay · Next.
 export class ResultCard {
@@ -74,7 +77,7 @@ export class ResultCard {
     this.rowW = rowW;
     // Picture with a soft drop shadow (Step 3 revision).
     const pic = scene.add.image(px, ch * RESULT.picY, picture);
-    pic.setScale((panelW * RESULT.picW) / pic.width);
+    pic.setScale(Math.min((panelW * RESULT.picW) / pic.width, (ch * RESULT.picMaxH) / pic.height)); // larger preview, capped by height (square pictures)
     const picW = pic.width * pic.scale;
     const picH = pic.height * pic.scale;
     const picShadow = scene.add.graphics();
@@ -89,7 +92,7 @@ export class ResultCard {
     card.add([this.pill, this.rewardLabel, this.rewardIcon, this.amount]);
     this._layoutPill();
     // Level-progress chest bar (approved; tap opens the offer when the chest is full).
-    this.chestRow = new ChestProgressRow(scene, { cx: px, cy: ch * RESULT.chestY, w: panelW * 0.8, h: ch * 0.044 });
+    this.chestRow = new ChestProgressRow(scene, { cx: px, cy: ch * RESULT.chestY, w: panelW * 0.8, h: ch * RESULT.chestH });
     this.chestRow.set(chest?.from ?? 0);
     this.chestZone = scene.add.zone(px, ch * RESULT.chestY, panelW * 0.8, ch * 0.07).setInteractive({ useHandCursor: true });
     this.chestZone.on('pointerup', () => this.chestReady && this.enabled && onOpenChest?.());
@@ -97,19 +100,23 @@ export class ResultCard {
     this.buttons = [];
     this.base = reward.amount;
     this._buildBoost(boost, onBoost);
-    // Buttons: row 1 = Home + Replay (wide, yellow, replay icon); row 2 = Next across the full row.
+    // One navigation row: Home + Replay as quiet white icon buttons, Next as the wide green primary
+    // action (without Next, Replay takes the row with its label).
     const r1 = ch * RESULT.row1Y;
     const bh = ch * RESULT.rowH; // ≥ 48 CSS px on a 390-px phone
     const gap = cw * 0.025;
-    const homeW = bh * 1.22;
+    const sq = bh * 1.12;
     const left = px - rowW / 2;
-    const home = new Button(scene, { id: 'result-home', x: left + homeW / 2, y: r1, w: homeW, h: bh, style: 'yellow', icon: 'icon-home', iconSize: 0.58, onClick: onHome });
-    const replayW = rowW - homeW - gap;
-    const replay = new Button(scene, { id: 'result-replay', x: left + homeW + gap + replayW / 2, y: r1, w: replayW, h: bh, label: 'Replay', style: 'yellow', icon: 'icon-replay', iconSize: 0.56, onClick: onReplay });
+    const home = new Button(scene, { id: 'result-home', x: left + sq / 2, y: r1, w: sq, h: bh, style: 'white', icon: 'icon-home', iconSize: 0.56, onClick: onHome });
+    const replayW = onNext ? sq : rowW - sq - gap;
+    const replay = new Button(scene, { id: 'result-replay', x: left + sq + gap + replayW / 2, y: r1, w: replayW, h: bh, label: onNext ? '' : 'Replay', style: 'white', icon: 'icon-replay', iconSize: 0.54, onClick: onReplay });
+    // the generated icons are light (made for coloured buttons): navy on the white surface
+    [home, replay].forEach((b) => b.icon?.setTint(0x46557a));
     card.add([home.container, replay.container]);
     this.buttons.push(home, replay);
     if (onNext) {
-      const next = new Button(scene, { id: 'result-next', x: px, y: ch * RESULT.row2Y, w: rowW, h: bh, label: 'Next', style: 'green', icon: 'icon-next', iconSize: 0.52, onClick: onNext });
+      const nextW = rowW - 2 * (sq + gap);
+      const next = new Button(scene, { id: 'result-next', x: left + 2 * (sq + gap) + nextW / 2, y: r1, w: nextW, h: bh, label: 'Next', style: 'green', icon: 'icon-next', iconSize: 0.52, onClick: onNext });
       card.add(next.container);
       this.buttons.push(next);
     }
@@ -147,9 +154,10 @@ export class ResultCard {
   }
 
   // ---- boost meter (reference: multiplier bar) ---------------------------------------------
-  // Rounded green bar with a pale inner lane: zones x2 | x3 | x5 | x3 | x2 (x5 = orange centre).
-  // A purple marker below the bar sweeps left ↔ right at constant speed; the zone above it is the
-  // current multiplier (shown live on the button). A tap freezes the marker on that zone.
+  // Light lavender track with a white inner lane: zones x2 | x3 | x5 | x3 | x2. x2 / x3 are quiet
+  // (muted text), x5 is a purple segment in the same colour family as the purple Claim button, so
+  // the two form one accent. A purple marker below the bar sweeps left / right at constant speed;
+  // the zone above it is the current multiplier (shown live on the button). A tap freezes it.
   _buildBoost(boost, onBoost) {
     const { scene, ch, px, rowW } = this;
     this.zones = boost?.zones ?? [2, 3, 5, 3, 2];
@@ -157,8 +165,8 @@ export class ResultCard {
     const bh = ch * RESULT.meterH;
     this.meterBh = bh;
     this.meter = scene.add.container(px, ch * RESULT.meterY);
-    const outer = nineSlice(scene, 'ui-btn-green', rowW, bh);
-    const face = bh * -0.075; // the green surface's face centre
+    const outer = nineSlice(scene, 'ui-pill', rowW, bh).setTint(0xe6dcf5);
+    const face = bh * -0.06; // the track's face centre (pill face)
     const pad = bh * 0.2;
     const zoneW = (rowW - pad * 2) / this.zones.length;
     this.zoneW = zoneW;
@@ -166,21 +174,17 @@ export class ResultCard {
     // inner segments: one shared height filling the green face evenly; each piece is placed so its
     // own flat face (above its darker lip: pill −0.06 h, orange −0.081 h) sits on the bar's face
     const segH = bh * 0.72;
-    const lane = nineSlice(scene, 'ui-pill', zoneW * 3 + bh * 0.2, segH, 0, face + segH * 0.06).setTint(0xfff1c2);
-    const centre = nineSlice(scene, 'ui-btn-orange', zoneW * 1.02, segH, 0, face + segH * 0.081);
-    // soft glow behind the zone the marker is under (moves with it)
-    this.zoneGlow = nineSlice(scene, 'ui-pill', zoneW * 0.94, segH, 0, face + segH * 0.06).setTint(0xffffff).setAlpha(0.55).setBlendMode(Phaser.BlendModes.ADD);
+    const lane = nineSlice(scene, 'ui-pill', zoneW * 3 + bh * 0.2, segH, 0, face + segH * 0.06).setTint(0xffffff);
+    const centre = nineSlice(scene, 'ui-btn-purple', zoneW * 1.02, segH, 0, face + segH * 0.069);
+    // soft highlight on the zone the marker is under (moves with it)
+    this.zoneGlow = nineSlice(scene, 'ui-pill', zoneW * 0.94, segH, 0, face + segH * 0.06).setTint(0xcdb4f2).setAlpha(0.45);
     this.meter.add([outer, lane, centre, this.zoneGlow]);
     this.zoneTexts = this.zones.map((v, i) => {
       const x = this.laneX0 + zoneW * (i + 0.5);
       const isCentre = v === Math.max(...this.zones);
       const isEnd = i === 0 || i === this.zones.length - 1;
-      const style = isCentre
-        ? { color: TEXT.white, stroke: '#A8361A' }
-        : isEnd
-          ? { color: TEXT.white, stroke: TEXT.greenStroke }
-          : { color: '#FFE08A', stroke: '#B0742A' };
-      const t = makeText(scene, x, face + bh * 0.02, `x${v}`, { size: bh * 0.46, family: FONT_DISPLAY, weight: '900', strokeThickness: bh * (isCentre || isEnd ? 0.07 : 0.055), ...style });
+      const style = isCentre ? { color: TEXT.white, stroke: '#4B1D7A', strokeThickness: bh * 0.07 } : { color: isEnd ? '#9A8BB3' : '#7E6A9E' };
+      const t = makeText(scene, x, face + bh * 0.02, `x${v}`, { size: bh * (isCentre ? 0.48 : 0.42), family: FONT_DISPLAY, weight: '900', ...style });
       this.meter.add(t);
       return t;
     });
@@ -194,11 +198,11 @@ export class ResultCard {
     this.marker.setY(bh / 2 - mh * 0.15);
     this.meter.add(this.marker);
     this.card.add(this.meter);
-    // pink button: [ad] Claim  xN  [coin] total
+    // purple button (the rewarded accent, same family as the x5 segment): [ad] Claim  xN  [coin] total
     const bth = ch * RESULT.boostH;
-    this.boostBtn = new Button(scene, { id: 'result-boost', x: px, y: ch * RESULT.boostY, w: rowW, h: bth, style: 'pink', onClick: () => onBoost?.() });
+    this.boostBtn = new Button(scene, { id: 'result-boost', x: px, y: ch * RESULT.boostY, w: rowW, h: bth, style: 'purple', onClick: () => onBoost?.() });
     const fs = bth * 0.4;
-    const outline = { stroke: '#9C1458', strokeThickness: fs * 0.18 };
+    const outline = { stroke: '#4B1D7A', strokeThickness: fs * 0.18 };
     this.bIcon = fitImage(scene, 'icon-ad-clapper', bth * 0.68);
     this.bClaim = makeText(scene, 0, 0, 'Claim', { size: fs, color: TEXT.white, family: FONT_DISPLAY, weight: '900', ...outline });
     this.bMult = makeText(scene, 0, 0, 'x2', { size: fs * 1.25, color: '#FFE45C', family: FONT_DISPLAY, weight: '900', ...outline });
@@ -422,7 +426,7 @@ export class PauseModal {
   }
 }
 
-// Settings: sound, music, vibration toggles (reference 12:30). Values live in the save; the audio
+// Settings: sound and music toggles (reference 12:30; vibration removed 2026-10-11). Values live in the save; the audio
 // service reads them through its gate. Used from the menu gear and from the pause window.
 export class SettingsModal {
   constructor(scene, { save, onClose, depth = 650 }) {
@@ -442,11 +446,10 @@ export class SettingsModal {
     const rows = [
       { key: 'sound', label: 'Sound', icon: 'icon-sound' },
       { key: 'music', label: 'Music', icon: 'icon-music' },
-      { key: 'vibration', label: 'Vibration', icon: 'icon-vibration' },
     ];
     this.toggles = [];
     rows.forEach((r, i) => {
-      const y = -ch * 0.15 + i * rowH * 1.15;
+      const y = -ch * 0.09 + i * rowH * 1.15; // two rows centred between the ribbon and OK
       const left = px - panelW / 2 + panelW * 0.08;
       const icon = fitImage(scene, r.icon, rowH * 0.62, left + rowH * 0.31, y);
       const label = makeText(scene, left + rowH * 0.75, y, r.label, { size: ch * 0.036, color: TEXT.navy, weight: '900', family: FONT_UI, originX: 0 });
@@ -484,7 +487,7 @@ export class SettingsModal {
 
   destroy() {
     this.buttons.forEach((b) => b.destroy());
-    for (const k of ['sound', 'music', 'vibration']) this.scene.qaTargets?.delete(`settings-${k}`);
+    for (const k of ['sound', 'music']) this.scene.qaTargets?.delete(`settings-${k}`);
     this.root.destroy();
   }
 }

@@ -67,7 +67,7 @@ spec('leather-jacket', 'studio', ['dirty', 'dry'],
      foam='leather', points={'junk': ([(0.3, 0.35), (0.7, 0.55), (0.45, 0.75), (0.6, 0.25)], None)})
 # 18 · rusty cleaver (WORKSHOP)
 spec('rusty-cleaver', 'workshop', ['rusty', 'bare'],
-     [L('smudge', ('dull', 'clean', 0.25)), L('edge-dull', ('dull', 'clean', 0.7), 'edge'), L('bare', ('edit', 'bare')),
+     [L('smudge', ('dull', 'clean', 0.25)), L('edge-dull', ('dull', 'clean', 1.4), 'edge'), L('bare', ('edit', 'bare')),
       L('rusty', ('edit', 'rusty')), L('dusty', ('dusty', 'rusty', 0.5))],
      regions=[('blade', ('gray', 0.22, 0.2, 1.0)), ('edgeband', ('rows', 0.78, 1.0)), ('handle', ('not', 'blade')), ('edge', ('and', 'blade', 'edgeband'))])
 # 19 · toaster (WASH)
@@ -76,8 +76,9 @@ spec('toaster', 'wash', ['greasy'],
      foam='degreaser', points={'dents': ([(0.27, 0.5), (0.47, 0.68)], None)})
 # 20 · coir doormat (YARD)
 spec('coir-doormat', 'yard', ['dirty'],
-     [L('wet', ('wet', 'clean')), L('dirty', ('edit', 'dirty')), L('crust', ('edit', 'dirty'), 'crust', 'chunks'), FOAM, L('dusty', ('dusty', 'dirty', 0.65))],
+     [L('wet', ('wet', 'clean')), L('dirty', ('img', 'dirtybase')), L('crust', ('edit', 'dirty'), 'crust', 'chunks'), FOAM, L('dusty', ('dusty', 'dirty', 0.65))],
      regions=[('crust', ('diff', 'clean', 'dirty', 0.3, 2))], foam='rug',
+     images=[('grimec', ('build', ('grime', 'clean', 0.45))), ('dirtybase', ('over', 'dirty', 'grimec', 'crust'))],
      points={'leaves': ([(0.3, 0.4), (0.6, 0.35), (0.45, 0.65), (0.75, 0.6)], None),
              'beat': ([(fx, fy) for fy in (0.32, 0.68) for fx in (0.22, 0.5, 0.78)], None)})
 # 21 · garden grill (YARD)
@@ -95,37 +96,44 @@ spec('bathtub', 'wash', ['murky', 'empty-dirty', 'empty-clean'],
      points={'junk': ([(0.35, 0.4), (0.6, 0.45), (0.5, 0.35)], 'water')})
 # 23 · retro radio (STUDIO)
 spec('retro-radio', 'studio', ['dirty'],
-     [L('dull', ('dull', 'clean', 0.4)), L('dirty', ('edit', 'dirty')), L('lint', ('dusty', 'dirty', 0.8), 'grille'), L('dusty', ('dusty', 'dirty', 0.45))],
-     regions=[('grille', ('cols', 0.08, 0.52)), ('body', ('not', 'grille'))],
-     points={'screws': ([(0.06, 0.08), (0.94, 0.08), (0.06, 0.92), (0.94, 0.92)], None)})
+     [L('dirty', ('edit', 'dirty')), L('lint', ('dusty', 'dirty', 0.8), 'grille'), L('dusty', ('dusty', 'dirty', 0.45))],
+     # Step 9: logical parts instead of rectangles — the light fabric grille (left), the cream dial
+     # and knobs (right), the wooden housing (everything else)
+     regions=[('lightall', ('gray', 0.45, 0.5, 1.0)), ('belowrim', ('rows', 0.2, 1.0)), ('light', ('and', 'lightall', 'belowrim')), ('left', ('cols', 0.0, 0.56)), ('right', ('cols', 0.5, 1.0)),
+              ('g0', ('and', 'light', 'left')), ('g1', ('fill', 'g0')), ('g2', ('clean', 'g1')), ('grille', ('largest', 'g2', 1)),
+              ('f0', ('and', 'light', 'right')), ('f1', ('fill', 'f0')), ('front', ('clean', 'f1')),
+              ('parts', ('or', 'grille', 'front')), ('housing', ('not', 'parts'))])
 # 24 · stone lion (PLAZA)
 spec('stone-lion', 'plaza', ['dirty', 'crust'],
-     [L('wet', ('wet', 'clean')), L('dirty', ('edit', 'dirty')), L('moss', ('edit', 'dirty'), 'moss'), FOAM, L('crust', ('edit', 'crust'), 'crust', 'chunks')],
+     [L('wet', ('wet', 'clean')), L('dirty', ('img', 'dirtybase')), L('moss', ('edit', 'dirty'), 'moss'), FOAM, L('crust', ('edit', 'crust'), 'crust', 'chunks')],
      regions=[('crust', ('diff', 'clean', 'crust', 0.12, 3)), ('moss', ('hue', 60, 160, 0.22, 0.12, 'dirty'))], foam='ceramic',
+     images=[('grimec', ('build', ('grime', 'clean', 0.4))), ('dirtybase', ('over', 'dirty', 'grimec', 'moss'))],
      points={'leaves': ([(0.3, 0.3), (0.65, 0.4), (0.45, 0.7), (0.75, 0.75)], None)})
 # 25 · wooden dresser (WORKSHOP)
 spec('wooden-dresser', 'workshop', ['old', 'sanded'],
      [L('dull', ('dull', 'clean', 0.4)), L('sanded', ('edit', 'sanded'), 'body'), L('sawdust', ('dusty', 'sanded', 0.55), 'body'),
       L('old', ('edit', 'old')), L('dusty', ('dusty', 'old', 0.5))],
-     regions=[('knobs', ('hue', 30, 60, 0.4, 0.45)), ('body', ('not', 'knobs'))],
+     regions=[('knobsall', ('hue', 30, 60, 0.4, 0.45)), ('front', ('rows', 0.2, 1.0)), ('knobs', ('and', 'knobsall', 'front')), ('body', ('not', 'knobs'))],
      points={'junk': ([(0.3, 0.08), (0.6, 0.06), (0.8, 0.1)], None)})
 # 26 · aquarium (STUDIO)
 spec('aquarium', 'studio', ['murky', 'empty-dirty', 'empty-clean'],
      [L('empty-clean', ('edit', 'empty-clean'), 'tank'), L('smudge', ('dull', 'emptyfull', 0.4), 'tank'), L('silt', ('grime', 'emptyfull', 0.45), 'tank'),
       L('empty-dirty', ('edit', 'empty-dirty'), 'tank'), L('murky', ('edit', 'murky'), 'tank'), L('dusty', ('dusty', 'clean', 0.55), 'stand')],
-     regions=[('tank', ('diff', 'clean', 'murky', 0.1, 2)), ('stand', ('not', 'tank')), ('decorband', ('rows', 0.5, 0.85)), ('decor', ('and', 'tank', 'decorband')), ('glass', ('minus', 'tank', 'decor'))],
+     regions=[('tank', ('diff', 'clean', 'murky', 0.1, 2)), ('stand', ('not', 'tank'))],
      images=[('emptyfull', ('over', 'clean', 'empty-clean', 'tank'))],
      points={'leaves': ([(0.3, 0.3), (0.55, 0.25), (0.7, 0.35), (0.42, 0.4)], 'tank')})
 # 27 · backpack (STUDIO)
 spec('backpack', 'studio', ['dirty'],
-     [L('dull', ('dull', 'clean', 0.3)), L('wet', ('wet', 'clean')), L('dirty', ('edit', 'dirty')), L('stains', ('edit', 'dirty'), 'stains'), FOAM, L('dusty', ('dusty', 'dirty', 0.5))],
+     [L('dull', ('dull', 'clean', 0.3)), L('wet', ('wet', 'clean')), L('dirty', ('img', 'dirtybase')), L('stains', ('edit', 'dirty'), 'stains'), FOAM, L('dusty', ('dusty', 'dirty', 0.5))],
      regions=[('stains', ('diff', 'clean', 'dirty', 0.28, 3))], foam='rug',
+     images=[('grimec', ('build', ('grime', 'clean', 0.3))), ('dirtybase', ('over', 'dirty', 'grimec', 'stains'))],
      points={'junk': ([(0.3, 0.3), (0.7, 0.35), (0.5, 0.65), (0.35, 0.8)], None),
              'beat': ([(0.35, 0.3), (0.65, 0.3), (0.35, 0.6), (0.65, 0.6), (0.5, 0.82)], None)})
 # 28 · kitchen stove (WASH)
 spec('kitchen-stove', 'wash', ['greasy', 'crust'],
-     [L('dull', ('dull', 'clean', 0.35)), L('wet', ('wet', 'clean')), L('greasy', ('edit', 'greasy')), FOAM, L('crust', ('edit', 'crust'), 'crust', 'chunks')],
-     regions=[('crust', ('diff', 'clean', 'crust', 0.12, 3)), ('cooktop', ('rows', 0.0, 0.38))], foam='degreaser',
+     [L('wet', ('wet', 'clean')), L('grime', ('grime', 'clean', 0.45)), L('greasy', ('img', 'greasybase')), FOAM, L('crust', ('edit', 'crust'), 'crust', 'chunks')],
+     regions=[('crust', ('diff', 'clean', 'crust', 0.12, 3))], foam='degreaser',
+     images=[('grimec', ('build', ('grime', 'clean', 0.35))), ('greasybase', ('over', 'greasy', 'grimec', 'crust'))],
      points={'junk': ([(0.3, 0.15), (0.7, 0.2), (0.5, 0.55)], None)})
 # 29 · lawn mower (GARAGE)
 spec('lawn-mower', 'garage', ['muddy', 'rusty'],
@@ -136,11 +144,11 @@ spec('lawn-mower', 'garage', ['muddy', 'rusty'],
 spec('street-sign', 'plaza', ['rusty', 'bare'],
      [L('dull', ('dull', 'clean', 0.3), 'plate'), L('bare', ('edit', 'bare')), L('rusty', ('edit', 'rusty')), L('dusty', ('dusty', 'rusty', 0.5))],
      regions=[('platec', ('hue', 35, 70, 0.4, 0.4)), ('plate', ('fill', 'platec')), ('platefill', ('grow', 'plate', 4)), ('post', ('not', 'platefill'))],
-     points={'junk': ([(0.4, 0.25), (0.6, 0.4)], 'plate'), 'bolts': ([(0.5, 0.08), (0.5, 0.42)], None)})
+     points={'junk': ([(0.4, 0.25), (0.6, 0.4)], 'plate'), 'bolts': ([(0.5, 0.08), (0.5, 0.527)], None)})
 # 31 · table lamp (STUDIO)
 spec('table-lamp', 'studio', ['tarnished'],
      [L('dull', ('dull', 'clean', 0.25), 'base'), L('tarnished', ('edit', 'tarnished')), L('lint', ('dusty', 'tarnished', 0.8), 'shade'), FOAM, L('dusty', ('dusty', 'tarnished', 0.4))],
-     regions=[('shade', ('rows', 0.0, 0.47)), ('base', ('not', 'shade'))], foam='metal', foam_region='base',
+     regions=[('cream', ('gray', 0.38, 0.55, 1.0)), ('upper', ('rows', 0.0, 0.62)), ('s0', ('and', 'cream', 'upper')), ('s1', ('fill', 's0')), ('shade', ('clean', 's1')), ('base', ('not', 'shade'))], foam='metal', foam_region='base',
      points={'junk': ([(0.3, 0.85), (0.7, 0.85)], None)})
 # 32 · rowboat (SHORE)
 spec('rowboat', 'shore', ['dirty', 'bare'],
@@ -151,8 +159,8 @@ spec('rowboat', 'shore', ['dirty', 'bare'],
 # 33 · game controller (STUDIO)
 spec('game-controller', 'studio', ['dirty'],
      [L('dull', ('dull', 'clean', 0.35)), L('wet', ('wet', 'clean', )), L('dirty', ('edit', 'dirty')), L('scuff', ('grime', 'dirty', 0.5), 'grips'),
-      L('gunk', ('grime', 'dirty', 0.6), 'detail'), L('lint', ('dusty', 'dirty', 0.75), 'detail'), L('dusty', ('dusty', 'dirty', 0.45))],
-     regions=[('grips', ('hue', 240, 320, 0.15, 0.3)), ('drows', ('rows', 0.15, 0.62)), ('dcols', ('cols', 0.18, 0.82)), ('detail', ('and', 'drows', 'dcols'))],
+      L('gunk', ('grime', 'dirty', 0.4)), L('lint', ('dusty', 'dirty', 0.6)), L('dusty', ('dusty', 'dirty', 0.45))],
+     regions=[('lilac', ('hue', 240, 320, 0.15, 0.3)), ('grips', ('largest', 'lilac', 2))],
      points={'junk': ([(0.3, 0.3), (0.7, 0.35), (0.5, 0.6)], None)})
 # 34 · iron gate (PLAZA)
 spec('iron-gate', 'plaza', ['rusty', 'bare'],
@@ -161,16 +169,17 @@ spec('iron-gate', 'plaza', ['rusty', 'bare'],
      points={'leaves': ([(0.3, 0.75), (0.55, 0.8), (0.75, 0.7), (0.45, 0.6)], None)})
 # 35 · sofa (STUDIO)
 spec('sofa', 'studio', ['stained'],
-     [L('dull', ('dull', 'clean', 0.3)), L('wet', ('wet', 'clean')), L('stained', ('edit', 'stained')), L('stains', ('edit', 'stained'), 'stains'), FOAM, L('dusty', ('dusty', 'stained', 0.55))],
+     [L('dull', ('dull', 'clean', 0.3)), L('wet', ('wet', 'clean')), L('stained', ('img', 'stainedbase')), L('stains', ('edit', 'stained'), 'stains'), FOAM, L('dusty', ('dusty', 'stained', 0.55))],
      regions=[('stains', ('diff', 'clean', 'stained', 0.25, 3))], foam='rug',
+     images=[('grimec', ('build', ('grime', 'clean', 0.25))), ('stainedbase', ('over', 'stained', 'grimec', 'stains'))],
      points={'junk': ([(0.25, 0.45), (0.5, 0.5), (0.75, 0.45), (0.4, 0.3)], None),
              'beat': ([(fx, fy) for fy in (0.3, 0.6) for fx in (0.2, 0.5, 0.8)], None)})
 # 36 · stone fountain (PLAZA)
 spec('stone-fountain', 'plaza', ['murky', 'empty-dirty', 'empty-clean'],
      [L('empty-clean', ('edit', 'empty-clean'), 'water'), L('spout-dull', ('dull', 'clean', 0.55), 'spout'), L('wet', ('wet', 'emptyfull')),
-      L('empty-dirty', ('edit', 'empty-dirty')), L('moss', ('edit', 'empty-dirty'), 'moss'), FOAM, L('murky', ('edit', 'murky'), 'water')],
+      L('empty-dirty', ('img', 'edbase')), L('moss', ('edit', 'empty-dirty'), 'moss'), FOAM, L('murky', ('edit', 'murky'), 'water')],
      regions=[('water', ('diff', 'clean', 'murky', 0.1, 2)), ('spout', ('rows', 0.0, 0.14)), ('moss', ('hue', 60, 160, 0.25, 0.15, 'empty-dirty'))],
-     images=[('emptyfull', ('over', 'clean', 'empty-clean', 'water'))], foam='ceramic',
+     images=[('emptyfull', ('over', 'clean', 'empty-clean', 'water')), ('grimee', ('build', ('grime', 'emptyfull', 0.45))), ('edbase', ('over', 'empty-dirty', 'grimee', 'moss'))], foam='ceramic',
      points={'leaves': ([(0.3, 0.5), (0.5, 0.55), (0.7, 0.5), (0.45, 0.25)], 'water')})
 # 37 · vintage motorcycle (GARAGE)
 spec('vintage-motorcycle', 'garage', ['dirty', 'rusty'],
@@ -198,13 +207,13 @@ spec('knight-armor', 'vip', ['rusty'],
 # 41 · cannon (SHORE)
 spec('cannon', 'shore', ['rusty', 'bare'],
      [L('dull', ('dull', 'clean', 0.4)), L('bare', ('edit', 'bare')), L('sawdust', ('dusty', 'bare', 0.55), 'wood'), L('rusty', ('edit', 'rusty')), L('dusty', ('dusty', 'rusty', 0.45))],
-     regions=[('iron', ('gray', 0.3, 0.0, 0.55)), ('wood', ('not', 'iron')), ('top', ('rows', 0.0, 0.5)), ('barrel', ('and', 'iron', 'top')), ('rims', ('minus', 'iron', 'barrel'))],
+     regions=[('ironc', ('gray', 0.26, 0.0, 0.86)), ('iron', ('grow', 'ironc', 2)), ('woodraw', ('not', 'iron')), ('wood', ('clean', 'woodraw')), ('top', ('rows', 0.0, 0.5)), ('barrel', ('and', 'iron', 'top')), ('rims', ('minus', 'iron', 'barrel'))],
      points={'leaves': ([(0.3, 0.7), (0.5, 0.75), (0.7, 0.65)], None)})
 # 42 · shower cabin (WASH)
 spec('shower-cabin', 'wash', ['dirty'],
-     [L('dull', ('dull', 'clean', 0.35), 'fixtures'), L('wet', ('wet', 'clean')), L('dirty', ('edit', 'dirty')), L('mold', ('edit', 'dirty'), 'mold'),
-      L('lime', ('grime', 'dirty', 0.5), 'fixtures'), FOAM],
-     regions=[('mold', ('dark', 0.32, 'dirty')), ('tray', ('rows', 0.86, 1.0)), ('glass', ('not', 'tray')), ('fixtures', ('rows', 0.0, 0.3))], foam='ceramic',
+     [L('wet', ('wet', 'clean')), L('dirty', ('img', 'dirtybase')), L('lime', ('dull', 'dirtybase', 0.6)), L('mold', ('edit', 'dirty'), 'mold'), FOAM],
+     regions=[('mold', ('dark', 0.32, 'dirty'))], foam='ceramic',
+     images=[('grimec', ('build', ('grime', 'clean', 0.3))), ('dirtybase', ('over', 'dirty', 'grimec', 'mold'))],
      points={'junk': ([(0.35, 0.85), (0.55, 0.88), (0.7, 0.84)], None)})
 # 43 · bicycle (GARAGE)
 spec('bicycle', 'garage', ['muddy'],
@@ -213,15 +222,16 @@ spec('bicycle', 'garage', ['muddy'],
      points={'leaves': ([(0.78, 0.18), (0.82, 0.25)], None), 'bolts': ([(0.42, 0.25), (0.74, 0.22)], None)})
 # 44 · rider statue (PLAZA)
 spec('rider-statue', 'plaza', ['patina'],
-     [L('haze', ('dull', 'clean', 0.25), 'bronze'), L('dull', ('dull', 'clean', 0.5), 'bronze'), L('wet', ('wet', 'clean')), L('patina', ('edit', 'patina')),
+     [L('haze', ('dull', 'clean', 0.25), 'bronze'), L('dull', ('dull', 'clean', 0.5), 'bronze'), L('wet', ('wet', 'clean')), L('patina', ('img', 'patinabase')),
       L('moss', ('edit', 'patina'), 'moss'), FOAM],
-     regions=[('plinth', ('rows', 0.55, 1.0)), ('bronze', ('not', 'plinth')), ('mossc', ('hue', 60, 160, 0.25, 0.12, 'patina')), ('moss', ('and', 'mossc', 'plinth'))],
+     regions=[('stone', ('gray', 0.22, 0.15, 0.95)), ('lower', ('rows', 0.35, 1.0)), ('p0', ('and', 'stone', 'lower')), ('p1', ('fill', 'p0')), ('plinth', ('clean', 'p1')), ('bronze', ('not', 'plinth')), ('mossc', ('hue', 60, 160, 0.25, 0.12, 'patina')), ('moss', ('and', 'mossc', 'plinth'))],
+     images=[('grimec', ('build', ('grime', 'clean', 0.4))), ('patinabase', ('over', 'patina', 'grimec', 'moss'))],
      foam='ceramic', foam_region='plinth', points={'leaves': ([(0.3, 0.85), (0.5, 0.9), (0.7, 0.86)], None)})
 # 45 · chandelier (VIP)
 spec('chandelier', 'vip', ['dusty'],
      [L('dull', ('dull', 'clean', 0.25), 'brass'), L('smudge', ('dull', 'clean', 0.5), 'crystals'), L('grime', ('grime', 'clean', 0.5), 'brass'),
-      L('old', ('edit', 'dusty')), FOAM, L('dust', ('dusty', 'dusty', 0.4)), L('cobweb', ('dusty', 'dusty', 0.85), 'top')],
-     regions=[('brass', ('hue', 28, 62, 0.3, 0.3)), ('crystals', ('not', 'brass')), ('top', ('rows', 0.0, 0.45))], foam='metal', foam_region='brass')
+      L('old', ('edit', 'dusty')), FOAM, L('dust', ('dusty', 'dusty', 0.4)), L('cobweb', ('dusty', 'dusty', 0.75))],
+     regions=[('brass', ('hue', 28, 62, 0.3, 0.3)), ('crystals', ('not', 'brass'))], foam='metal', foam_region='brass')
 # 46 · royal throne (VIP)
 spec('royal-throne', 'vip', ['old'],
      [L('velvet-haze', ('dull', 'clean', 0.3), 'velvet'), L('dull', ('dull', 'clean', 0.22), 'frame'), L('sockets', ('edit', 'old'), 'gems'), L('old', ('edit', 'old'), 'nogems'), L('grime', ('grime', 'old', 0.45), 'frame'),
@@ -230,12 +240,13 @@ spec('royal-throne', 'vip', ['old'],
      regions=[('redc', ('hue', 335, 20, 0.35, 0.18)), ('gemc', ('hue', 70, 300, 0.4, 0.25)), ('crest', ('rows', 0.0, 0.2)), ('stones', ('or', 'gemc', 'redc')),
               ('gems0', ('and', 'stones', 'crest')), ('gems', ('grow', 'gems0', 3)), ('velvet', ('minus', 'redc', 'gems')), ('nogems', ('not', 'gems')),
               ('framev', ('not', 'velvet')), ('frame', ('minus', 'framev', 'gems'))],
-     points={'junk': ([(0.4, 0.62), (0.6, 0.6)], 'velvet')}, gems=True)
+     points={'junk': ([(0.4, 0.62), (0.6, 0.6)], 'velvet'), 'beat': ([(0.5, 0.32), (0.5, 0.48), (0.38, 0.66), (0.62, 0.66)], 'velvet')}, gems=True)
 # 47 · stone patio (environment-like; YARD) — slabs: polygon outline (the remover kept only the bistro set)
 spec('stone-patio', 'yard', ['dirty'],
      [L('unsealed', ('dull', 'clean', 0.3), 'slabs'), L('wet', ('wet', 'clean'), 'slabs'), L('primer', ('dull', 'clean', 0.75), 'furniture'),
-      L('dirty', ('edit', 'dirty')), L('moss', ('edit', 'dirty'), 'moss'), FOAM],
+      L('dirty', ('img', 'dirtybase')), L('moss', ('edit', 'dirty'), 'moss'), FOAM],
      regions=[('furniture', ('alpha',)), ('slabs', ('not', 'furniture')), ('mossc', ('hue', 60, 160, 0.3, 0.15, 'dirty')), ('moss', ('and', 'mossc', 'slabs'))],
+     images=[('grimec', ('build', ('grime', 'clean', 0.35))), ('dirtybase', ('over', 'dirty', 'grimec', 'moss'))],
      foam='ceramic', foam_region='slabs', poly=[(512, 221), (999, 516), (999, 538), (512, 840), (25, 537), (25, 516)],
      points={'leaves': ([(0.25, 0.5), (0.45, 0.7), (0.7, 0.55), (0.6, 0.8), (0.35, 0.35)], 'slabs')})
 # 48 · carousel horse (PLAZA)
@@ -282,7 +293,10 @@ def over(base, top, m):
 
 def build(src, imgs, a):
     kind = src[0]
-    if kind == 'edit' or kind == 'img':
+    if kind == 'edit':
+        # always the ORIGINAL edit state (a stack layer of the same name may replace imgs[name])
+        return imgs.get(f'edit:{src[1]}', imgs[src[1]])
+    if kind == 'img':
         return imgs[src[1]]
     base = imgs[src[1]]
     if kind == 'dull':
@@ -359,9 +373,15 @@ def run_level(level):
     regions = {}
     for name, rs in sp['regions']:
         regions[name] = K.region(rs, imgs, clean_a, regions)
-    for name, (_, b, t, r) in sp['images']:
-        imgs[name] = over(imgs[b], imgs[t], soft(regions[r], 1.0, clean_a))
+    for name, ispec in sp['images']:
+        if ispec[0] == 'build':
+            imgs[name] = build(ispec[1], imgs, clean_a)
+        else:
+            _, b, t, r = ispec
+            imgs[name] = over(imgs[b], imgs[t], soft(regions[r], 1.0, clean_a))
     soft_regions = {k: soft(v, 1.0, clean_a) for k, v in regions.items()}
+    for st in ['clean'] + sp['states']:
+        imgs[f'edit:{st}'] = imgs[st]
     out = {'clean': imgs['clean']}
     stack = []
     for entry in sp['stack']:
@@ -506,27 +526,100 @@ SKIN_BASE = {
     'washer': C / 'soccer-ball/tool-washer-lance.png', 'scrub': C / 'soccer-ball/tool-scrub-brush.png', 'foam': C / 'soccer-ball/tool-foam-sprayer.png',
     'screw': C / 'shared/tool-screwdriver.png', 'hammer': C / 'shared/tool-hammer.png', 'grinder': C / 'shared/tool-angle-grinder.png',
     'polisher': C / 'shared/tool-polisher.png', 'laser': C / 'shared/tool-laser.png',
+    # tool variety pass
+    'roller': C / 'shared/tool-paint-roller.png', 'spraygun': C / 'shared/tool-spray-gun.png', 'wire': C / 'shared/tool-wire-brush.png',
+    'cloth': C / 'soccer-ball/tool-cloth.png', 'squeegee': C / 'shared/tool-squeegee.png', 'pool': C / 'shared/tool-pool-brush.png',
+    'mitt': C / 'shared/tool-wash-mitt.png', 'detail': C / 'shared/tool-detail-brush.png',
 }
 
 
-def run_skins():
-    for p in sorted((M / 'shared').glob('skin-*.png')):
-        sid = p.stem[5:]
-        base = Image.open(SKIN_BASE[sid.split('-')[0]]).convert('RGBA')
-        rgb = Image.open(p).convert('RGB')
-        a = base.split()[-1].resize(rgb.size, Image.LANCZOS)
-        img = rgb.copy()
-        img.putalpha(a)
-        # the exact crop / fit of the base tool (prepare_assets.py / prepare_levels.tool): the skin
-        # keeps the base's normalized working point
-        bx = PL.bbox(np.array(a).astype(np.float32) / 255, 0.06)
-        out = PL.fit(PL.crop_padded(img, 0.05, bx), 768)
-        PL.save_webp(out, PUB / 'shared' / f'skin-{sid}.webp')
-        PL.review('skins', sid, out)
-        boot[f'skin-{sid}'] = f'assets/shared/skin-{sid}.webp'
+def recolor(src, base_cutout, name, review_group):
+    """A recolour edit of an approved tool master -> runtime sprite with the base cutout's alpha
+    and the exact crop / fit of the base tool (prepare_assets.py / prepare_levels.tool), so the
+    sprite keeps the base's normalized working point."""
+    base = Image.open(base_cutout).convert('RGBA')
+    rgb = Image.open(src).convert('RGB')
+    a = base.split()[-1].resize(rgb.size, Image.LANCZOS)
+    img = rgb.copy()
+    img.putalpha(a)
+    bx = PL.bbox(np.array(a).astype(np.float32) / 255, 0.06)
+    out = PL.fit(PL.crop_padded(img, 0.05, bx), 768)
+    PL.save_webp(out, PUB / 'shared' / f'{name}.webp')
+    PL.review(review_group, name, out)
+    boot[name] = f'assets/shared/{name}.webp'
 
 
-STEPS = {'backgrounds': run_backgrounds, 'tools': run_tools, 'skins': run_skins}
+# Cosmetic skins were removed from the game (designer 2026-10-10: the alternative tools are the
+# visual variety). The skin masters stay in reference/ as records; nothing is exported or registered.
+
+
+# tool variety pass: new functional tools (own Background Remover cutouts), functional
+# alternatives (recolour / material edits of a base master -> base alpha) and the new skins
+VARIETY_TOOLS = [('tool-wheel-brush', 'top-center'), ('tool-stone-brush', 'top-center'), ('tool-upholstery-brush', 'top-center'),
+                 ('tool-toothbrush', 'top-center'), ('tool-soft-brush', 'top-center'), ('tool-brass-brush', 'top-center'),
+                 ('tool-polishing-cloth', 'center'), ('tool-dish-sponge', 'center'), ('tool-deck-brush', 'top-center')]
+VARIETY_ALTS = {'tool-gold-pool-brush': 'pool', 'tool-pro-squeegee': 'squeegee', 'tool-gold-squeegee': 'squeegee',
+                'tool-microfiber-mitt': 'mitt', 'tool-wool-mitt': 'mitt'}
+
+
+def run_variety():
+    for name, rule in VARIETY_TOOLS:
+        PL.tool(name, Image.open(C / 'shared' / f'{name}.png').convert('RGBA'), rule)
+        boot[name] = f'assets/shared/{name}.webp'
+    for name, b in VARIETY_ALTS.items():
+        recolor(M / 'shared' / f'{name}.png', SKIN_BASE[b], name, 'tools')
+
+
+# tool variety pass 2 (2026-10-10): functional tools with new interactions. 'top' = nozzle / blade edge
+# (the blade's edge width is recorded too: scraper flakes come off the whole edge), 'head' = the round
+# head facing the viewer (centre = working point, its size = the spinning overlay / footprint)
+VARIETY2_TOOLS = [('tool-sandblaster', 'top'), ('tool-wet-vacuum', 'top'), ('tool-spin-scrubber', 'disc'), ('tool-rotary-buffer', 'disc'),
+                  ('tool-cup-brush', 'disc'), ('tool-razor-scraper', 'top'), ('tool-heavy-scraper', 'top'), ('tool-telescopic-brush', 'head')]
+
+
+def run_variety2():
+    for name, rule in VARIETY2_TOOLS:
+        img = Image.open(C / 'shared' / f'{name}.png').convert('RGBA')
+        PL.tool(name, img, 'top' if rule == 'disc' else rule)
+        boot[name] = f'assets/shared/{name}.webp'
+        if rule == 'disc':
+            # round head facing the viewer at the top: diameter = its widest row in the upper part,
+            # centre = top + diameter / 2 (the body below the disc may be as wide; not measured)
+            f = PL.fit(PL.crop_padded(img, 0.05), 768)
+            a = np.array(f.split()[-1]) > 128
+            h, w = a.shape
+            ys = np.where(a.any(1))[0]
+            widths = a.sum(1)
+            top = ys.min()
+            upper = widths[top:top + int((ys.max() - top) * 0.55)]
+            d = int(upper.max())
+            row = top + int(np.argmax(upper))
+            cols = np.where(a[row])[0]
+            cx, cy = (cols.min() + cols.max()) / 2, top + d / 2
+            PL.meta['tools'][name]['workingPoint'] = [round(cx / w, 4), round(cy / h, 4)]
+            PL.meta['tools'][name]['spin'] = round(d / 2 / max(w, h), 4)
+            PL.meta['tools'][name].pop('head', None)
+        if rule == 'top':
+            f = PL.fit(PL.crop_padded(img, 0.05), 768)
+            a = np.array(f.split()[-1]) > 128
+            ys, xs = np.where(a)
+            band = xs[ys < ys.min() + max(3, int(a.shape[0] * 0.02))]
+            PL.meta['tools'][name]['edge'] = round(float(band.max() - band.min() + 1) / max(a.shape), 4)
+
+
+# Unified tool variants (designer 2026-10-10): the best of the earlier recolour masters come back as
+# VISUAL-ONLY variants inside the tool families (no separate skin system). Exported as ordinary tool
+# sprites `tool-<id>` with the base cutout's alpha and crop (same working point as the base).
+VISUAL_VARIANTS = {'washer-neon': 'washer', 'scrub-wood': 'scrub', 'grinder-industrial': 'grinder', 'hammer-construction': 'hammer',
+                   'laser-redblack': 'laser', 'laser-blue': 'laser', 'laser-gold': 'laser'}
+
+
+def run_variants():
+    for vid, b in VISUAL_VARIANTS.items():
+        recolor(M / 'shared' / f'skin-{vid}.png', SKIN_BASE[b], f'tool-{vid}', 'tools')
+
+
+STEPS = {'backgrounds': run_backgrounds, 'tools': run_tools, 'variety': run_variety, 'variety2': run_variety2, 'variants': run_variants}
 
 
 def main():
@@ -562,7 +655,7 @@ def main():
     bt = {**old_reg['boot'], **boot}
     REG.write_text('// GENERATED by scripts/prepare_batch_b.py — do not edit by hand.\n'
                    '// Levels 16–50: art loaded when the level opens (levelId -> { textureKey: url }) and the boot set\n'
-                   '// (light menu thumbnails, new tools, cosmetic skins).\n'
+                   '// (light menu thumbnails, new tools).\n'
                    'export const BATCH_B_ASSETS = ' + json.dumps(lv, indent=1) + ';\n'
                    'export const BATCH_B_BOOT = ' + json.dumps(bt, indent=1) + ';\n', encoding='utf-8')
 

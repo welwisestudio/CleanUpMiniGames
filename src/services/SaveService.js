@@ -5,7 +5,8 @@ import { Emitter } from '../core/Emitter.js';
 // writes are serialized through one queue; status is observable.
 
 // v2 (Step 6 reward pass): completion receipts, x3, timed chest, level-progress chest.
-export const SAVE_VERSION = 2;
+// v3 (2026-10-10): level access — progression / ad-unlocked / VIP sets (ProgressionService).
+export const SAVE_VERSION = 3;
 
 export function createDefaultState() {
   return {
@@ -13,7 +14,7 @@ export function createDefaultState() {
     coins: 0,
     diamonds: 0,
     levels: {}, // levelId -> { completed: boolean, completions: number }
-    settings: { sound: true, music: true, vibration: true },
+    settings: { sound: true, music: true }, // vibration removed 2026-10-11
     tutorial: {}, // gesture families whose hint has been introduced (Step 4)
     // Reward receipts (one per accepted level completion). `lastCompletion` lets the x3 offer of
     // that completion be paid exactly once, even after a reload.
@@ -24,6 +25,13 @@ export function createDefaultState() {
     // Step 7 alternative tools: permanently owned tool ids (base tools are implicit), the equipped
     // tool per family, and a purchase / unlock counter (audit)
     tools: { owned: [], equipped: {}, purchases: 0, skins: { owned: [], equipped: {} } },
+    // Level access (v3): normal levels opened by progression, normal levels opened with a rewarded
+    // ad, VIP levels bought with diamonds. `migrated` = derived once from an older save's history.
+    progression: { unlocked: [], adUnlocked: [], vip: [], migrated: true },
+    // Store / Wheel (2026-10-10): rewarded-ad claims per offer for one local day, purchase log
+    // count, wheel spins of the day and in total
+    store: { day: '', claims: {}, purchases: 0 },
+    wheel: { day: '', spins: 0, total: 0 },
   };
 }
 
@@ -49,7 +57,8 @@ export function parseSave(serialized) {
     coins: toNonNegativeInt(raw.coins),
     diamonds: toNonNegativeInt(raw.diamonds),
     levels: {},
-    settings: { ...base.settings, ...(raw.settings ?? {}) },
+    // only known settings are kept (an old save's `vibration` is dropped — the game never vibrates)
+    settings: { sound: raw.settings?.sound ?? base.settings.sound, music: raw.settings?.music ?? base.settings.music },
     tutorial: {},
   };
   for (const [k, v] of Object.entries(raw.tutorial ?? {})) if (v) state.tutorial[k] = true;
@@ -63,13 +72,22 @@ export function parseSave(serialized) {
     owned: [...new Set((Array.isArray(tl.owned) ? tl.owned : []).filter((x) => typeof x === 'string'))],
     equipped: Object.fromEntries(Object.entries(tl.equipped && typeof tl.equipped === 'object' ? tl.equipped : {}).filter(([, v]) => typeof v === 'string')),
     purchases: toNonNegativeInt(tl.purchases),
-    // Step 8 cosmetic skins: owned skin ids and the equipped skin per tool family
+    // legacy (removed cosmetic skins, 2026-10-10): kept and sanitised so old saves load unchanged;
+    // the game no longer reads it
     skins: {
       owned: [...new Set((Array.isArray(tl.skins?.owned) ? tl.skins.owned : []).filter((x) => typeof x === 'string'))],
       equipped: Object.fromEntries(Object.entries(tl.skins?.equipped && typeof tl.skins.equipped === 'object' ? tl.skins.equipped : {}).filter(([, v]) => typeof v === 'string')),
     },
   };
   state.progressChest = { steps: toNonNegativeInt(raw.progressChest?.steps), opened: toNonNegativeInt(raw.progressChest?.opened), forfeited: toNonNegativeInt(raw.progressChest?.forfeited) };
+  // level access: a v2 save has none → empty sets, migrated once from its completion history
+  const pr = raw.progression && typeof raw.progression === 'object' ? raw.progression : {};
+  const ids = (a) => [...new Set((Array.isArray(a) ? a : []).filter((x) => typeof x === 'string'))];
+  state.progression = { unlocked: ids(pr.unlocked), adUnlocked: ids(pr.adUnlocked), vip: ids(pr.vip), migrated: pr.migrated === true };
+  const st = raw.store && typeof raw.store === 'object' ? raw.store : {};
+  state.store = { day: typeof st.day === 'string' ? st.day : '', claims: Object.fromEntries(Object.entries(st.claims && typeof st.claims === 'object' ? st.claims : {}).map(([k, v]) => [k, toNonNegativeInt(v)])), purchases: toNonNegativeInt(st.purchases) };
+  const wh = raw.wheel && typeof raw.wheel === 'object' ? raw.wheel : {};
+  state.wheel = { day: typeof wh.day === 'string' ? wh.day : '', spins: toNonNegativeInt(wh.spins), total: toNonNegativeInt(wh.total) };
   for (const [id, entry] of Object.entries(raw.levels ?? {})) {
     state.levels[id] = {
       completed: Boolean(entry?.completed),

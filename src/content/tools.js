@@ -30,6 +30,12 @@ function wp(id) {
   return m ? { x: m.workingPoint[0], y: m.workingPoint[1] } : { x: 0.5, y: 0.5 };
 }
 
+// Rotary head facing the viewer: { r } = its radius as a share of the sprite's longest side (measured).
+function spin(id) {
+  const r = LEVEL_META.tools[`tool-${id}`]?.spin;
+  return r ? { r } : null;
+}
+
 // Long soft head (duster): [width, length] as a share of the sprite's longest side (measured).
 function head(id) {
   return LEVEL_META.tools[`tool-${id}`]?.head ?? null;
@@ -74,7 +80,7 @@ export const TOOLS = {
     kind: 'contact',
     texture: 'tool-scrub-brush',
     workingPoint: wp('scrub-brush'),
-    displayLength: 300,
+    displayLength: 350, // mobile pass 2026-10-10: was 300 (read too small)
     workOffset: { x: 0, y: -120 },
     tiltWithMotion: 10,
   },
@@ -96,7 +102,7 @@ export const TOOLS = {
     kind: 'contact',
     texture: 'tool-cloth',
     workingPoint: wp('cloth'),
-    displayLength: 340,
+    displayLength: 380, // mobile pass 2026-10-10: was 340
     workOffset: { x: 0, y: -130 },
     tiltWithMotion: 4,
     squash: true,
@@ -115,23 +121,24 @@ export const TOOLS = {
   // bristle face rubs the surface; the drill body sits to the right of the finger
   'drill-brush': { id: 'drill-brush', name: 'Drill brush', kind: 'contact', texture: 'tool-drill-brush', workingPoint: wp('drill-brush'), displayLength: 420, workOffset: { x: -90, y: -150 }, tiltWithMotion: 4, scaleOffset: true },
   'putty-knife': { id: 'putty-knife', name: 'Putty knife', kind: 'contact', texture: 'tool-putty-knife', workingPoint: wp('putty-knife'), displayLength: 380, workOffset: { x: 0, y: -110 }, tiltWithMotion: 6 },
-  sandpaper: { id: 'sandpaper', name: 'Sandpaper', kind: 'contact', texture: 'tool-sandpaper', workingPoint: wp('sandpaper'), displayLength: 110, workOffset: { x: 0, y: -120 }, tiltWithMotion: 5, squash: true },
-  'stain-sponge': { id: 'stain-sponge', name: 'Stain sponge', kind: 'contact', texture: 'tool-stain-sponge', workingPoint: wp('stain-sponge'), displayLength: 200, workOffset: { x: 0, y: -120 }, tiltWithMotion: 5, squash: true },
-  eraser: { id: 'eraser', name: 'Eraser', kind: 'contact', texture: 'tool-eraser', workingPoint: wp('eraser'), displayLength: 150, workOffset: { x: 0, y: -120 }, tiltWithMotion: 5, squash: true },
+  sandpaper: { id: 'sandpaper', name: 'Sandpaper', kind: 'contact', texture: 'tool-sandpaper', workingPoint: wp('sandpaper'), displayLength: 150, workOffset: { x: 0, y: -120 }, tiltWithMotion: 5, squash: true },
+  'stain-sponge': { id: 'stain-sponge', name: 'Stain sponge', kind: 'contact', texture: 'tool-stain-sponge', workingPoint: wp('stain-sponge'), displayLength: 250, workOffset: { x: 0, y: -120 }, tiltWithMotion: 5, squash: true },
+  eraser: { id: 'eraser', name: 'Eraser', kind: 'contact', texture: 'tool-eraser', workingPoint: wp('eraser'), displayLength: 190, workOffset: { x: 0, y: -120 }, tiltWithMotion: 5, squash: true },
   'trash-bin': { id: 'trash-bin', name: 'Trash bin', kind: 'target', texture: 'trash-bin', displayLength: 300 },
   // ---- Step 7: alternative tools (content/toolFamilies.js); same job, same mechanic ----
-  'scrub-brush-oval': { id: 'scrub-brush-oval', name: 'Oval brush', kind: 'contact', texture: 'tool-scrub-brush-oval', workingPoint: wp('scrub-brush-oval'), displayLength: 320, workOffset: { x: 0, y: -120 }, tiltWithMotion: 10 },
+  'scrub-brush-oval': { id: 'scrub-brush-oval', name: 'Oval brush', kind: 'contact', texture: 'tool-scrub-brush-oval', workingPoint: wp('scrub-brush-oval'), displayLength: 370, workOffset: { x: 0, y: -120 }, tiltWithMotion: 10 },
   'foam-gun': { id: 'foam-gun', name: 'Foam gun', kind: 'jet', texture: 'tool-foam-gun', workingPoint: wp('foam-gun'), displayLength: 440, workOffset: { x: 0, y: -60 }, jetLength: 480, jetUi: 140, jetStyle: 'foam' },
-  'foam-cannon': { id: 'foam-cannon', name: 'Foam cannon', kind: 'jet', texture: 'tool-foam-cannon', workingPoint: wp('foam-cannon'), displayLength: 460, workOffset: { x: 0, y: -60 }, jetLength: 480, jetUi: 140, jetStyle: 'foam' },
+  // the foam cannon sprays a WIDE cone (ToolController._foamCone), the sprayers a narrow stream
+  'foam-cannon': { id: 'foam-cannon', name: 'Foam cannon', kind: 'jet', texture: 'tool-foam-cannon', workingPoint: wp('foam-cannon'), displayLength: 460, workOffset: { x: 0, y: -60 }, jetLength: 480, jetUi: 140, jetStyle: 'foam', cone: true },
   // drying alternatives: the existing sponge / eraser art at the cloth's footprint size
-  'wipe-sponge': { id: 'wipe-sponge', name: 'Sponge', kind: 'contact', texture: 'tool-stain-sponge', workingPoint: wp('stain-sponge'), displayLength: 290, workOffset: { x: 0, y: -130 }, tiltWithMotion: 5, squash: true },
+  'wipe-sponge': { id: 'wipe-sponge', name: 'Sponge', kind: 'contact', texture: 'tool-stain-sponge', workingPoint: wp('stain-sponge'), displayLength: 330, workOffset: { x: 0, y: -130 }, tiltWithMotion: 5, squash: true },
   'wipe-eraser': { id: 'wipe-eraser', name: 'Magic eraser', kind: 'contact', texture: 'tool-eraser', workingPoint: wp('eraser'), displayLength: 270, workOffset: { x: 0, y: -130 }, tiltWithMotion: 5, squash: true },
 
   // ---- Step 8 Batch A (levels 6–15): new tools, each with one clear job (CONTENT-MATRIX §3.1) ----
   // fx: contact effect while working (sparks / shine / dust / sawdust / chips), jetStyle 'paint' /
   // 'air' for the spray gun and the air blower. Card alternatives reuse the same job and footprint
   // within ±10 % (content/toolFamilies.js).
-  'steel-wool': { id: 'steel-wool', name: 'Steel wool', kind: 'contact', texture: 'tool-steel-wool', workingPoint: wp('steel-wool'), displayLength: 200, workOffset: { x: 0, y: -120 }, tiltWithMotion: 5, squash: true, fx: 'dust' },
+  'steel-wool': { id: 'steel-wool', name: 'Steel wool', kind: 'contact', texture: 'tool-steel-wool', workingPoint: wp('steel-wool'), displayLength: 250, workOffset: { x: 0, y: -120 }, tiltWithMotion: 5, squash: true, fx: 'dust' },
   'wide-scraper': { id: 'wide-scraper', name: 'Scraper', kind: 'contact', texture: 'tool-wide-scraper', workingPoint: wp('wide-scraper'), displayLength: 400, workOffset: { x: 0, y: -110 }, tiltWithMotion: 6 },
   'paint-brush': { id: 'paint-brush', name: 'Paint brush', kind: 'contact', texture: 'tool-paint-brush', workingPoint: wp('paint-brush'), displayLength: 420, workOffset: { x: 0, y: -110 }, tiltWithMotion: 8 },
   'wire-brush': { id: 'wire-brush', name: 'Wire brush', kind: 'contact', texture: 'tool-wire-brush', workingPoint: wp('wire-brush'), displayLength: 380, workOffset: { x: 0, y: -120 }, tiltWithMotion: 8, fx: 'dust' },
@@ -144,7 +151,7 @@ export const TOOLS = {
   'air-blower': { id: 'air-blower', name: 'Air blower', kind: 'jet', texture: 'tool-air-blower', workingPoint: wp('air-blower'), displayLength: 360, workOffset: { x: 0, y: -60 }, jetLength: 360, jetUi: 110, jetStyle: 'air' },
   'cotton-swab': { id: 'cotton-swab', name: 'Cotton swab', kind: 'contact', texture: 'tool-cotton-swab', workingPoint: wp('cotton-swab'), displayLength: 360, workOffset: { x: 0, y: -110 }, tiltWithMotion: 6 },
   // Step 9: the STRIKE point is the centre of the hammer's striking head (left block of the head,
-  // measured on the sprite; skins share the geometry) and it lands where the player points — the
+  // measured on the sprite; the alternatives share the geometry) and it lands where the player points — the
   // head comes down on the dent, the handle hangs below (strike = head drop, ToolController)
   hammer: { id: 'hammer', name: 'Hammer', kind: 'contact', texture: 'tool-hammer', workingPoint: { x: 0.26, y: 0.145 }, displayLength: 360, workOffset: { x: 0, y: -26 }, tiltWithMotion: 2, strike: true },
   // drop targets / parts shown in the tool strip (not held)
@@ -154,11 +161,11 @@ export const TOOLS = {
   // card alternatives (same job, same mechanic)
   'turbo-lance': { id: 'turbo-lance', name: 'Turbo lance', kind: 'jet', texture: 'tool-turbo-lance', workingPoint: wp('turbo-lance'), displayLength: 760, workOffset: { x: 0, y: -60 }, jetLength: 520, jetUi: 150, jetStyle: 'water' },
   'gold-washer': { id: 'gold-washer', name: 'Gold washer', kind: 'jet', texture: 'tool-gold-washer', workingPoint: wp('gold-washer'), displayLength: 760, workOffset: { x: 0, y: -60 }, jetLength: 520, jetUi: 150, jetStyle: 'water' },
-  'rust-steel-wool': { id: 'rust-steel-wool', name: 'Steel wool', kind: 'contact', texture: 'tool-steel-wool', workingPoint: wp('steel-wool'), displayLength: 240, workOffset: { x: 0, y: -120 }, tiltWithMotion: 5, squash: true, fx: 'dust' },
+  'rust-steel-wool': { id: 'rust-steel-wool', name: 'Steel wool', kind: 'contact', texture: 'tool-steel-wool', workingPoint: wp('steel-wool'), displayLength: 280, workOffset: { x: 0, y: -120 }, tiltWithMotion: 5, squash: true, fx: 'dust' },
   'wire-wheel': { id: 'wire-wheel', name: 'Wire wheel', kind: 'contact', texture: 'tool-wire-wheel', workingPoint: wp('wire-wheel'), displayLength: 440, workOffset: { x: 0, y: -170 }, tiltWithMotion: 4, fx: 'sparks' },
   'scrape-putty-knife': { id: 'scrape-putty-knife', name: 'Putty knife', kind: 'contact', texture: 'tool-putty-knife', workingPoint: wp('putty-knife'), displayLength: 380, workOffset: { x: 0, y: -110 }, tiltWithMotion: 6 },
   'pro-scraper': { id: 'pro-scraper', name: 'Pro scraper', kind: 'contact', texture: 'tool-pro-scraper', workingPoint: wp('pro-scraper'), displayLength: 400, workOffset: { x: 0, y: -110 }, tiltWithMotion: 6 },
-  'sanding-block': { id: 'sanding-block', name: 'Sanding block', kind: 'contact', texture: 'tool-sanding-block', workingPoint: wp('sanding-block'), displayLength: 170, workOffset: { x: 0, y: -120 }, tiltWithMotion: 5, squash: true, fx: 'sawdust' },
+  'sanding-block': { id: 'sanding-block', name: 'Sanding block', kind: 'contact', texture: 'tool-sanding-block', workingPoint: wp('sanding-block'), displayLength: 215, workOffset: { x: 0, y: -120 }, tiltWithMotion: 5, squash: true, fx: 'sawdust' },
   'orbital-sander': { id: 'orbital-sander', name: 'Orbital sander', kind: 'contact', texture: 'tool-orbital-sander', workingPoint: wp('orbital-sander'), displayLength: 400, workOffset: { x: 0, y: -160 }, tiltWithMotion: 3, fx: 'sawdust' },
   'grind-sander': { id: 'grind-sander', name: 'Orbital sander', kind: 'contact', texture: 'tool-orbital-sander', workingPoint: wp('orbital-sander'), displayLength: 420, workOffset: { x: 0, y: -160 }, tiltWithMotion: 3, fx: 'sparks' },
   'gold-grinder': { id: 'gold-grinder', name: 'Gold grinder', kind: 'contact', texture: 'tool-gold-grinder', workingPoint: wp('gold-grinder'), displayLength: 460, workOffset: { x: 0, y: -170 }, tiltWithMotion: 4, fx: 'sparks' },
@@ -186,18 +193,74 @@ export const TOOLS = {
   // Step 9: working point = centre of the outlet face (measured); the gun is held tilted 30° and the
   // water leaves the outlet along its axis (up-left), not straight up out of the top of the ring
   hose: { id: 'hose', name: 'Garden hose', kind: 'jet', texture: 'tool-hose', workingPoint: { x: 0.133, y: 0.189 }, displayLength: 360, holdAngle: 30, workOffset: { x: 40, y: -40 }, jetAngle: -132, jetLength: 380, jetUi: 120, jetStyle: 'water' },
-  whetstone: { id: 'whetstone', name: 'Whetstone', kind: 'contact', texture: 'tool-whetstone', workingPoint: wp('whetstone'), displayLength: 300, workOffset: { x: 0, y: -120 }, tiltWithMotion: 6, fx: 'sparks' },
-  'carpet-beater': { id: 'carpet-beater', name: 'Carpet beater', kind: 'contact', texture: 'tool-carpet-beater', workingPoint: wp('carpet-beater'), displayLength: 460, workOffset: { x: 0, y: -170 }, tiltWithMotion: 3 },
+  whetstone: { id: 'whetstone', name: 'Whetstone', kind: 'contact', texture: 'tool-whetstone', workingPoint: wp('whetstone'), displayLength: 345, workOffset: { x: 0, y: -120 }, tiltWithMotion: 6, fx: 'sparks' },
+  // mobile pass 2026-10-10 (same fix as the hammer): the STRIKE point is the centre of the beating
+  // head (measured on the sprite) and it lands where the player taps — the handle hangs below
+  'carpet-beater': { id: 'carpet-beater', name: 'Carpet beater', kind: 'contact', texture: 'tool-carpet-beater', workingPoint: { x: 0.498, y: 0.251 }, displayLength: 460, workOffset: { x: 0, y: -26 }, tiltWithMotion: 2, strike: true },
   mop: { id: 'mop', name: 'Mop', kind: 'contact', texture: 'tool-mop', workingPoint: wp('mop'), displayLength: 520, workOffset: { x: 0, y: -200 }, tiltWithMotion: 3 },
+  // ---- Step 9 tool variety: specialised reusable tools (each used where it is physically logical) ----
+  'wheel-brush': { id: 'wheel-brush', name: 'Wheel brush', kind: 'contact', texture: 'tool-wheel-brush', workingPoint: wp('wheel-brush'), displayLength: 440, workOffset: { x: 0, y: -170 }, tiltWithMotion: 6 },
+  'stone-brush': { id: 'stone-brush', name: 'Stone brush', kind: 'contact', texture: 'tool-stone-brush', workingPoint: wp('stone-brush'), displayLength: 370, workOffset: { x: 0, y: -130 }, tiltWithMotion: 8, fx: 'dust' },
+  'upholstery-brush': { id: 'upholstery-brush', name: 'Upholstery brush', kind: 'contact', texture: 'tool-upholstery-brush', workingPoint: wp('upholstery-brush'), displayLength: 380, workOffset: { x: 0, y: -130 }, tiltWithMotion: 8 },
+  toothbrush: { id: 'toothbrush', name: 'Detail toothbrush', kind: 'contact', texture: 'tool-toothbrush', workingPoint: wp('toothbrush'), displayLength: 365, workOffset: { x: 0, y: -110 }, tiltWithMotion: 8 },
+  'soft-brush': { id: 'soft-brush', name: 'Soft brush', kind: 'contact', texture: 'tool-soft-brush', workingPoint: wp('soft-brush'), displayLength: 360, workOffset: { x: 0, y: -120 }, tiltWithMotion: 6 },
+  'brass-brush': { id: 'brass-brush', name: 'Brass brush', kind: 'contact', texture: 'tool-brass-brush', workingPoint: wp('brass-brush'), displayLength: 380, workOffset: { x: 0, y: -120 }, tiltWithMotion: 8, fx: 'dust' },
+  'polishing-cloth': { id: 'polishing-cloth', name: 'Polishing cloth', kind: 'contact', texture: 'tool-polishing-cloth', workingPoint: wp('polishing-cloth'), displayLength: 320, workOffset: { x: 0, y: -130 }, tiltWithMotion: 4, squash: true, fx: 'shine' },
+  'dish-sponge': { id: 'dish-sponge', name: 'Dish sponge', kind: 'contact', texture: 'tool-dish-sponge', workingPoint: wp('dish-sponge'), displayLength: 290, workOffset: { x: 0, y: -125 }, tiltWithMotion: 5, squash: true },
+  // alternatives of the Step 9 families (same job, same mechanic; ±10 % footprint)
+  'deck-brush': { id: 'deck-brush', name: 'Deck brush', kind: 'contact', texture: 'tool-deck-brush', workingPoint: wp('deck-brush'), displayLength: 640, workOffset: { x: 0, y: -280 }, tiltWithMotion: 3 },
+  'gold-pool-brush': { id: 'gold-pool-brush', name: 'Gold pool brush', kind: 'contact', texture: 'tool-gold-pool-brush', workingPoint: wp('pool-brush'), displayLength: 640, workOffset: { x: 0, y: -280 }, tiltWithMotion: 3 },
+  'pro-squeegee': { id: 'pro-squeegee', name: 'Pro squeegee', kind: 'contact', texture: 'tool-pro-squeegee', workingPoint: wp('squeegee'), displayLength: 560, workOffset: { x: 0, y: -110 }, tiltWithMotion: 3 },
+  'gold-squeegee': { id: 'gold-squeegee', name: 'Gold squeegee', kind: 'contact', texture: 'tool-gold-squeegee', workingPoint: wp('squeegee'), displayLength: 560, workOffset: { x: 0, y: -110 }, tiltWithMotion: 3 },
+  'microfiber-mitt': { id: 'microfiber-mitt', name: 'Microfiber mitt', kind: 'contact', texture: 'tool-microfiber-mitt', workingPoint: wp('wash-mitt'), displayLength: 350, workOffset: { x: 0, y: -130 }, tiltWithMotion: 5, squash: true },
+  'wool-mitt': { id: 'wool-mitt', name: 'Wool mitt', kind: 'contact', texture: 'tool-wool-mitt', workingPoint: wp('wash-mitt'), displayLength: 350, workOffset: { x: 0, y: -130 }, tiltWithMotion: 5, squash: true },
+  'detail-toothbrush': { id: 'detail-toothbrush', name: 'Detail toothbrush', kind: 'contact', texture: 'tool-toothbrush', workingPoint: wp('toothbrush'), displayLength: 365, workOffset: { x: 0, y: -110 }, tiltWithMotion: 8 },
+  'detail-crevice': { id: 'detail-crevice', name: 'Crevice brush', kind: 'contact', texture: 'tool-crevice-brush', workingPoint: wp('crevice-brush'), displayLength: 360, workOffset: { x: 0, y: -110 }, tiltWithMotion: 8 },
   // drop targets
   // Step 9: the skimmer net is held; its net head collects floating debris (collect mechanic)
   'skimmer-net': { id: 'skimmer-net', name: 'Skimmer net', kind: 'contact', texture: 'tool-skimmer-net', workingPoint: wp('skimmer-net'), displayLength: 620, workOffset: { x: 0, y: -260 }, tiltWithMotion: 4 },
   // Step 9 reusable tools for large surfaces / narrow gaps
   'pool-brush': { id: 'pool-brush', name: 'Pool brush', kind: 'contact', texture: 'tool-pool-brush', workingPoint: wp('pool-brush'), displayLength: 640, workOffset: { x: 0, y: -280 }, tiltWithMotion: 3 },
-  'wash-mitt': { id: 'wash-mitt', name: 'Wash mitt', kind: 'contact', texture: 'tool-wash-mitt', workingPoint: wp('wash-mitt'), displayLength: 300, workOffset: { x: 0, y: -130 }, tiltWithMotion: 5, squash: true },
+  'wash-mitt': { id: 'wash-mitt', name: 'Wash mitt', kind: 'contact', texture: 'tool-wash-mitt', workingPoint: wp('wash-mitt'), displayLength: 350, workOffset: { x: 0, y: -130 }, tiltWithMotion: 5, squash: true },
   'crevice-brush': { id: 'crevice-brush', name: 'Crevice brush', kind: 'contact', texture: 'tool-crevice-brush', workingPoint: wp('crevice-brush'), displayLength: 360, workOffset: { x: 0, y: -110 }, tiltWithMotion: 8 },
+  // ---- Tool variety pass 2: functional tools with their own interaction / effect ----
+  // sandblaster: a directional abrasive grit stream from the nozzle tip (jetStyle 'grit'), dust + sparks
+  sandblaster: { id: 'sandblaster', name: 'Sandblaster', kind: 'jet', texture: 'tool-sandblaster', workingPoint: wp('sandblaster'), displayLength: 420, workOffset: { x: 0, y: -60 }, jetLength: 320, jetUi: 110, jetStyle: 'grit', fx: 'grit' },
+  // wet / dry vacuum: working point = the nozzle slot; loose dirt is pulled into it (fx 'suck')
+  'wet-vacuum': { id: 'wet-vacuum', name: 'Wet/dry vacuum', kind: 'contact', texture: 'tool-wet-vacuum', workingPoint: wp('wet-vacuum'), displayLength: 480, workOffset: { x: 0, y: -200 }, tiltWithMotion: 3, fx: 'suck' },
+  // rotary tools: the round head faces the viewer and spins while working (ToolController spin),
+  // working point = head centre, footprint = the head
+  'spin-scrubber': { id: 'spin-scrubber', name: 'Spin scrubber', kind: 'contact', texture: 'tool-spin-scrubber', workingPoint: wp('spin-scrubber'), spin: spin('spin-scrubber'), displayLength: 480, workOffset: { x: 0, y: -200 }, tiltWithMotion: 2 },
+  'rotary-buffer': { id: 'rotary-buffer', name: 'Rotary buffer', kind: 'contact', texture: 'tool-rotary-buffer', workingPoint: wp('rotary-buffer'), spin: spin('rotary-buffer'), displayLength: 410, workOffset: { x: 0, y: -170 }, tiltWithMotion: 2, fx: 'shine' },
+  'cup-brush': { id: 'cup-brush', name: 'Wire cup brush', kind: 'contact', texture: 'tool-cup-brush', workingPoint: wp('cup-brush'), spin: spin('cup-brush'), displayLength: 390, workOffset: { x: 0, y: -160 }, tiltWithMotion: 2, fx: 'sparks' },
+  // blade tools: only the blade edge works (wide, thin footprint along the edge; flakes peel off along it)
+  'razor-scraper': { id: 'razor-scraper', name: 'Razor scraper', kind: 'contact', texture: 'tool-razor-scraper', workingPoint: wp('razor-scraper'), displayLength: 300, workOffset: { x: 0, y: -110 }, tiltWithMotion: 3, fx: 'flakes', bladeHalf: 65 },
+  'heavy-scraper': { id: 'heavy-scraper', name: 'Heavy scraper', kind: 'contact', texture: 'tool-heavy-scraper', workingPoint: wp('heavy-scraper'), displayLength: 560, workOffset: { x: 0, y: -250 }, tiltWithMotion: 3, fx: 'flakes', bladeHalf: 68 },
+  // large objects: a wide soft brush head on a telescopic pole
+  'telescopic-brush': { id: 'telescopic-brush', name: 'Telescopic brush', kind: 'contact', texture: 'tool-telescopic-brush', workingPoint: wp('telescopic-brush'), displayLength: 620, workOffset: { x: 0, y: -280 }, tiltWithMotion: 3 },
   'gem-set': { id: 'gem-set', name: 'Gems', kind: 'target', texture: 'royal-throne-gem-1', displayLength: 200 },
 };
+
+// ---- Unified tool variants (designer 2026-10-10): VISUAL-ONLY variants ----
+// A visual variant is the base tool with another sprite (a recolour of the approved base master with
+// the base cutout's alpha and crop, so the working point is identical). Everything else — footprint,
+// offsets, jet, mechanic, speed, rewards — is the base tool's, so it plays exactly like the base.
+// They are ordinary options of the family (content/toolFamilies.js, `visual: true`), next to the
+// functional alternatives: ONE list of variants per tool.
+function visual(base, id, name) {
+  TOOLS[id] = { ...TOOLS[base], id, name, texture: `tool-${id}`, visualOf: base };
+}
+visual('washer-lance', 'washer-neon', 'Neon washer');
+visual('scrub-brush', 'scrub-wood', 'Wooden brush');
+visual('angle-grinder', 'grinder-industrial', 'Industrial grinder');
+visual('hammer', 'hammer-construction', 'Construction hammer');
+visual('laser', 'laser-redblack', 'Red & black laser');
+visual('laser', 'laser-blue', 'Futuristic laser');
+visual('laser', 'laser-gold', 'Gold laser');
+// recolours made in the Step 9 variety pass, now classified as what they are: visual-only variants
+// (same ids, so ownership in old saves is kept; the +5 / +10 % radius they had is dropped)
+for (const id of ['pro-squeegee', 'gold-squeegee']) TOOLS[id] = { ...TOOLS.squeegee, id, name: TOOLS[id].name, texture: TOOLS[id].texture, visualOf: 'squeegee' };
+TOOLS['gold-pool-brush'] = { ...TOOLS['pool-brush'], id: 'gold-pool-brush', name: 'Gold pool brush', texture: 'tool-gold-pool-brush', visualOf: 'pool-brush' };
 
 export function getTool(id) {
   const tool = TOOLS[id];

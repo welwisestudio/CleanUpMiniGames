@@ -8,6 +8,10 @@
 //   radius    – multiplier of the stage's cleaning / spray radius (paid tools at most +10 %)
 //   toolScale – multiplier of the displayed tool size (so the visible head matches the footprint)
 // unlock: { type: 'default' } | { type: 'coins', price } | { type: 'diamonds', price } | { type: 'ad' }
+// visual: true – a VISUAL-ONLY variant (content/tools.js `visual()`): plays exactly like the base
+//   tool (no radius / toolScale / work modifier), only the look differs. Designer 2026-10-10: one
+//   unified list of variants per tool — 3 for most families, 4 for the important tools (washer,
+//   scrub brush, grinder, hammer, laser); functional alternatives first, visual variants fill in.
 // Every stage stays fully completable with the base tool. Prices follow the reference (5–25 coins,
 // 5 diamonds) and are provisional (Step 10 balance).
 
@@ -19,6 +23,7 @@ export const TOOL_FAMILIES = {
       { tool: 'scrub-brush', unlock: { type: 'default' }, card: 0xb9dcff },
       { tool: 'scrub-brush-oval', unlock: { type: 'coins', price: 15 }, radius: 1.05, card: 0xffc6dd },
       { tool: 'drill-brush', unlock: { type: 'diamonds', price: 5 }, radius: 1.1, toolScale: 1.4, card: 0xd9c8ff },
+      { tool: 'scrub-wood', unlock: { type: 'ad' }, visual: true, card: 0xffe2b8 },
     ],
   },
   foam: {
@@ -48,6 +53,7 @@ export const TOOL_FAMILIES = {
       { tool: 'washer-lance', unlock: { type: 'default' }, card: 0xb9dcff },
       { tool: 'turbo-lance', unlock: { type: 'coins', price: 20 }, radius: 1.05, card: 0xffd7a8 },
       { tool: 'gold-washer', unlock: { type: 'ad' }, radius: 1.1, card: 0xd9c8ff },
+      { tool: 'washer-neon', unlock: { type: 'diamonds', price: 4 }, visual: true, card: 0xc9f2c0 },
     ],
   },
   rust: {
@@ -84,6 +90,7 @@ export const TOOL_FAMILIES = {
       { tool: 'angle-grinder', unlock: { type: 'default' }, card: 0xb9f0e6 },
       { tool: 'grind-sander', unlock: { type: 'coins', price: 25 }, radius: 1.05, card: 0xe4f7b5 },
       { tool: 'gold-grinder', unlock: { type: 'ad' }, radius: 1.1, card: 0xd9c8ff },
+      { tool: 'grinder-industrial', unlock: { type: 'diamonds', price: 4 }, visual: true, card: 0xfff0a8 },
     ],
   },
   spray: {
@@ -129,15 +136,61 @@ export const TOOL_FAMILIES = {
       { tool: 'hammer', unlock: { type: 'default' }, card: 0xffd7a8 },
       { tool: 'mallet', unlock: { type: 'coins', price: 15 }, card: 0xd8e6f5 },
       { tool: 'gold-hammer', unlock: { type: 'ad' }, card: 0xd9c8ff },
+      { tool: 'hammer-construction', unlock: { type: 'diamonds', price: 3 }, visual: true, card: 0xfff0a8 },
     ],
   },
 };
 
 // ---- Step 8 Batch B ----
-// Laser: no functional alternative yet (a single card); its looks come from the cosmetic skins
-// (content/toolSkins.js), which never change the beam.
+// Laser: no functional alternative — the base laser plus three visual variants.
 Object.assign(TOOL_FAMILIES, {
-  laser: { name: 'Laser', base: 'laser', options: [{ tool: 'laser', unlock: { type: 'default' }, card: 0xffd7a8 }] },
+  laser: {
+    name: 'Laser',
+    base: 'laser',
+    options: [
+      { tool: 'laser', unlock: { type: 'default' }, card: 0xffd7a8 },
+      { tool: 'laser-redblack', unlock: { type: 'coins', price: 35 }, visual: true, card: 0xffc6c6 },
+      { tool: 'laser-blue', unlock: { type: 'ad' }, visual: true, card: 0xb9dcff },
+      { tool: 'laser-gold', unlock: { type: 'diamonds', price: 6 }, visual: true, card: 0xfff0a8 },
+    ],
+  },
+  // Step 9 tool variety: more card families (base free · coins · diamonds or rewarded ad; ±10 %)
+  detail: {
+    name: 'Detail',
+    base: 'detail-brush',
+    options: [
+      { tool: 'detail-brush', unlock: { type: 'default' }, card: 0xd8e6f5 },
+      { tool: 'detail-toothbrush', unlock: { type: 'coins', price: 10 }, radius: 1.05, card: 0xb9f0e6 },
+      { tool: 'detail-crevice', unlock: { type: 'ad' }, radius: 1.1, card: 0xd9c8ff },
+    ],
+  },
+  poolBrush: {
+    name: 'Pool brush',
+    base: 'pool-brush',
+    options: [
+      { tool: 'pool-brush', unlock: { type: 'default' }, card: 0xb9dcff },
+      { tool: 'deck-brush', unlock: { type: 'coins', price: 20 }, radius: 1.05, card: 0xffd7a8 },
+      { tool: 'gold-pool-brush', unlock: { type: 'diamonds', price: 5 }, visual: true, card: 0xd9c8ff },
+    ],
+  },
+  squeegee: {
+    name: 'Squeegee',
+    base: 'squeegee',
+    options: [
+      { tool: 'squeegee', unlock: { type: 'default' }, card: 0xd8e6f5 },
+      { tool: 'pro-squeegee', unlock: { type: 'coins', price: 15 }, visual: true, card: 0xffd7a8 },
+      { tool: 'gold-squeegee', unlock: { type: 'ad' }, visual: true, card: 0xd9c8ff },
+    ],
+  },
+  mitt: {
+    name: 'Wash mitt',
+    base: 'wash-mitt',
+    options: [
+      { tool: 'wash-mitt', unlock: { type: 'default' }, card: 0xb9dcff },
+      { tool: 'microfiber-mitt', unlock: { type: 'coins', price: 15 }, radius: 1.05, card: 0xd8e6f5 },
+      { tool: 'wool-mitt', unlock: { type: 'diamonds', price: 4 }, radius: 1.1, card: 0xfff0a8 },
+    ],
+  },
 });
 
 export const TOOL_AD_PLACEMENT = 'tool-unlock';

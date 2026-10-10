@@ -671,25 +671,25 @@ export const LEVEL_META = {
    },
    "guard": [
     512,
-    368,
-    604
+    420,
+    709
    ],
    "screws": [
     [
      512,
-     80
+     81
     ],
     [
-     800,
-     368
+     850,
+     420
     ],
     [
      512,
-     656
+     758
     ],
     [
-     224,
-     368
+     174,
+     420
     ]
    ]
   },
@@ -1304,24 +1304,6 @@ export const LEVEL_META = {
      183,
      953,
      841
-    ],
-    "decorband": [
-     73,
-     511,
-     953,
-     742
-    ],
-    "decor": [
-     124,
-     511,
-     911,
-     706
-    ],
-    "glass": [
-     124,
-     292,
-     909,
-     511
     ]
    },
    "points": {
@@ -2014,7 +1996,7 @@ export const LEVEL_META = {
      ],
      [
       512,
-      442
+      536
      ]
     ]
    },
@@ -2070,15 +2052,39 @@ export const LEVEL_META = {
     ]
    ],
    "regions": {
-    "shade": [
+    "cream": [
+     281,
+     87,
+     743,
+     932
+    ],
+    "upper": [
      281,
      73,
      743,
-     485
+     617
+    ],
+    "s0": [
+     281,
+     87,
+     743,
+     476
+    ],
+    "s1": [
+     281,
+     87,
+     743,
+     476
+    ],
+    "shade": [
+     281,
+     87,
+     743,
+     476
     ],
     "base": [
      363,
-     485,
+     73,
      659,
      951
     ]
@@ -2236,29 +2242,17 @@ export const LEVEL_META = {
     ]
    ],
    "regions": {
-    "grips": [
+    "lilac": [
      74,
      237,
      953,
      812
     ],
-    "drows": [
-     82,
-     301,
-     943,
-     583
-    ],
-    "dcols": [
-     231,
-     211,
-     794,
-     775
-    ],
-    "detail": [
-     231,
-     301,
-     794,
-     583
+    "grips": [
+     74,
+     387,
+     953,
+     808
     ]
    },
    "points": {
@@ -2298,11 +2292,6 @@ export const LEVEL_META = {
    },
    "stack": [
     [
-     "dull",
-     "full",
-     "dull"
-    ],
-    [
      "dirty",
      "full",
      "dirty"
@@ -2319,39 +2308,92 @@ export const LEVEL_META = {
     ]
    ],
    "regions": {
-    "grille": [
-     142,
-     178,
-     529,
+    "lightall": [
+     81,
+     166,
+     942,
+     810
+    ],
+    "belowrim": [
+     73,
+     303,
+     951,
      858
     ],
-    "body": [
+    "light": [
+     187,
+     303,
+     933,
+     810
+    ],
+    "left": [
+     73,
+     175,
+     564,
+     858
+    ],
+    "right": [
+     512,
+     166,
+     951,
+     820
+    ],
+    "g0": [
+     187,
+     303,
+     564,
+     810
+    ],
+    "g1": [
+     187,
+     303,
+     564,
+     810
+    ],
+    "g2": [
+     189,
+     303,
+     547,
+     784
+    ],
+    "grille": [
+     255,
+     329,
+     539,
+     784
+    ],
+    "f0": [
+     512,
+     304,
+     933,
+     803
+    ],
+    "f1": [
+     512,
+     304,
+     933,
+     803
+    ],
+    "front": [
+     512,
+     304,
+     887,
+     802
+    ],
+    "parts": [
+     255,
+     304,
+     887,
+     802
+    ],
+    "housing": [
      73,
      166,
      951,
-     818
+     858
     ]
    },
-   "points": {
-    "screws": [
-     [
-      126,
-      226
-     ],
-     [
-      894,
-      236
-     ],
-     [
-      147,
-      772
-     ],
-     [
-      887,
-      749
-     ]
-    ]
-   },
+   "points": {},
    "bg": "studio"
   },
   "stone-lion": {
@@ -2484,10 +2526,22 @@ export const LEVEL_META = {
     ]
    ],
    "regions": {
-    "knobs": [
+    "knobsall": [
      580,
      131,
      698,
+     707
+    ],
+    "front": [
+     112,
+     248,
+     907,
+     952
+    ],
+    "knobs": [
+     594,
+     268,
+     653,
      707
     ],
     "body": [
@@ -2640,14 +2694,14 @@ export const LEVEL_META = {
    },
    "stack": [
     [
-     "dull",
-     "full",
-     "dull"
-    ],
-    [
      "wet",
      "full",
      "wet"
+    ],
+    [
+     "grime",
+     "full",
+     "grime"
     ],
     [
      "greasy",
@@ -2676,12 +2730,6 @@ export const LEVEL_META = {
      101,
      845,
      330
-    ],
-    "cooktop": [
-     142,
-     72,
-     883,
-     406
     ]
    },
    "points": {
@@ -2827,6 +2875,24 @@ export const LEVEL_META = {
      [
       560,
       629
+     ]
+    ],
+    "beat": [
+     [
+      513,
+      353
+     ],
+     [
+      513,
+      494
+     ],
+     [
+      456,
+      652
+     ],
+     [
+      569,
+      652
      ]
     ]
    },
@@ -3830,17 +3896,29 @@ export const LEVEL_META = {
     ]
    ],
    "regions": {
-    "iron": [
-     79,
+    "ironc": [
+     77,
      284,
      952,
      740
     ],
+    "iron": [
+     77,
+     284,
+     952,
+     740
+    ],
+    "woodraw": [
+     72,
+     345,
+     914,
+     734
+    ],
     "wood": [
      72,
-     298,
-     948,
-     735
+     407,
+     723,
+     734
     ],
     "top": [
      275,
@@ -3855,7 +3933,7 @@ export const LEVEL_META = {
      512
     ],
     "rims": [
-     79,
+     77,
      512,
      732,
      740
@@ -3898,11 +3976,6 @@ export const LEVEL_META = {
    },
    "stack": [
     [
-     "dull",
-     "full",
-     "dull"
-    ],
-    [
      "wet",
      "full",
      "wet"
@@ -3913,14 +3986,14 @@ export const LEVEL_META = {
      "dirty"
     ],
     [
-     "mold",
-     "full",
-     "mold"
-    ],
-    [
      "lime",
      "full",
      "lime"
+    ],
+    [
+     "mold",
+     "full",
+     "mold"
     ],
     [
      "scrubbed",
@@ -3939,24 +4012,6 @@ export const LEVEL_META = {
      788,
      766,
      932
-    ],
-    "tray": [
-     238,
-     827,
-     790,
-     951
-    ],
-    "glass": [
-     235,
-     73,
-     790,
-     827
-    ],
-    "fixtures": [
-     236,
-     73,
-     787,
-     335
     ]
    },
    "points": {
@@ -4118,9 +4173,33 @@ export const LEVEL_META = {
     ]
    ],
    "regions": {
+    "stone": [
+     288,
+     595,
+     736,
+     952
+    ],
+    "lower": [
+     288,
+     380,
+     736,
+     952
+    ],
+    "p0": [
+     288,
+     595,
+     736,
+     952
+    ],
+    "p1": [
+     288,
+     595,
+     736,
+     952
+    ],
     "plinth": [
      288,
-     556,
+     595,
      736,
      952
     ],
@@ -4128,7 +4207,7 @@ export const LEVEL_META = {
      317,
      72,
      729,
-     556
+     624
     ],
     "mossc": [
      290,
@@ -4138,7 +4217,7 @@ export const LEVEL_META = {
     ],
     "moss": [
      290,
-     556,
+     600,
      734,
      950
     ]
@@ -4232,12 +4311,6 @@ export const LEVEL_META = {
      89,
      894,
      952
-    ],
-    "top": [
-     174,
-     72,
-     849,
-     468
     ]
    },
    "points": {},
@@ -4797,6 +4870,187 @@ export const LEVEL_META = {
    "workingPoint": [
     0.4883,
     0.0482
+   ]
+  },
+  "tool-wheel-brush": {
+   "size": [
+    197,
+    768
+   ],
+   "workingPoint": [
+    0.4927,
+    0.1549
+   ]
+  },
+  "tool-stone-brush": {
+   "size": [
+    595,
+    768
+   ],
+   "workingPoint": [
+    0.5,
+    0.155
+   ]
+  },
+  "tool-upholstery-brush": {
+   "size": [
+    283,
+    768
+   ],
+   "workingPoint": [
+    0.4992,
+    0.1634
+   ]
+  },
+  "tool-toothbrush": {
+   "size": [
+    123,
+    768
+   ],
+   "workingPoint": [
+    0.4966,
+    0.1392
+   ]
+  },
+  "tool-soft-brush": {
+   "size": [
+    207,
+    768
+   ],
+   "workingPoint": [
+    0.4987,
+    0.1403
+   ]
+  },
+  "tool-brass-brush": {
+   "size": [
+    134,
+    768
+   ],
+   "workingPoint": [
+    0.4935,
+    0.1386
+   ]
+  },
+  "tool-polishing-cloth": {
+   "size": [
+    759,
+    768
+   ],
+   "workingPoint": [
+    0.4993,
+    0.4993
+   ]
+  },
+  "tool-dish-sponge": {
+   "size": [
+    768,
+    576
+   ],
+   "workingPoint": [
+    0.5,
+    0.4991
+   ]
+  },
+  "tool-deck-brush": {
+   "size": [
+    389,
+    768
+   ],
+   "workingPoint": [
+    0.4985,
+    0.1364
+   ]
+  },
+  "tool-sandblaster": {
+   "size": [
+    203,
+    768
+   ],
+   "workingPoint": [
+    0.5094,
+    0.0443
+   ],
+   "edge": 0.0286
+  },
+  "tool-wet-vacuum": {
+   "size": [
+    242,
+    768
+   ],
+   "workingPoint": [
+    0.4996,
+    0.0456
+   ],
+   "edge": 0.224
+  },
+  "tool-spin-scrubber": {
+   "size": [
+    277,
+    768
+   ],
+   "workingPoint": [
+    0.4982,
+    0.1803
+   ],
+   "spin": 0.1348
+  },
+  "tool-rotary-buffer": {
+   "size": [
+    384,
+    768
+   ],
+   "workingPoint": [
+    0.4987,
+    0.25
+   ],
+   "spin": 0.2044
+  },
+  "tool-cup-brush": {
+   "size": [
+    317,
+    768
+   ],
+   "workingPoint": [
+    0.4984,
+    0.2064
+   ],
+   "spin": 0.1608
+  },
+  "tool-razor-scraper": {
+   "size": [
+    455,
+    768
+   ],
+   "workingPoint": [
+    0.4977,
+    0.0469
+   ],
+   "edge": 0.5
+  },
+  "tool-heavy-scraper": {
+   "size": [
+    256,
+    768
+   ],
+   "workingPoint": [
+    0.4907,
+    0.0456
+   ],
+   "edge": 0.2422
+  },
+  "tool-telescopic-brush": {
+   "size": [
+    379,
+    768
+   ],
+   "workingPoint": [
+    0.4974,
+    0.125
+   ],
+   "head": [
+    0.401,
+    0.1471
    ]
   }
  },

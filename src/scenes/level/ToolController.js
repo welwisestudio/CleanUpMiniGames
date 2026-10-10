@@ -52,6 +52,7 @@ export class ToolController {
     this.sprite = s;
     const k = this._spriteScale();
     s.setScale(k);
+    this._makeSpin(tool);
     this.active = false;
     this.pointerWorld = null;
     if (animate) {
@@ -74,8 +75,66 @@ export class ToolController {
     this.scene.tweens.add({ targets: this.loadSprite, scale: k, duration: 220, ease: 'Back.easeOut' });
   }
 
+  // Rotary tools (tool.spin = { r }: head radius as a share of the sprite's longest side): the round
+  // head facing the viewer is cut out of the tool's own sprite once (canvas texture) and drawn on top
+  // of it, rotating while the tool works. The working point is the head centre, which is also the
+  // sprite origin, so the overlay simply follows the sprite.
+  _makeSpin(tool) {
+    this.spinSprite?.destroy();
+    this.spinSprite = null;
+    this.spinAngle = 0;
+    if (!tool.spin) return;
+    const key = `spin-${tool.texture}`;
+    const tex = this.scene.textures;
+    const src = tex.get(tool.texture).getSourceImage();
+    const r = Math.max(4, Math.round(tool.spin.r * Math.max(src.width, src.height)));
+    if (!tex.exists(key)) {
+      const c = tex.createCanvas(key, r * 2, r * 2);
+      const ctx = c.getContext();
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(r, r, r, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(src, tool.workingPoint.x * src.width - r, tool.workingPoint.y * src.height - r, r * 2, r * 2, 0, 0, r * 2, r * 2);
+      ctx.restore();
+      c.refresh();
+    }
+    this.spinSprite = this.scene.add.image(this.sprite.x, this.sprite.y, key).setDepth(41.5);
+    this.spinR = r;
+  }
+
+  _spinUpdate() {
+    const sp = this.spinSprite;
+    if (!sp) return;
+    if (!this.sprite) {
+      sp.destroy();
+      this.spinSprite = null;
+      return;
+    }
+    const working = this.active && !this.inert;
+    const dt = Math.min(this.scene.game.loop.delta, 50) / 1000;
+    this.spinAngle = (this.spinAngle + (working ? 1080 : 0) * dt) % 360;
+    sp.setPosition(this.sprite.x, this.sprite.y).setScale(this.sprite.scaleX, this.sprite.scaleY).setAlpha(this.sprite.alpha);
+    sp.setAngle(this.sprite.angle + this.spinAngle);
+    if (!working) return;
+    // circular contact feedback: a soft ring with rotating highlight arcs at the head's rim
+    const g = this.jetGfx;
+    const R = this.spinR * this.sprite.scaleX;
+    const a0 = Phaser.Math.DegToRad(this.spinAngle * 1.5);
+    g.lineStyle(Math.max(3, R * 0.1), 0xffffff, 0.35).strokeCircle(sp.x, sp.y, R * 1.05);
+    g.lineStyle(Math.max(3, R * 0.1), 0xffffff, 0.9);
+    for (let i = 0; i < 3; i++) {
+      const a = a0 + (i * Math.PI * 2) / 3;
+      g.beginPath();
+      g.arc(sp.x, sp.y, R * 1.05, a, a + 0.8, false);
+      g.strokePath();
+    }
+  }
+
   exit() {
     this.setLoad(null);
+    this.spinSprite?.destroy();
+    this.spinSprite = null;
     if (!this.sprite) return Promise.resolve();
     const s = this.sprite;
     this.sprite = null;
@@ -186,10 +245,19 @@ export class ToolController {
   update() {
     if (this.loadSprite && this.sprite) this.loadSprite.setPosition(this.sprite.x, this.sprite.y - 8 * this.objScale);
     this.jetGfx.clear();
+    this._spinUpdate();
     if (!this.active || this.inert || !this.tool || this.tool.kind !== 'jet' || !this.pointerWorld) return;
     const nozzle = this.workPointFor(this.pointerWorld);
     const impact = this.impactFor(nozzle);
     const foam = this.tool.jetStyle === 'foam';
+    if (this.tool.jetStyle === 'grit') {
+      this._grit(nozzle, impact);
+      return;
+    }
+    if (foam && this.tool.cone) {
+      this._foamCone(nozzle, impact);
+      return;
+    }
     if (this.tool.jetStyle === 'paint' || this.tool.jetStyle === 'air' || this.tool.jetStyle === 'steam') {
       this._fineJet(nozzle, impact);
       return;
@@ -257,8 +325,84 @@ export class ToolController {
       g.lineStyle(4 * k, 0xffffff, 0.25);
       g.lineBetween(nozzle.x, nozzle.y, impact.x, impact.y);
     }
+    if (!paint && !steam) {
+      // air: fast streak lines racing along the stream (airflow direction is readable)
+      const ph = (this.scene.time.now / 160) % 1;
+      g.lineStyle(3 * k, 0xffffff, 0.6);
+      for (let i = 0; i < 6; i++) {
+        const t = (ph + i / 6) % 1;
+        const side = Math.sin(i * 1.7) * (4 + 16 * t) * k * spread;
+        const x = nozzle.x + dx * t + nx * side;
+        const y = nozzle.y + dy * t + ny * side;
+        g.lineBetween(x, y, x + (dx / len) * 22 * k, y + (dy / len) * 22 * k);
+      }
+    }
     g.fillStyle(col, paint ? 0.35 : 0.2);
     for (let i = 0; i < 6; i++) g.fillCircle(impact.x + Phaser.Math.Between(-40, 40) * k * spread, impact.y + Phaser.Math.Between(-40, 40) * k * spread, (paint ? 14 : 9) * k * spread);
+    if (steam) {
+      // a billowing steam cloud rolling off the surface where the steam hits
+      const t = this.scene.time.now / 900;
+      for (let i = 0; i < 4; i++) {
+        const a = t + i * 1.57;
+        g.fillStyle(0xffffff, 0.12);
+        g.fillCircle(impact.x + Math.cos(a) * 34 * k * spread, impact.y - 18 * k - Math.abs(Math.sin(a * 0.7)) * 40 * k * spread, (26 + 14 * Math.sin(a * 1.3)) * k * spread);
+      }
+    }
+  }
+
+  // Sandblaster: a dense stream of abrasive grains that fans out slightly from the nozzle, with a
+  // dusty cloud where it hits (code-drawn; grains race along the jet direction).
+  _grit(nozzle, impact) {
+    const g = this.jetGfx;
+    const k = this.objScale;
+    const spread = (this.sprayRadius ?? 70) / 100;
+    const dx = impact.x - nozzle.x;
+    const dy = impact.y - nozzle.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len;
+    const ny = dx / len;
+    const phase = (this.scene.time.now / 140) % 1;
+    // a translucent abrasive fan + dense grains (dark and light, readable on any background)
+    const fan = 34 * k * spread;
+    g.fillStyle(0xcdb894, 0.22);
+    g.fillTriangle(nozzle.x + nx * 3 * k, nozzle.y + ny * 3 * k, nozzle.x - nx * 3 * k, nozzle.y - ny * 3 * k, impact.x - nx * fan, impact.y - ny * fan);
+    g.fillTriangle(nozzle.x + nx * 3 * k, nozzle.y + ny * 3 * k, impact.x - nx * fan, impact.y - ny * fan, impact.x + nx * fan, impact.y + ny * fan);
+    const cols = [0x6f5f45, 0xcbb68d, 0xf3e6c4];
+    for (let i = 0; i < 56; i++) {
+      const t = (phase + i / 56) % 1;
+      const side = Math.sin(i * 2.399 + phase * 6) * (2 + 32 * t) * k * spread;
+      g.fillStyle(cols[i % 3], 0.95 - 0.3 * t);
+      g.fillCircle(nozzle.x + dx * t + nx * side, nozzle.y + dy * t + ny * side, (2.2 + 3 * t) * k);
+    }
+    for (let i = 0; i < 5; i++) {
+      g.fillStyle(0xd8c7a4, 0.16);
+      g.fillCircle(impact.x + Phaser.Math.Between(-36, 36) * k * spread, impact.y + Phaser.Math.Between(-30, 30) * k * spread, Phaser.Math.Between(14, 30) * k * spread);
+    }
+  }
+
+  // Foam cannon: a WIDE cone of foam (the regular sprayers shoot a narrow stream) — the cone opens to
+  // the stage's spray width, foam blobs travel across its whole width.
+  _foamCone(nozzle, impact) {
+    const g = this.jetGfx;
+    const k = this.objScale;
+    const w = (this.sprayRadius ?? 100) * k * 1.15;
+    const dx = impact.x - nozzle.x;
+    const dy = impact.y - nozzle.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len;
+    const ny = dx / len;
+    g.fillStyle(0xffffff, 0.32);
+    g.fillTriangle(nozzle.x + nx * 6 * k, nozzle.y + ny * 6 * k, nozzle.x - nx * 6 * k, nozzle.y - ny * 6 * k, impact.x - nx * w, impact.y - ny * w);
+    g.fillTriangle(nozzle.x + nx * 6 * k, nozzle.y + ny * 6 * k, impact.x - nx * w, impact.y - ny * w, impact.x + nx * w, impact.y + ny * w);
+    const phase = (this.scene.time.now / 420) % 1;
+    g.fillStyle(0xffffff, 0.9);
+    for (let i = 0; i < 14; i++) {
+      const t = (phase + i / 14) % 1;
+      const side = Math.sin(i * 2.399) * w * t;
+      g.fillCircle(nozzle.x + dx * t + nx * side, nozzle.y + dy * t + ny * side, (4 + 13 * t) * k);
+    }
+    g.fillStyle(0xffffff, 0.6);
+    for (let i = 0; i < 8; i++) g.fillCircle(impact.x + nx * Phaser.Math.FloatBetween(-1, 1) * w, impact.y + ny * Phaser.Math.FloatBetween(-1, 1) * w + Phaser.Math.Between(-12, 12) * k, 15 * k);
   }
 
   // Step 8 laser cleaner: a thin bright beam from the emitter to the contact point with a soft
@@ -278,6 +422,7 @@ export class ToolController {
   }
 
   destroy() {
+    this.spinSprite?.destroy();
     this.loadSprite?.destroy();
     this.sprite?.destroy();
     this.jetGfx.destroy();

@@ -1,0 +1,28 @@
+{
+ "soccer-ball": {
+  "object": {
+   "x": 195,
+   "y": 410.05,
+   "w": 378.29999999999995,
+   "h": 378.30000000000007,
+   "visible": true
+  },
+  "layout": {
+   "W": 390,
+   "H": 844,
+   "dpr": 2,
+   "u": 1,
+   "compact": true,
+   "hudBottom": 196
+  },
+  "xf": {
+   "cx": 195,
+   "cy": 410.05,
+   "k": 0.4298863636363636,
+   "size": 1024
+  },
+  "tool": "chisel",
+  "cards": [],
+  "stage": "chisel"
+ }
+}

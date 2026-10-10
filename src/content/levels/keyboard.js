@@ -3,7 +3,7 @@ import { LEVEL_META } from '../generated/levelMeta.js';
 // Level 13 · Keyboard (CONTENT-MATRIX Batch A). Step 9 polish: no keycap removal any more (pulling
 // and replacing ten caps was slow and fiddly) — the keyboard is cleaned in place: blow the dust
 // out → crevice brush between the keys of the grimy block (outlined) → swab the sticky spill →
-// wipe the case → spray cleaner for the last smudges.
+// wipe the case and its smudges (Step 9 visual pass: the separate spray step changed too little).
 
 const M = LEVEL_META.levels.keyboard ?? { bounds: [80, 260, 950, 780] };
 void M;
@@ -36,7 +36,6 @@ export const keyboard = {
     { id: 'blow', tool: 'air-blower', mechanic: 'brush', params: { mode: 'reveal', layers: ['dusty'], radius: 70, threshold: 0.95 }, targetSeconds: [5, 8] },
     { id: 'crevice', tool: 'crevice-brush', mechanic: 'brush', region: 'cells', params: { mode: 'reveal', layers: ['dirty'], radius: 30, threshold: 0.95 }, targetSeconds: [6, 9] },
     { id: 'swab', tool: 'cotton-swab', mechanic: 'brush', region: 'spill', params: { mode: 'reveal', layers: ['dirty'], radius: 32, threshold: 0.94 }, targetSeconds: [5, 8] },
-    { id: 'wipe-case', family: 'wipe', tool: 'cloth', mechanic: 'brush', params: { mode: 'reveal', layers: ['dirty'], radius: 110, threshold: 0.95 }, targetSeconds: [5, 8] },
-    { id: 'spray-clean', tool: 'spray-bottle', mechanic: 'brush', params: { mode: 'reveal', layers: ['smudged'], radius: 88, threshold: 0.95 }, targetSeconds: [5, 8] },
+    { id: 'wipe-case', family: 'wipe', tool: 'cloth', mechanic: 'brush', params: { mode: 'reveal', layers: ['dirty', 'smudged'], radius: 110, threshold: 0.95 }, targetSeconds: [5, 8] },
   ],
 };

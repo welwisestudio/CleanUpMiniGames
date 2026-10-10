@@ -4,12 +4,13 @@ import { PauseState } from '../core/PauseState.js';
 import { SaveService } from '../services/SaveService.js';
 import { RewardService } from '../services/RewardService.js';
 import { ToolService } from '../services/ToolService.js';
-import { SkinService } from '../services/SkinService.js';
-import { TOOL_SKINS, SKIN_AD_PLACEMENT } from '../content/toolSkins.js';
+import { ProgressionService } from '../services/ProgressionService.js';
+import { StoreService } from '../services/StoreService.js';
+import { WheelService } from '../services/WheelService.js';
 import { TOOL_FAMILIES, TOOL_AD_PLACEMENT } from '../content/toolFamilies.js';
 import { AudioService } from '../services/AudioService.js';
 import { economy } from '../content/economy.js';
-import { validateCatalog } from '../content/catalog.js';
+import { validateCatalog, DISPLAY_ORDER } from '../content/catalog.js';
 import { BootScene } from '../scenes/BootScene.js';
 import { MenuScene } from '../scenes/MenuScene.js';
 import { LevelScene } from '../scenes/LevelScene.js';
@@ -26,7 +27,17 @@ export function createApp({ platform, parent }) {
   const save = new SaveService(platform);
   const rewards = new RewardService({ save, economy, platform, pause });
   const toolShop = new ToolService({ save, rewards, families: TOOL_FAMILIES, placement: TOOL_AD_PLACEMENT });
-  const skins = new SkinService({ save, rewards, skins: TOOL_SKINS, placement: SKIN_AD_PLACEMENT });
+  // dev / test only (the dev adapter): every level selectable for QA, never written to the save —
+  // `?unlockAll=1`, or automatically for the QA harness (`?qa=1`) unless it tests access (`locks=1`)
+  const q = new URLSearchParams(window.location.search);
+  const devUnlockAll = Boolean(platform.dev) && (q.get('unlockAll') === '1' || (q.get('qa') === '1' && q.get('locks') !== '1'));
+  const progression = new ProgressionService({ save, rewards, order: DISPLAY_ORDER, config: economy.levelAccess, devUnlockAll });
+  const store = new StoreService({ save, rewards, platform, config: economy.store, timedChest: economy.rewards.timedChest });
+  // dev / test only: `?wheelSeg=N` forces the wheel's chosen segment (QA of each reward)
+  const forced = platform.dev && q.get('wheelSeg') != null ? Number(q.get('wheelSeg')) : null;
+  const segW = economy.wheel.segments.map((x) => x.weight);
+  const forcedRandom = forced != null && segW[forced] != null ? () => (segW.slice(0, forced).reduce((a2, v) => a2 + v, 0) + segW[forced] / 2) / segW.reduce((a2, v) => a2 + v, 0) : undefined;
+  const wheel = new WheelService({ save, rewards, toolShop, config: economy.wheel, ...(forcedRandom ? { random: forcedRandom } : {}) });
   const audio = new AudioService({ save, pause });
   let runCounter = 0;
 
@@ -36,7 +47,9 @@ export function createApp({ platform, parent }) {
     save,
     rewards,
     toolShop,
-    skins,
+    progression,
+    store,
+    wheel,
     audio,
     economy,
     build: { number: __BUILD_NUMBER__, time: __BUILD_TIME__ },
@@ -90,6 +103,8 @@ export function createApp({ platform, parent }) {
       audio.setPlatformAudio(audioEnabled);
     });
     await loadSaveWithRetry(save, platform);
+    // level access: derive the sets once from an older save's completion history
+    await (progression.migrate() ?? Promise.resolve()).catch((e) => platform.reportWarning('progression migrate', e));
     // timed chest: start its first cycle (or repair a clock jump) once the save is loaded
     await rewards.ensureTimedChest().catch((e) => platform.reportWarning('timed chest init', e));
   })();

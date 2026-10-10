@@ -18,6 +18,7 @@ import subjects  # noqa: E402
 import edits  # noqa: E402
 import tools  # noqa: E402
 import skins  # noqa: E402
+import variety  # noqa: E402  (tool variety pass, 2026-10-10)
 
 BG_PROMPT = ("Premium mobile game gameplay background, portrait 9:16, for a casual cleaning game. Match the attached reference background's rendering quality and mood exactly "
              "(semi-realistic polished 3D render, soft depth of field, calm, a brighter clean central area for the game object, slightly darker top band behind the HUD) but show a different place: {P}")
@@ -65,10 +66,22 @@ def main():
             e['file'] = f'reference/masters/{key}.png'
             e['alpha'] = 'master cutout alpha (pixel-aligned edit, no own removal)'
         elif kind == 'tool':
-            e['prompt'] = tools.prompt(key)
+            if key in variety.NEW or key in variety.NEW2:
+                g, sub, n, pad, h, x = {**variety.NEW, **variety.NEW2}[key]
+                e['prompt'] = tools.T.format(G=g, S=sub, N=n, P=pad, H=h, X=x)
+            else:
+                e['prompt'] = tools.prompt(key)
             e['parameters'] = {**common['parameters'], 'aspect_ratio': '9:16'}
             e['file'] = f'reference/masters/{key}.png'
             e['backgroundRemoval'] = {'operation': 'Higgsfield Background Remover (remove_background)', 'jobId': removals.get(key), 'file': f'reference/cutouts/{key}.png'}
+        elif kind == 'alt' or (kind == 'skin' and key.split('skin-')[1] in variety.SKINS):
+            b, change = variety.ALT[key] if kind == 'alt' else variety.SKINS[key.split('skin-')[1]]
+            job, noun = variety.BASE[b]
+            e['prompt'] = skins.SKIN.format(N=noun, C=change)
+            e['referenceJobs'] = [job]
+            e['parameters'] = {**common['parameters'], 'aspect_ratio': 'auto'}
+            e['file'] = f'reference/masters/{key}.png'
+            e['alpha'] = 'base tool cutout alpha + the base crop (same working point)'
         elif kind in ('skin', 'skinfailed'):
             sid = key.split('skin-')[1]
             base, noun, change = skins.SKINS[sid]
@@ -93,14 +106,14 @@ def main():
     ok = [e for e in entries if e['kind'] != 'skinfailed']
     summary = {
         'nb2ImagesGenerated': len(ok),
-        'byKind': {k: sum(1 for e in ok if e['kind'] == k) for k in ('master', 'edit', 'tool', 'skin', 'bg')},
+        'byKind': {k: sum(1 for e in ok if e['kind'] == k) for k in ('master', 'edit', 'tool', 'alt', 'skin', 'bg')},
         'failedJobs': sum(1 for e in entries if e['kind'] == 'skinfailed'),
         'backgroundRemovals': len(removals),
         'resolution2kUsed': 0,
         'creditsEstimate': {'nb2': f'{len(ok)} × 1.5 = {len(ok) * 1.5}', 'removals': f'{len(removals)} × 1 = {len(removals)}'},
     }
     man = json.loads(MAN.read_text(encoding='utf-8'))
-    man['batchB'] = {'updated': '2026-10-08', 'reason': 'Step 8: levels 16–50, background families, new tools, cosmetic skins', 'summary': summary, 'assets': entries,
+    man['batchB'] = {'updated': '2026-10-10', 'reason': 'Step 8: levels 16–50, background families, new tools, cosmetic skins; tool variety pass (new tools, alternatives, skins)', 'summary': summary, 'assets': entries,
                      'derived': 'scripts/prepare_batch_b.py (+ batch_b_core.py): registration with the master alpha, procedural dust / wet / dull / grime layers, regions, thumbnails 320 px, result pictures, skins with the base crop'}
     MAN.write_text(json.dumps(man, indent=1, ensure_ascii=False) + '\n', encoding='utf-8')
     print(json.dumps(summary, indent=1))

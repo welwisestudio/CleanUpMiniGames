@@ -74,12 +74,12 @@ def dull(img, a, amount=0.42):
     lum = c.mean(2, keepdims=True)
     inside = a > 0.5
     mean = float(lum[..., 0][inside].mean()) if inside.any() else 0.5
-    d = c * (1 - amount * 0.55) + lum * amount * 0.55
-    d = (d - mean) * (1 - amount * 0.7) + mean
+    d = c * (1 - amount * 0.3) + lum * amount * 0.3
+    d = (d - mean) * (1 - amount * 0.4) + mean
     tex = _dust_tex()
     streak = ndimage.gaussian_filter(tex, 6)
     streak = (streak - streak.min()) / max(1e-6, streak.max() - streak.min())
-    h = np.clip(amount * (0.75 + 0.6 * streak), 0, 0.6)[..., None]
+    h = np.clip(amount * (0.38 + 0.3 * streak), 0, 0.3)[..., None]
     d = d * (1 - h) + np.array([0.86, 0.86, 0.84], np.float32) * h
     return to_img(d, a)
 
@@ -210,6 +210,15 @@ def region(spec, imgs, clean_a, regions):
         return regions[spec[1]] | regions[spec[2]]
     if kind == 'minus':
         return regions[spec[1]] & ~regions[spec[2]]
+    if kind == 'largest':  # keep the n largest connected parts (a part, not its stray specks)
+        lab, n = ndimage.label(regions[spec[1]])
+        if not n:
+            return regions[spec[1]]
+        sizes = ndimage.sum(regions[spec[1]], lab, range(1, n + 1))
+        keep = [int(i) + 1 for i in np.argsort(sizes)[::-1][:spec[2]]]
+        return np.isin(lab, keep) & (inside > 0.5)
+    if kind == 'clean':  # drop small islands (no stray outline specks)
+        return clean_mask(regions[spec[1]], inside, 2, 600, 0)
     if kind == 'fill':  # a region with its holes filled (a sign plate with its painted symbol)
         return ndimage.binary_fill_holes(ndimage.binary_closing(regions[spec[1]], iterations=4)) & (inside > 0.5)
     if kind == 'grow':

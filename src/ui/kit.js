@@ -22,3 +22,28 @@ export function fitImage(scene, key, box, x = 0, y = 0) {
   img.setScale(box / Math.max(img.width, img.height));
   return img;
 }
+
+// "No" feedback shake (2026-10-11): a short horizontal shake around the target's BASE x. A new shake
+// first stops the running one and puts the target back on its base, so rapid repeated taps never
+// accumulate an offset; every shake ends exactly on the base. Used by chests, the level / VIP offer
+// and the tool cards.
+export function shakeX(scene, target, amp = 6, { duration = 45, repeat = 3 } = {}) {
+  if (target.shakeTween) {
+    target.shakeTween.stop();
+    target.x = target.shakeBaseX;
+  }
+  target.shakeBaseX = target.x;
+  const done = () => {
+    target.x = target.shakeBaseX;
+    target.shakeTween = null;
+  };
+  target.shakeTween = scene.tweens.add({ targets: target, x: target.shakeBaseX + amp, duration, yoyo: true, repeat, onComplete: done, onStop: done });
+}
+
+// stop a running shake (e.g. before a relayout moves the target)
+export function stopShake(target) {
+  if (!target.shakeTween) return;
+  target.shakeTween.stop();
+  target.x = target.shakeBaseX;
+  target.shakeTween = null;
+}

@@ -134,12 +134,15 @@ test('alternative tools: buy, ad unlock, switch mid-stage, persistence', async (
   s = await toStage(page, drv, 'scrub');
   await page.waitForTimeout(500);
   s = await snap(page);
-  expect(s.level.toolCards.map((c) => c.state)).toEqual(['equipped', 'coins', 'diamonds']);
+  expect(s.level.toolCards.map((c) => c.state)).toEqual(['equipped', 'coins', 'diamonds', 'ad']); // + the visual Wooden brush (2026-10-10)
   await tapCard(page, drv, 'scrub-brush-oval');
-  s = await snap(page);
+  // not enough coins → the rewarded-ad offer for that variant (2026-10-10); "No thanks" changes nothing
+  s = await waitFor(page, (x) => x.level.toolOffer && x.buttons?.['tool-offer-cancel']?.visible, { label: 'coin ad offer' });
+  await page.screenshot({ path: `${dir}/07-not-enough-coins.png` });
+  await pressButton(page, drv, 'tool-offer-cancel');
+  s = await waitFor(page, (x) => !x.level.toolOffer, { label: 'offer closed' });
   expect(s.coins).toBe(5);
   expect(s.level.tool.id).toBe('scrub-brush');
-  await page.screenshot({ path: `${dir}/07-not-enough-coins.png` });
   await tapCard(page, drv, 'drill-brush');
   s = await snap(page);
   expect(s.level.diamonds).toBe(4);

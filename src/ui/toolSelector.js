@@ -1,6 +1,6 @@
 import { TEXT, FONT_UI } from './theme.js';
 import { makeText, fitText, centerRow } from './text.js';
-import { nineSlice, fitImage } from './kit.js';
+import { nineSlice, fitImage, shakeX } from './kit.js';
 import { getTool } from '../content/tools.js';
 
 // Alternative-tool cards (Step 7, reference REFERENCE-BREAKDOWN §2 / Rug_foam_brush_cleaning):
@@ -11,10 +11,9 @@ import { getTool } from '../content/tools.js';
 export const CARD = { w: 74, h: 74, gap: 12, label: 24 };
 
 export class ToolSelector {
-  constructor(scene, { onTap, onSkin }) {
+  constructor(scene, { onTap }) {
     this.scene = scene;
     this.onTap = onTap;
-    this.onSkin = onSkin;
     this.container = scene.add.container(0, 0).setDepth(120);
     this.cards = [];
     this.vertical = false;
@@ -37,25 +36,21 @@ export class ToolSelector {
     const g = s.add.graphics();
     const frame = s.add.graphics();
     const tool = getTool(o.tool);
-    const img = fitImage(s, o.texture ?? tool.texture, w * 0.72, 0, -h * 0.04);
+    const img = fitImage(s, tool.texture, w * 0.72, 0, -h * 0.04);
     const pill = nineSlice(s, 'ui-pill', w * 1.02, label, 0, h / 2 + label * 0.18);
     const content = s.add.container(0, 0);
     const zone = s.add.zone(0, label * 0.2, Math.max(w, 48), Math.max(h + label * 0.6, 48)).setInteractive({ useHandCursor: true });
-    zone.on('pointerup', () => this.onTap?.(o.tool));
+    // only a tap that STARTED on this card counts: a cleaning drag may pass over the cards on phones
+    zone.on('pointerdown', (p) => (zone.downId = p.id));
+    zone.on('pointerup', (p) => {
+      const own = zone.downId === p.id;
+      zone.downId = null;
+      if (own) this.onTap?.(o.tool);
+    });
+    zone.on('pointerout', () => (zone.downId = null));
     root.add([frame, g, img, pill, content, zone]);
-    // Step 8: cosmetic skins - a small round brush button on the equipped base tool card
-    let skinBtn = null;
-    if (o.skinnable && this.onSkin) {
-      skinBtn = s.add.container(w / 2 - 2, -h / 2 + 2);
-      const bg = s.add.circle(0, 0, 17, 0xffffff, 1).setStrokeStyle(4, 0xc77dff, 1);
-      const ic = fitImage(s, 'tool-paint-brush', 26, 0, 0).setAngle(35);
-      const hit = s.add.zone(0, 0, 48, 48).setInteractive({ useHandCursor: true });
-      hit.on('pointerup', () => this.onSkin?.());
-      skinBtn.add([bg, ic, hit]);
-      root.add(skinBtn);
-    }
     this.container.add(root);
-    const card = { o, root, g, frame, img, pill, content, zone, skinBtn };
+    const card = { o, root, g, frame, img, pill, content, zone };
     this._paint(card, o);
     return card;
   }
@@ -64,7 +59,6 @@ export class ToolSelector {
     const s = this.scene;
     const { w, h, label } = CARD;
     card.o = o;
-    if (o.texture !== undefined) card.img.setTexture(o.texture ?? getTool(o.tool).texture);
     card.g.clear();
     card.g.fillStyle(0xffffff, 1).fillRoundedRect(-w / 2, -h / 2, w, h, 12);
     card.g.fillStyle(o.card ?? 0xd8e6f5, 1).fillRoundedRect(-w / 2 + 4, -h / 2 + 4, w - 8, h - 8, 9);
@@ -89,18 +83,7 @@ export class ToolSelector {
   }
 
   update(options) {
-    // a change of the skin button (equip moved) needs the cards rebuilt
-    if (options.some((o, i) => Boolean(o.skinnable) !== Boolean(this.cards[i]?.skinBtn))) return this.setOptions(this.familyId, options);
     options.forEach((o, i) => this.cards[i] && this._paint(this.cards[i], o));
-  }
-
-  // QA: the skin button of the equipped card (world rect) or null
-  skinButtonRect() {
-    const c = this.cards.find((k) => k.skinBtn);
-    if (!c) return null;
-    const m = c.skinBtn.getWorldTransformMatrix();
-    const k = Math.hypot(m.a, m.b);
-    return { x: m.tx, y: m.ty, w: 48 * k, h: 48 * k, visible: this.container.visible && this.container.alpha > 0.5 };
   }
 
   _arrange() {
@@ -113,10 +96,10 @@ export class ToolSelector {
     });
   }
 
-  // Size of the whole selector in UI units (for layout reservations).
-  static extent(vertical) {
+  // Size of the whole selector in UI units (for layout reservations); n = 3 or 4 variants.
+  static extent(vertical, n = 3) {
     const { w, h, gap, label } = CARD;
-    return vertical ? { w: w + 8, h: 3 * (h + label) + 2 * gap + 8 } : { w: 3 * w + 2 * gap + 8, h: h + label + 8 };
+    return vertical ? { w: w + 8, h: n * (h + label) + (n - 1) * gap + 8 } : { w: n * w + (n - 1) * gap + 8, h: h + label + 8 };
   }
 
   place(x, y, u, vertical) {
@@ -130,7 +113,7 @@ export class ToolSelector {
   shake(toolId) {
     const c = this.cards.find((k) => k.o.tool === toolId);
     if (!c) return;
-    this.scene.tweens.add({ targets: c.root, x: c.root.x + 5, duration: 45, yoyo: true, repeat: 3 });
+    shakeX(this.scene, c.root, 5);
   }
 
   pop(toolId) {
@@ -143,7 +126,7 @@ export class ToolSelector {
   // Short message above the selector ("Not enough coins", "Ad closed early").
   toast(msg) {
     this.toastText?.destroy();
-    const ext = ToolSelector.extent(this.vertical);
+    const ext = ToolSelector.extent(this.vertical, Math.max(3, this.cards.length));
     const t = makeText(this.scene, 0, -ext.h / 2 - 20, msg, { size: 17, color: TEXT.white, weight: '900', family: FONT_UI, stroke: '#2A2A2A', strokeThickness: 4 });
     if (this.vertical) t.setOrigin(1, t.originY).setPosition(-ext.w / 2 - 8, 0); // left of the column
     this.container.add(t);
@@ -174,3 +157,4 @@ export class ToolSelector {
     this.container.destroy();
   }
 }
+

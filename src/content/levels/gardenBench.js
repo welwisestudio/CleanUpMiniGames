@@ -66,10 +66,10 @@ export const gardenBench = {
     },
     { id: 'peel', family: 'scrape', tool: 'wide-scraper', mechanic: 'chunkBreak', fx: 'chips', params: { layer: 'flaking', chunkCount: 20, breakDistance: 120, tipRadius: 48, seed: 1212 }, targetSeconds: [10, 14] },
     { id: 'sand', family: 'sand', tool: 'sandpaper', mechanic: 'brush', fx: 'sawdust', region: 'slats', dim: true, params: { mode: 'reveal', layers: ['weathered'], radius: 60, threshold: 0.95 }, targetSeconds: [7, 10] },
-    { id: 'wire-brush', family: 'rust', tool: 'wire-brush', mechanic: 'brush', region: 'frame', dim: true, params: { mode: 'reveal', layers: ['rusty'], radius: 40, aspect: 2.0, threshold: 0.94 }, targetSeconds: [7, 10] },
+    { id: 'wire-brush', family: 'rust', tool: 'wire-brush', mechanic: 'brush', outline: false, region: 'frame', dim: true, params: { mode: 'reveal', layers: ['rusty'], radius: 40, aspect: 2.0, threshold: 0.94 }, targetSeconds: [7, 10] },
     { id: 'wipe', family: 'wipe', tool: 'cloth', mechanic: 'brush', params: { mode: 'reveal', layers: ['dusty'], radius: 110, threshold: 0.95 }, targetSeconds: [5, 8] },
     { id: 'roll', family: 'roll', tool: 'paint-roller', mechanic: 'brush', region: 'slats', dim: true, focus: 'paint', params: { mode: 'reveal', layers: ['bare'], radius: 38, aspect: 2.6, threshold: 0.95, source: TRAY }, targetSeconds: [8, 12] },
-    { id: 'paint-frame', tool: 'paint-brush', mechanic: 'brush', region: 'frame', dim: true, focus: 'paint', params: { mode: 'reveal', layers: ['bare'], radius: 30, aspect: 1.8, threshold: 0.94, source: CAN }, targetSeconds: [8, 12] },
+    { id: 'paint-frame', tool: 'paint-brush', mechanic: 'brush', outline: false, region: 'frame', dim: true, focus: 'paint', params: { mode: 'reveal', layers: ['bare'], radius: 30, aspect: 1.8, threshold: 0.94, source: CAN }, targetSeconds: [8, 12] },
     { id: 'varnish', tool: 'stain-sponge', mechanic: 'brush', region: 'slats', params: { mode: 'reveal', layers: ['painted'], radius: 90, threshold: 0.95 }, targetSeconds: [5, 8] },
   ],
 };

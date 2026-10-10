@@ -17,6 +17,7 @@ export const wateringCan = {
     canvasSize: 1024,
     mask: 'watering-can-mask',
     outsideMask: 'watering-can-mask-outside',
+    centerOnMass: 0.75, // mobile framing pass: the body, not the long spout, sits on the screen centre
     shadow: 'flat',
     layers: [
       { id: 'clean', texture: 'watering-can-clean', initial: 'full', static: true }, // painted green

@@ -81,7 +81,7 @@ export function validateCatalog() {
         if (!fam) errors.push(`${level.id}/${st.id}: unknown tool family ${st.family}`);
         else {
           if (fam.base !== st.tool) errors.push(`${level.id}/${st.id}: tool ${st.tool} is not the base of family ${st.family}`);
-          if (fam.options.length !== 3 && fam.options.length !== 1) errors.push(`${st.family}: a family needs 3 options (or 1: a skin-only card)`);
+          if (fam.options.length !== 3 && fam.options.length !== 4) errors.push(`${st.family}: a family needs 3 or 4 variants`);
           for (const o of fam.options) if (!TOOLS[o.tool]) errors.push(`${st.family}: unknown tool ${o.tool}`);
           if (fam.options.filter((o) => o.unlock.type === 'default').length !== 1 || fam.options[0].tool !== fam.base) errors.push(`${st.family}: the base tool must be the single default option`);
         }

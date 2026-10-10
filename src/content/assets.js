@@ -103,8 +103,10 @@ Object.assign(
   }),
   level('sneaker', { ...common, 'scuffs-mask': 'scuffs-mask.png', clean: 'sneaker-clean.webp', scuffed: 'sneaker-scuffed.webp', wet: 'sneaker-wet.webp', stained: 'sneaker-stained.webp', muddy: 'sneaker-muddy.webp', mudcrust: 'sneaker-mudcrust.webp' }),
   { 'trash-bin': 'assets/chair/trash-bin.webp' },
+  // paint masks of the shared paint can / tray (2026-10-11): the paint inside is recoloured to the stage's paint colour
+  { 'garden-bench-paint-can-paint-mask': 'assets/garden-bench/paint-can-paint-mask.png', 'garden-bench-paint-tray-paint-mask': 'assets/garden-bench/paint-tray-paint-mask.png' },
   Object.fromEntries(['squeegee', 'detail-brush', 'mist-nozzle', 'duster', 'foam-can', 'drill-brush', 'putty-knife', 'sandpaper', 'stain-sponge', 'eraser'].map((t) => [`tool-${t}`, `assets/shared/tool-${t}.webp`])),
-  Object.fromEntries(['icon-gear', 'icon-sound', 'icon-music', 'icon-vibration', 'icon-close', 'ui-toggle-on', 'ui-toggle-off', 'ui-hint-hand'].map((k) => [k, `assets/ui/${k}.webp`])),
+  Object.fromEntries(['icon-gear', 'icon-sound', 'icon-music', 'icon-close', 'icon-store', 'icon-wheel', 'ui-toggle-on', 'ui-toggle-off', 'ui-hint-hand'].map((k) => [k, `assets/ui/${k}.webp`])),
 );
 
 // ---- Step 8 Batch A (levels 6–15) ----
@@ -125,8 +127,8 @@ Object.assign(
 );
 
 // ---- Step 8 Batch B (levels 16–50) ----
-// Boot: light 320 px menu thumbnails, the new tool sprites and the cosmetic skin sprites (cards and
-// the skin picker can show them anywhere). Level art is lazy, as in Batch A; some Batch A sprites
+// Boot: light 320 px menu thumbnails and the new tool sprites (the tool cards can show any
+// alternative anywhere). Level art is lazy, as in Batch A; some Batch A sprites
 // (leaves, junk, screws, dents, paint can / tray) are shared by URL and loaded with the level.
 Object.assign(IMAGE_ASSETS, BATCH_B_BOOT);
 

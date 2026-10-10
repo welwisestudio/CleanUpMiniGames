@@ -66,9 +66,14 @@ async function areaPass(page, drv, L, pass) {
   for (const [x, y] of targets.points) {
     const key = Math.round((vertical ? x : y) / r);
     const v = vertical ? y : x;
-    const e = lines.get(key) ?? { min: Infinity, max: -Infinity, at: key * r };
+    // the sweep line runs through the targets of its band (their mean), not through key·r: with large
+    // phone framings key·r of the first band can lie left of the screen (canvas x = 0)
+    const e = lines.get(key) ?? { min: Infinity, max: -Infinity, sum: 0, n: 0 };
     e.min = Math.min(e.min, v);
     e.max = Math.max(e.max, v);
+    e.sum += vertical ? x : y;
+    e.n += 1;
+    e.at = e.sum / e.n;
     lines.set(key, e);
   }
   const keys = [...lines.keys()].sort((a, b) => a - b);

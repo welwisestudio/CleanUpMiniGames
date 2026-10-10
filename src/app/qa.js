@@ -64,6 +64,17 @@ function snapshot() {
     coins: s.save.loaded ? s.save.get('coins') : null,
     levels: s.save.loaded ? JSON.parse(JSON.stringify(s.save.get('levels'))) : null,
     saveStatus: s.save.status,
+    // level access (read-only): the saved sets + dev unlock-all flag; levelOffer = menu offer open
+    progression: s.save.loaded ? { ...JSON.parse(JSON.stringify(s.save.get('progression'))), devUnlockAll: s.progression.devUnlockAll } : null,
+    levelOffer: Boolean(scene?.levelOffer),
+    levelOfferX: scene?.levelOffer ? scene.levelOffer.panel.x / (scene.layout?.dpr ?? 1) : null, // CSS px (the panel's base = W / 2)
+    // chest images' local x (a not-ready nudge must always return to 0) + the paint source texture
+    chestX: { timed: (scene?.timedChest ?? scene?.hudTimedChest)?.chest?.x ?? null, progress: (scene?.progressChest ?? scene?.hudProgressChest)?.chest?.x ?? null },
+    paintSource: scene?.mechanic?.sourceImg?.texture?.key ?? null,
+    // Store / Wheel (read-only): open flags; wheel state + the segment it chose / landed on
+    store: scene?.store ? { open: true } : null,
+    wheel: scene?.wheel ? { state: scene.wheel.state, chosen: scene.wheel.result?.index ?? null, landed: scene.wheel.landedIndex(), spinsLeft: s.wheel.spinsLeft() } : null,
+    toolsOwned: s.save.loaded ? [...s.save.get('tools.owned')] : null,
     pause: s.pause.snapshot(),
     build: s.build,
     audio: { requested: s.audio.requested, played: s.audio.played },
@@ -88,7 +99,7 @@ function snapshot() {
   const layout = scene.layout;
   const buttons = {};
   for (const [id, b] of scene.qaButtons ?? []) buttons[id] = rectToScreen(layout, b.worldRect());
-  for (const [id, r] of scene.qaTargets ?? []) buttons[id] = { ...rectToScreen(layout, r), ...(r.thumb ? { thumb: r.thumb, check: r.check / layout.dpr } : {}) };
+  for (const [id, r] of scene.qaTargets ?? []) buttons[id] = { ...rectToScreen(layout, r), ...(r.thumb ? { thumb: r.thumb, check: r.check / layout.dpr } : {}), ...(r.state ? { state: r.state } : {}) };
   base.layout = { W: layout.cssW, H: layout.cssH, dpr: layout.dpr, u: layout.u / layout.dpr, compact: layout.compact, hudBottom: layout.hudBottom / layout.dpr };
   base.buttons = buttons;
   if (scene.scene.key === 'Level' && scene.stack) {
@@ -100,6 +111,8 @@ function snapshot() {
       state: scene.state,
       stageIndex: scene.stageIndex,
       stageId: scene.stage?.id,
+      toolOffer: Boolean(scene.toolOffer), // "Not enough coins" → rewarded-ad offer is open
+      fxLog: { ...(scene.fxLog ?? {}) }, // effect events by type (tool variety pass)
       stageCount: scene.level.stages.length,
       progress: scene.mechanic?.progress ?? 0,
       completedFlag: scene.mechanic?.completed ?? false,
@@ -109,14 +122,6 @@ function snapshot() {
       ownedTools: s.save.loaded ? [...s.save.get('tools.owned')] : null,
       equippedTools: s.save.loaded ? { ...s.save.get('tools.equipped') } : null,
       diamonds: s.save.loaded ? s.save.get('diamonds') : null,
-      // Step 8 cosmetic skins
-      skinsOwned: s.save.loaded ? [...s.save.get('tools.skins.owned')] : null,
-      skinsEquipped: s.save.loaded ? { ...s.save.get('tools.skins.equipped') } : null,
-      skinButton: (() => {
-        const r = scene.selector?.skinButtonRect?.();
-        return r ? { x: r.x / layout.dpr, y: r.y / layout.dpr, w: r.w / layout.dpr, h: r.h / layout.dpr, visible: r.visible } : null;
-      })(),
-      skinModal: Boolean(scene.skinModal),
       tool: scene.tool && {
         texture: scene.tools.sprite?.texture?.key ?? null,
         id: scene.tool.id,

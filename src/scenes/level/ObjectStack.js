@@ -25,6 +25,132 @@ function readAlphaMask(scene, key) {
   return { w: c.width, h: c.height, a };
 }
 
+// Chamfer distance (3-4 metric, ~px*3) from every cell to the nearest cell where `src` is true.
+function chamfer(src, R) {
+  const INF = 1e9;
+  const d = new Float32Array(R * R);
+  for (let i = 0; i < d.length; i++) d[i] = src[i] ? 0 : INF;
+  for (let y = 0; y < R; y++) {
+    for (let x = 0; x < R; x++) {
+      const i = y * R + x;
+      if (x > 0) d[i] = Math.min(d[i], d[i - 1] + 3);
+      if (y > 0) {
+        d[i] = Math.min(d[i], d[i - R] + 3);
+        if (x > 0) d[i] = Math.min(d[i], d[i - R - 1] + 4);
+        if (x < R - 1) d[i] = Math.min(d[i], d[i - R + 1] + 4);
+      }
+    }
+  }
+  for (let y = R - 1; y >= 0; y--) {
+    for (let x = R - 1; x >= 0; x--) {
+      const i = y * R + x;
+      if (x < R - 1) d[i] = Math.min(d[i], d[i + 1] + 3);
+      if (y < R - 1) {
+        d[i] = Math.min(d[i], d[i + R] + 3);
+        if (x < R - 1) d[i] = Math.min(d[i], d[i + R + 1] + 4);
+        if (x > 0) d[i] = Math.min(d[i], d[i + R - 1] + 4);
+      }
+    }
+  }
+  return d;
+}
+
+// Step 9 outline shape: closing scaled to the zone size, holes filled, small islands dropped,
+// a light opening for smooth edges. Pure function of the region mask (deterministic).
+export function simplifyZone(inside, R) {
+  let n = 0;
+  let x0 = R;
+  let y0 = R;
+  let x1 = 0;
+  let y1 = 0;
+  for (let y = 0; y < R; y++) for (let x = 0; x < R; x++) if (inside[y * R + x]) {
+    n++;
+    x0 = Math.min(x0, x);
+    x1 = Math.max(x1, x);
+    y0 = Math.min(y0, y);
+    y1 = Math.max(y1, y);
+  }
+  if (!n) return inside;
+  const k = Math.max(3, Math.min(22, Math.round(Math.hypot(x1 - x0, y1 - y0) * 0.05))) * 3;
+  // closing: grow by k, then shrink by k
+  const grow = chamfer(inside, R);
+  const big = new Uint8Array(R * R);
+  for (let i = 0; i < big.length; i++) big[i] = grow[i] <= k ? 1 : 0;
+  const outside = new Uint8Array(R * R);
+  for (let i = 0; i < big.length; i++) outside[i] = big[i] ? 0 : 1;
+  const shrink = chamfer(outside, R);
+  const shape = new Uint8Array(R * R);
+  for (let i = 0; i < shape.length; i++) shape[i] = shrink[i] > k ? 1 : 0;
+  // fill holes: flood the background from the border; whatever it cannot reach is inside
+  const seen = new Uint8Array(R * R);
+  const stack = [];
+  for (let i = 0; i < R; i++) stack.push(i, (R - 1) * R + i, i * R, i * R + R - 1);
+  while (stack.length) {
+    const i = stack.pop();
+    if (seen[i] || shape[i]) continue;
+    seen[i] = 1;
+    const x = i % R;
+    const y = (i / R) | 0;
+    if (x > 0) stack.push(i - 1);
+    if (x < R - 1) stack.push(i + 1);
+    if (y > 0) stack.push(i - R);
+    if (y < R - 1) stack.push(i + R);
+  }
+  for (let i = 0; i < shape.length; i++) if (!seen[i]) shape[i] = 1;
+  // smooth contour: blur the shape and threshold it again (no jagged / stair-step edges)
+  const br = Math.max(2, Math.round(k / 3 / 2));
+  let f = new Float32Array(R * R);
+  for (let i = 0; i < f.length; i++) f[i] = shape[i];
+  for (let pass = 0; pass < 2; pass++) {
+    const g = new Float32Array(R * R);
+    for (let y = 0; y < R; y++) {
+      let acc = 0;
+      for (let x = -br; x < R + br; x++) {
+        if (x + br < R && x + br >= 0) acc += f[y * R + x + br];
+        if (x - br - 1 >= 0 && x - br - 1 < R) acc -= f[y * R + x - br - 1];
+        if (x >= 0 && x < R) g[y * R + x] = acc / (2 * br + 1);
+      }
+    }
+    const h = new Float32Array(R * R);
+    for (let x = 0; x < R; x++) {
+      let acc = 0;
+      for (let y = -br; y < R + br; y++) {
+        if (y + br < R && y + br >= 0) acc += g[(y + br) * R + x];
+        if (y - br - 1 >= 0 && y - br - 1 < R) acc -= g[(y - br - 1) * R + x];
+        if (y >= 0 && y < R) h[y * R + x] = acc / (2 * br + 1);
+      }
+    }
+    f = h;
+  }
+  for (let i = 0; i < shape.length; i++) shape[i] = f[i] >= 0.5 ? 1 : 0;
+  // drop islands smaller than 6 % of the zone
+  const lab = new Int32Array(R * R);
+  const sizes = [0];
+  for (let i = 0; i < shape.length; i++) {
+    if (!shape[i] || lab[i]) continue;
+    const id = sizes.length;
+    let count = 0;
+    const st = [i];
+    lab[i] = id;
+    while (st.length) {
+      const j = st.pop();
+      count++;
+      const x = j % R;
+      const y = (j / R) | 0;
+      for (const nj of [x > 0 ? j - 1 : -1, x < R - 1 ? j + 1 : -1, y > 0 ? j - R : -1, y < R - 1 ? j + R : -1]) {
+        if (nj >= 0 && shape[nj] && !lab[nj]) {
+          lab[nj] = id;
+          st.push(nj);
+        }
+      }
+    }
+    sizes.push(count);
+  }
+  const total = sizes.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < shape.length; i++) if (shape[i] && sizes[lab[i]] < total * 0.06) shape[i] = 0;
+  return shape;
+}
+
 function maskBounds(m, size) {
   let x0 = m.w;
   let y0 = m.h;
@@ -72,13 +198,14 @@ export class ObjectStack {
     for (const layer of objectDef.layers) {
       if (layer.static) {
         const img = scene.add.image(0, 0, layer.texture);
+        img.setScale(this.size / img.width, this.size / img.height); // any export resolution fills the canvas
         this.container.add(img);
         this.layers.set(layer.id, { def: layer, display: img });
       } else if (layer.initial === 'chunks') {
         this._buildChunks(layer);
       } else {
         const rt = scene.add.renderTexture(0, 0, this.size, this.size);
-        if (layer.initial === 'full') rt.draw(layer.texture, 0, 0);
+        if (layer.initial === 'full') this._drawFull(rt, layer.texture);
         if (layer.initial === 'decals') {
           for (const d of layer.decals) {
             const f = scene.textures.getFrame(d.texture);
@@ -161,6 +288,27 @@ export class ObjectStack {
     return this.def.regions?.[regionId]?.circles ?? [];
   }
 
+  // Visual mass centre (alpha-weighted mean of the object mask), object-local; null without a mask.
+  massCenter() {
+    if (this._mass !== undefined) return this._mass;
+    const m = this.mask;
+    if (!m) return (this._mass = null);
+    let sx = 0;
+    let sy = 0;
+    let n = 0;
+    for (let y = 0; y < m.h; y += 2) {
+      for (let x = 0; x < m.w; x += 2) {
+        if (m.a[y * m.w + x] > 127) {
+          sx += x;
+          sy += y;
+          n += 1;
+        }
+      }
+    }
+    const k = this.size / m.w;
+    return (this._mass = n ? { x: (sx / n + 0.5) * k, y: (sy / n + 0.5) * k } : null);
+  }
+
   // Local bounds of a region (or of the object) — used for camera framing, hints and QA.
   regionBounds(regionId) {
     if (!regionId) return this.bounds;
@@ -198,7 +346,10 @@ export class ObjectStack {
     const size = Math.min(1024, 2 * half);
     if (!this._clipRT || this._clipRT.width < size) {
       this._clipRT?.destroy();
-      this._clipRT = this.scene.make.renderTexture({ width: Math.max(size, 256), height: Math.max(size, 256) }, false);
+      // Origin (0, 0): a Game Object drawn into another texture is placed by its ORIGIN (default
+      // centre), unlike a texture key (top-left). With the default the clipped brush landed half
+      // the scratch size up-left of the tool (build #64 regression: cleaning beside the outline).
+      this._clipRT = this.scene.make.renderTexture({ width: Math.max(size, 256), height: Math.max(size, 256) }, false).setOrigin(0, 0);
     }
     const t = this._clipRT;
     const c = t.width / 2;
@@ -226,7 +377,7 @@ export class ObjectStack {
   }
 
   paint(id, stampKey, local, r) {
-    const scale = (2 * r) / 256 / 0.7;
+    const scale = (2 * r) / this.scene.textures.getFrame(stampKey).width / 0.7; // stamp art of any resolution
     this._rt(id).stamp(stampKey, null, local.x, local.y, { scale, angle: Math.random() * 360 });
   }
 
@@ -308,7 +459,16 @@ export class ObjectStack {
   }
 
   clipToObject(id, clipKey) {
-    this._rt(id).stamp(clipKey ?? this.def.outsideMask ?? 'mask-outside', null, this.size / 2, this.size / 2, { erase: true });
+    const key = clipKey ?? this.def.outsideMask ?? 'mask-outside';
+    const f = this.scene.textures.getFrame(key);
+    this._rt(id).stamp(key, null, this.size / 2, this.size / 2, { erase: true, scaleX: this.size / f.width, scaleY: this.size / f.height });
+  }
+
+  // A full-canvas texture (layer art, foam) drawn over the whole object canvas whatever its export
+  // resolution (runtime textures may be smaller than the 1024 canvas; geometry stays identical).
+  _drawFull(rt, key) {
+    const f = this.scene.textures.getFrame(key);
+    rt.stamp(key, null, this.size / 2, this.size / 2, { scaleX: this.size / f.width, scaleY: this.size / f.height });
   }
 
   fadeOutLayers(ids, duration) {
@@ -437,7 +597,11 @@ export class ObjectStack {
     const key = `routline-${this.levelId}-${regionId}`;
     if (!this.scene.textures.exists(key)) {
       this.regionMaskKey(regionId);
-      const { R, inside } = this._regionInside[regionId];
+      const { R } = this._regionInside[regionId];
+      // Step 9: the outline shows the logical ZONE — a simplified shape built from the very same
+      // region mask (closed, holes filled, slivers dropped), so it always encloses the cleanable
+      // pixels but does not trace every crack or leaf-like edge (no edge-detection look)
+      const inside = simplifyZone(this._regionInside[regionId].inside, R);
       const c = document.createElement('canvas');
       c.width = R;
       c.height = R;
@@ -491,7 +655,7 @@ export class ObjectStack {
     const rt = this._rt(id);
     const full = () => {
       rt.clear();
-      rt.draw(entry.def.texture, 0, 0);
+      this._drawFull(rt, entry.def.texture);
     };
     if (duration <= 0) {
       full();
@@ -499,6 +663,7 @@ export class ObjectStack {
     }
     // Fade a full overlay in directly above the layer, then bake it.
     const overlay = this.scene.add.image(0, 0, entry.def.texture).setAlpha(0);
+    overlay.setScale(this.size / overlay.width, this.size / overlay.height);
     this.container.addAt(overlay, this.container.getIndex(rt) + 1);
     return new Promise((resolve) => {
       this.scene.tweens.add({

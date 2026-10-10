@@ -12,9 +12,9 @@ import { Button } from '../ui/Button.js';
 import { ResultCard, PauseModal, SettingsModal } from '../ui/modals.js';
 import { ChestOfferModal, TimedChestWidget, ProgressChestMini, TIMED_CHEST_SIZE, flyIcons, worldOf } from '../ui/rewards.js';
 import { ToolSelector } from '../ui/toolSelector.js';
+import { CoinAdOffer } from '../ui/coinAdOffer.js';
+import { StoreModal } from '../ui/storeModal.js';
 import { familyOption, TOOL_FAMILIES } from '../content/toolFamilies.js';
-import { TOOL_SKINS } from '../content/toolSkins.js';
-import { SkinModal } from '../ui/skinModal.js';
 import { registerQaScene } from '../app/qa.js';
 
 // One play run of a level: sequential stages → completion → result.
@@ -23,6 +23,7 @@ import { registerQaScene } from '../app/qa.js';
 // Everything is laid out from the live screen size (relayout) — no fixed canvas.
 
 const CONFETTI_COLORS = [0xff4d6d, 0xffd60a, 0x4cc9f0, 0x80ed99, 0xc77dff, 0xff9f1c];
+
 
 export class LevelScene extends Phaser.Scene {
   constructor() {
@@ -92,25 +93,33 @@ export class LevelScene extends Phaser.Scene {
     this.stage = null;
 
     this.fx = null; // particle emitters, rebuilt for the object scale in relayout
+    this.fxLog = {}; // QA: effect events by type
 
     // HUD (built in UI units, anchored and scaled in relayout)
     const save = s.save;
     this.hud = this.add.container(0, 0).setDepth(100);
     this.topLeft = this.add.container(0, 0);
-    this.coinsPill = new CurrencyPill(this, { icon: 'icon-coin', value: save.get('coins') });
-    this.diamondsPill = new CurrencyPill(this, { icon: 'icon-diamond', value: save.get('diamonds') });
+    this.coinsPill = new CurrencyPill(this, { icon: 'icon-coin', value: save.get('coins'), onPlus: () => this.openStore('coins') });
+    this.diamondsPill = new CurrencyPill(this, { icon: 'icon-diamond', value: save.get('diamonds'), onPlus: () => this.openStore('gems') });
     this.topLeft.add([this.coinsPill.container, this.diamondsPill.container]);
     this.strip = new ToolStrip(this, { stages: this.level.stages, getTool: (id, st) => (st ? this.toolFor(st) : getTool(id)) });
     // Step 7: alternative-tool cards (only levels with tool families)
     this.hasFamilies = this.level.stages.some((st) => st.family);
-    this.selector = this.hasFamilies ? new ToolSelector(this, { onTap: (id) => this.onToolCard(id), onSkin: () => this.openSkins() }) : null;
+    this.selector = this.hasFamilies ? new ToolSelector(this, { onTap: (id) => this.onToolCard(id) }) : null;
     this.selector?.container.setVisible(false);
     this.progressBar = new ProgressBar(this);
     this.pauseButton = new Button(this, { id: 'hud-pause', x: 0, y: 0, w: UI.pause, h: UI.pause, style: 'square', icon: 'icon-pause', iconSize: 0.5, onClick: () => this.openPause() });
     // Chests stay visible during play (display only: a touch here never claims mid-stroke;
     // claiming happens in the hub and on the completed screen).
-    this.hudTimedChest = new TimedChestWidget(this, { rewards: s.rewards, interactive: false });
-    this.hudProgressChest = new ProgressChestMini(this, { rewards: s.rewards, interactive: false });
+    // 2026-10-11: a ready chest can be opened during the level (taps only between strokes, never
+    // over another popup); the stage, its progress and the active tool stay as they are
+    const chestTap = () => this.state === 'playing' && this.activePointerId === null && !this.services.pause.isPaused;
+    this.hudTimedChest = new TimedChestWidget(this, {
+      rewards: s.rewards,
+      canTap: chestTap,
+      onClaimed: (r, from) => this.flyToPill(this.coinsPill, 'icon-coin', from, r.coinsBefore, r.coinsAfter, 5),
+    });
+    this.hudProgressChest = new ProgressChestMini(this, { rewards: s.rewards, canTap: chestTap, onOpen: () => this.openHudChestOffer() });
     this.hud.add([this.topLeft, this.strip.container, this.progressBar.container, this.pauseButton.container, this.hudTimedChest.container, this.hudProgressChest.container]);
     this.badges = addStatusBadges(this, { build: s.build, testMode: s.platform.testMode });
 
@@ -123,13 +132,13 @@ export class LevelScene extends Phaser.Scene {
     this.input.on('gameout', this.onGameOut);
     this.game.events.on('blur', this.endStroke, this);
 
-    this.onPauseChange = (snap) => this.applyPause(snap.paused);
+    this.onPauseChange = (snap) => this.applyPause(snap);
     s.pause.on('change', this.onPauseChange);
 
     this.events.once('shutdown', () => this.cleanup());
     s.pause.set('navigationBusy', false);
     attachResponsiveLayout(this, (l) => this.relayout(l));
-    this.applyPause(s.pause.isPaused);
+    this.applyPause(s.pause.snapshot());
     this.startStage(0);
     registerQaScene(this);
   }
@@ -151,7 +160,10 @@ export class LevelScene extends Phaser.Scene {
     this.coinsPill.container.setPosition(0, 0);
     if (l.compact) this.diamondsPill.container.setPosition(this.coinsPill.width + 14, 0);
     else this.diamondsPill.container.setPosition(0, UI.pillH + 10);
-    this.topLeft.setPosition(m + 6 * u, m + (UI.pillH / 2) * u).setScale(u);
+    // side-by-side counters (compact) never run under the pause button: scaled down just enough
+    const pillsRow = this.coinsPill.width + 14 + this.diamondsPill.width;
+    const pillK = l.compact ? Math.min(u, (W - m - UI.pause * u - 10 * u - (m + 6 * u)) / pillsRow) : u;
+    this.topLeft.setPosition(m + 6 * u, m + (UI.pillH / 2) * u).setScale(pillK);
     this.strip.container.setPosition(W / 2, l.stripY).setScale(u);
     this.progressBar.container.setPosition(W / 2, l.progressY).setScale(u);
     this.pauseButton.setPlacement(W - m - (UI.pause / 2) * u, m + (UI.pause / 2) * u, u);
@@ -171,13 +183,14 @@ export class LevelScene extends Phaser.Scene {
     // tool cards: bottom row on portrait screens, right column on landscape / desktop
     if (this.selector) {
       const vertical = this.selectorVertical(l);
-      const ext = ToolSelector.extent(vertical);
-      if (vertical) this.selector.place(W - m - (ext.w / 2) * u, (l.hudBottom + H) / 2, u, true);
-      else this.selector.place(W / 2, H - m - 22 * u - (ext.h / 2) * u, u, false);
+      const ext = ToolSelector.extent(vertical, Math.max(3, this.selector.cards.length));
+      const sx = vertical ? W - m - (ext.w / 2) * u : W / 2;
+      const sy = vertical ? (l.hudBottom + H) / 2 : H - m - 22 * u - (ext.h / 2) * u;
+      this.selector.place(sx, sy, u, vertical);
     }
 
     // QA geometry of HUD blocks (read-only, used by layout tests)
-    const pillsW = (l.compact ? this.coinsPill.width * 2 + 14 : this.coinsPill.width) * u;
+    const pillsW = (l.compact ? this.coinsPill.width * 2 + 14 : this.coinsPill.width) * this.topLeft.scaleX;
     const pillsH = (l.compact ? UI.pillH : UI.pillH * 2 + 10) * u;
     this.qaTargets.set('hud-pills', { x: m + 6 * u + pillsW / 2 - 10 * u, y: m + pillsH / 2, w: pillsW + 10 * u, h: pillsH });
     const stripW = (UI.tileGap * 2 + UI.tileSmall) * u;
@@ -192,7 +205,12 @@ export class LevelScene extends Phaser.Scene {
     this.buildFx(this.objFit.scale / 0.4);
 
     this.result?.layout(l);
-    this.skinModal?.layout(l);
+    this.toolOffer?.layout(l);
+    this.store?.layout(l);
+    for (const [id, pill] of [['hud-plus-coins', this.coinsPill], ['hud-plus-gems', this.diamondsPill]]) {
+      const r = pill.plusRect();
+      if (r) this.qaTargets.set(id, { ...r, visible: this.hud.alpha > 0.5 && !this.store });
+    }
     this.chestOffer?.layout(l);
     this.pauseModal?.layout(l);
     this.settingsModal?.layout(l);
@@ -236,7 +254,17 @@ export class LevelScene extends Phaser.Scene {
     const share = 0.78; // same height share for every object (Soccer Ball included since the Step 6 UI pass)
     // `object.maxLong` (Step 9): very elongated objects (the cleaver) are limited by their LONG side
     // too, so they do not look huge next to the other objects and leave room for the tool
-    const fit = fitObject(l, t.bounds, { reach: t.reach, jetReach: t.jetReach, jetPx: t.jetPx, canvasSize: this.level.object.canvasSize, share, bottomReserve: this.selectorReserve(l), maxLong: this.level.object.maxLong });
+    // mobile framing (2026-10-10): on phones the finger / jet room may reach into the card band (the
+    // object stays above it) → noticeably larger objects; `object.centerOnMass` (0..1) shifts the
+    // framing centre from the bounds centre toward the visual mass (watering can: long spout)
+    const reserve = this.selectorReserve(l);
+    const o = this.level.object;
+    let centerX = null;
+    if (o.centerOnMass && t.key === 'default' && Array.isArray(t.bounds)) {
+      const mass = this.stack.massCenter();
+      if (mass) centerX = (t.bounds[0] + t.bounds[2]) / 2 + o.centerOnMass * (mass.x - (t.bounds[0] + t.bounds[2]) / 2);
+    }
+    const fit = fitObject(l, t.bounds, { reach: t.reach, jetReach: t.jetReach, jetPx: t.jetPx, canvasSize: o.canvasSize, share, bottomReserve: reserve, maxLong: o.maxLong, fingerExtra: reserve * 0.9, centerX });
     const changed = this.fitKey !== null && this.fitKey !== t.key;
     this.fitKey = t.key;
     this.objFit = fit;
@@ -274,67 +302,19 @@ export class LevelScene extends Phaser.Scene {
       impact: mk('fx-dot', { speed: { min: 80 * k, max: 260 * k }, lifespan: 380, scale: { start: 1.2 * k, end: 0.2 * k }, alpha: { start: 0.9, end: 0 }, tint: 0xd8d2c8 }),
       smoke: mk('fx-dot', { speed: { min: 20 * k, max: 70 * k }, angle: { min: 240, max: 300 }, lifespan: 700, scale: { start: 0.8 * k, end: 2.6 * k }, alpha: { start: 0.45, end: 0 }, tint: 0x6b6b6b }),
       steam: mk('fx-dot', { speed: { min: 30 * k, max: 120 * k }, angle: { min: 230, max: 310 }, lifespan: 800, scale: { start: 1.2 * k, end: 3.6 * k }, alpha: { start: 0.5, end: 0 } }),
+      // tool variety pass: steam condensation beads, sandblast dust, scraper flakes
+      condense: mk('fx-drop-1', { speed: { min: 10 * k, max: 60 * k }, gravityY: 260 * k, lifespan: 900, scale: { start: 0.12 * k, end: 0.2 * k }, alpha: { start: 0.85, end: 0 } }),
+      grit: mk('fx-dot', { speed: { min: 60 * k, max: 220 * k }, lifespan: 600, scale: { start: 0.9 * k, end: 2.8 * k }, alpha: { start: 0.5, end: 0 }, tint: [0xd8c7a4, 0xb9a682, 0x9b8a6c] }),
+      flakes: mk(FX_CHUNKS[0], { speed: { min: 60 * k, max: 200 * k }, angle: { min: 210, max: 330 }, gravityY: 1400 * k, lifespan: 700, scale: { start: 0.13 * k, end: 0.08 * k }, rotate: { min: 0, max: 360 } }),
     };
   }
 
   // ---- stages ----------------------------------------------------------------------------
   // ---- alternative tools (Step 7) ---------------------------------------------------------
-  // The stage's tool: the equipped option of its family, else the stage tool.
+  // The stage's tool: the equipped option of its family, else the stage tool. The alternative tools
+  // themselves are the visual variety (designer 2026-10-10: no separate cosmetic skin layer).
   toolFor(stage) {
-    return this.skinned(getTool(stage.family ? this.services.toolShop.equipped(stage.family) : stage.tool), stage.family);
-  }
-
-  // Step 8 cosmetic skins: the family's BASE tool is drawn with the equipped skin texture; nothing
-  // else of the tool (working point, offsets, footprint) changes.
-  skinned(tool, familyId) {
-    if (!familyId || !TOOL_SKINS[familyId] || TOOL_FAMILIES[familyId]?.base !== tool.id) return tool;
-    const tex = this.services.skins.textureFor(familyId);
-    return tex ? { ...tool, texture: tex } : tool;
-  }
-
-  openSkins() {
-    const fam = this.stage?.family;
-    if (!fam || !TOOL_SKINS[fam] || this.skinModal || !this.canInteract() || this.activePointerId !== null) return;
-    this.services.audio.play('ui-tap');
-    this.hint.hide();
-    this.services.pause.set('skinMenu', true);
-    const skins = this.services.skins;
-    const m = new SkinModal(this, { skins, familyId: fam, onClose: () => this.closeSkins() });
-    m.onTap = async (id) => {
-      const o = skins.options(fam).find((x) => x.id === id);
-      if (!o || o.busy) return;
-      this.services.audio.play('ui-tap');
-      let r;
-      if (o.owned) r = skins.equip(fam, id);
-      else if (o.unlock.type === 'coins' || o.unlock.type === 'diamonds') {
-        r = skins.purchase(fam, id);
-        if (r.status === 'insufficient') {
-          m.shake(id);
-          m.toast(`Not enough ${r.currency}`);
-          return;
-        }
-        if (r.status === 'purchased') (r.currency === 'coins' ? this.coinsPill : this.diamondsPill).setValue(r.after);
-      } else {
-        m.setEnabled(false);
-        m.refresh();
-        r = await skins.unlockWithAd(fam, id);
-        if (!this.alive || this.skinModal !== m) return;
-        m.setEnabled(true);
-        if (r.status !== 'unlocked' && r.status !== 'equipped') m.toast(r.status === 'not-earned' ? 'Ad closed early' : 'Ad not available');
-        else m.clearToast(); // an older failure message must not linger after the unlock
-      }
-      m.refresh();
-      const eq = this.services.toolShop.equipped(fam);
-      if (TOOL_FAMILIES[fam]?.base === eq) this.applyTool(eq);
-    };
-    this.skinModal = m;
-  }
-
-  closeSkins() {
-    this.skinModal?.destroy();
-    this.skinModal = null;
-    this.services.pause.set('skinMenu', false);
-    this.refreshSelector();
+    return getTool(stage.family ? this.services.toolShop.equipped(stage.family) : stage.tool);
   }
 
   toolMods(stage, toolId) {
@@ -363,14 +343,10 @@ export class LevelScene extends Phaser.Scene {
       return;
     }
     const shop = this.services.toolShop;
-    const skinTex = this.services.skins.textureFor(fam);
     const opts = shop.options(fam).map((o) => ({
       ...o,
       affordable: shop.canAfford(o),
       busy: o.busy || (this.cardBusy && this.cardBusy === o.tool),
-      // the base tool card shows the equipped skin; its equipped card gets the skin button
-      texture: o.tool === TOOL_FAMILIES[fam].base ? skinTex : null,
-      skinnable: Boolean(TOOL_SKINS[fam]) && o.tool === TOOL_FAMILIES[fam].base && o.equipped,
     }));
     if (rebuild || this.selector.familyId !== fam || !this.selector.container.visible) this.selector.setOptions(fam, opts);
     else this.selector.update(opts);
@@ -395,7 +371,9 @@ export class LevelScene extends Phaser.Scene {
       const r = shop.purchase(fam, toolId);
       if (r.status === 'insufficient') {
         this.selector.shake(toolId);
-        this.selector.toast(`Not enough ${r.currency}`);
+        // a COIN variant: offer to unlock this exact variant with a rewarded ad (diamonds: no offer)
+        if (r.currency === 'coins') this.offerToolAd(fam, toolId);
+        else this.selector.toast(`Not enough ${r.currency}`);
         return;
       }
       if (r.status === 'purchased') {
@@ -426,11 +404,75 @@ export class LevelScene extends Phaser.Scene {
     }
   }
 
+  // Store from the "+" next to a counter (2026-10-10): opens at that currency; the game is paused
+  // (pause reason 'store') until it is closed; the counters follow every change.
+  openStore(focus) {
+    if (this.store || this.toolOffer || this.skinOffer || this.pauseModal || this.settingsModal || this.chestOffer) return;
+    this.endStroke();
+    this.hint.hide();
+    this.services.audio.play('ui-tap');
+    this.services.pause.set('store', true);
+    const sync = () => {
+      this.coinsPill.setValue(this.services.save.get('coins'));
+      this.diamondsPill.setValue(this.services.save.get('diamonds'));
+      this.refreshSelector?.();
+    };
+    this.store = new StoreModal(this, {
+      services: this.services,
+      focus,
+      onChanged: sync,
+      onClose: () => {
+        this.store?.destroy();
+        this.store = null;
+        this.services.pause.set('store', false);
+        sync();
+        if (this.layout) this.relayout(this.layout);
+      },
+    });
+  }
+
+  // "Not enough coins" → watch a rewarded ad to unlock THIS coin variant (functional or visual-only),
+  // no coins charged. Success: owned permanently + equipped. Cancelled / failed: nothing changes, the
+  // card stays open with a message (retry or "No thanks"). ToolService guards duplicate results.
+  offerToolAd(fam, toolId) {
+    if (this.toolOffer) return;
+    const tool = getTool(toolId);
+    this.hint.hide();
+    this.services.pause.set('toolOffer', true);
+    const idx = this.stageIndex;
+    const close = () => {
+      this.toolOffer?.destroy();
+      this.toolOffer = null;
+      this.services.pause.set('toolOffer', false);
+    };
+    const offer = new CoinAdOffer(this, {
+      name: tool.name,
+      texture: tool.texture,
+      onClose: close,
+      onWatch: async () => {
+        offer.setBusy(true);
+        const r = await this.services.toolShop.unlockWithAd(fam, toolId, { coinFallback: true });
+        if (!this.alive || this.toolOffer !== offer) return;
+        if (r.status === 'unlocked' || r.status === 'equipped') {
+          close();
+          if (this.stageIndex === idx && this.state === 'playing') {
+            this.applyTool(toolId);
+            this.selector?.pop(toolId);
+          }
+          return;
+        }
+        offer.setBusy(false);
+        offer.message(r.status === 'not-earned' ? 'Ad closed early - no unlock' : 'Ad not available - try again');
+      },
+    });
+    this.toolOffer = offer;
+  }
+
   // Mid-stage switch: same job, same progress; only the active tool (sprite, footprint) changes.
   applyTool(toolId) {
     this.endStroke();
     this.selector?.clearToast(); // an older "Ad closed early" must not linger after success
-    const tool = this.skinned(getTool(toolId), this.stage.family);
+    const tool = getTool(toolId);
     const mods = this.toolMods(this.stage, toolId);
     this.tool = tool;
     this.tools.toolScale = (this.stage.toolScale ?? 1) * mods.toolScale;
@@ -712,9 +754,15 @@ export class LevelScene extends Phaser.Scene {
     this.hint.show(path, { press: true, drag: this.family === 'drag-item' });
   }
 
+  _logFx(type) {
+    this.fxLog ??= {};
+    this.fxLog[type] = (this.fxLog[type] ?? 0) + 1;
+  }
+
   emitContactFx(p) {
     const id = this.stage.id;
     const fx = this.stage.fx ?? this.tool.fx; // Step 8: stage override (scraper chips, sanding dust)
+    if (fx) this._logFx(fx);
     if (id === 'chisel' && Math.random() < 0.35) {
       this.fx.chips.setTexture(FX_CHUNKS[Math.floor(Math.random() * FX_CHUNKS.length)]);
       this.fx.chips.emitParticleAt(p.x, p.y, 1);
@@ -724,7 +772,21 @@ export class LevelScene extends Phaser.Scene {
     else if (fx === 'laser') {
       this.fx.sparks.emitParticleAt(p.x, p.y, 1);
       if (Math.random() < 0.5) this.fx.smoke.emitParticleAt(p.x, p.y, 1);
-    } else if (fx === 'steam' && Math.random() < 0.6) this.fx.steam.emitParticleAt(p.x, p.y, 1);
+    } else if (fx === 'steam') {
+      // steam cloud + condensation beading on the surface under the nozzle
+      if (Math.random() < 0.6) this.fx.steam.emitParticleAt(p.x, p.y, 1);
+      if (Math.random() < 0.35) {
+        const r = (this.stage.params?.radius ?? 70) * this.stack.scale;
+        this.fx.condense.emitParticleAt(p.x + Phaser.Math.FloatBetween(-r, r), p.y + Phaser.Math.FloatBetween(-r, r) * 0.7, 1);
+      }
+    } else if (fx === 'grit') this.fx.grit.emitParticleAt(p.x, p.y, 2); else if (fx === 'suck') this.suctionFx(p);
+    else if (fx === 'flakes' && Math.random() < 0.45) {
+      // flakes peel off along the blade edge (not from one point)
+      const half = (this.tool.bladeHalf ?? 40) * this.stack.scale * (this.tools.toolScale ?? 1);
+      this.fx.flakes.setTexture(FX_CHUNKS[Math.floor(Math.random() * FX_CHUNKS.length)]);
+      this.fx.flakes.setParticleTint(this.stage.flakeTint ?? 0xffffff);
+      this.fx.flakes.emitParticleAt(p.x + Phaser.Math.FloatBetween(-half, half), p.y, 1);
+    }
     else if (fx === 'shine' && Math.random() < 0.25) this.fx.shine.emitParticleAt(p.x, p.y, 1);
     else if (fx === 'sawdust' && Math.random() < 0.5) this.fx.sawdust.emitParticleAt(p.x, p.y, 1);
     else if (fx === 'dust' && Math.random() < 0.5) this.fx.dust.emitParticleAt(p.x, p.y, 1);
@@ -732,6 +794,47 @@ export class LevelScene extends Phaser.Scene {
       this.fx.chips.setTexture(FX_CHUNKS[Math.floor(Math.random() * FX_CHUNKS.length)]);
       this.fx.chips.emitParticleAt(p.x, p.y, 1);
     }
+  }
+
+  // Vacuum: loose dirt around the nozzle is visibly pulled IN — specks start on a ring around the
+  // nozzle opening and accelerate into it, shrinking as they disappear.
+  suctionFx(p) {
+    const k = this.stack.scale;
+    const R = (this.stage.params?.radius ?? 70) * k * 1.8;
+    const tints = [0x8c7b66, 0xb5a58e, 0x6e6254, 0xd1c6b4];
+    for (let i = 0; i < 3; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const d = R * Phaser.Math.FloatBetween(0.7, 1.15);
+      this.flyDot(p.x + Math.cos(a) * d, p.y + Math.sin(a) * d * 0.8, p.x, p.y, { tint: tints[(Math.random() * 4) | 0], scale: Phaser.Math.FloatBetween(0.28, 0.46) * Math.max(1, k * 2), dur: Phaser.Math.Between(260, 400), ease: 'Cubic.easeIn', endScale: 0.15 });
+    }
+  }
+
+  // Air blower: loose dust / water is blown AWAY along the air stream (direction of the jet).
+  blowFx(impact) {
+    this._logFx('blow');
+    const k = this.stack.scale;
+    const v = this.tools.jetVector();
+    const len = Math.hypot(v.x, v.y) || 1;
+    const ux = v.x / len;
+    const uy = v.y / len;
+    const wet = (this.stage.params?.layers ?? []).some((l) => String(l).startsWith('wet'));
+    for (let i = 0; i < 2; i++) {
+      const spread = Phaser.Math.FloatBetween(-0.6, 0.6);
+      const dist = Phaser.Math.Between(110, 220) * k;
+      const dx = ux + -uy * spread;
+      const dy = uy + ux * spread;
+      const x0 = impact.x + Phaser.Math.Between(-30, 30) * k;
+      const y0 = impact.y + Phaser.Math.Between(-30, 30) * k;
+      if (wet) this.flyDot(x0, y0, x0 + dx * dist, y0 + dy * dist, { tex: 'fx-drop-1', scale: 0.16 * k, dur: Phaser.Math.Between(260, 420), ease: 'Quad.easeOut' });
+      else this.flyDot(x0, y0, x0 + dx * dist, y0 + dy * dist, { tint: 0xcfc6b6, scale: Phaser.Math.FloatBetween(0.25, 0.45) * Math.max(1, k * 2), dur: Phaser.Math.Between(300, 480), ease: 'Quad.easeOut', endScale: 2.2 });
+    }
+  }
+
+  // a short-lived dot tweened along a path (suction / airflow)
+  flyDot(x0, y0, x1, y1, { tex = 'fx-dot', tint, scale, dur, ease = 'Quad.easeIn', endScale = 0.25 }) {
+    const d = this.add.image(x0, y0, tex).setDepth(45).setScale(scale).setAlpha(0.9);
+    if (tint != null) d.setTint(tint);
+    this.tweens.add({ targets: d, x: x1, y: y1, scale: scale * endScale, alpha: 0.15, duration: dur, ease, onComplete: () => d.destroy() });
   }
 
   // Hammer blow on a point target (Step 8): a small burst at the hit point.
@@ -761,7 +864,8 @@ export class LevelScene extends Phaser.Scene {
       if (this.mechanic.spray) this.mechanic.spray(impact, Math.min(delta, 50) / 1000);
       else this.mechanic.hold?.(impact, Math.min(delta, 50) / 1000);
       if (this.mechanic.validContacts > before && Math.random() < 0.5) {
-        if (['paint', 'air', 'laser', 'steam'].includes(this.tool.jetStyle)) this.emitContactFx(impact);
+        if (this.tool.jetStyle === 'air') this.blowFx(impact);
+        else if (['paint', 'laser', 'steam', 'grit'].includes(this.tool.jetStyle)) this.emitContactFx(impact);
         else (this.tool.jetStyle === 'foam' ? this.fx.foam : this.fx.mist).emitParticleAt(impact.x, impact.y, 1);
       }
     }
@@ -805,7 +909,6 @@ export class LevelScene extends Phaser.Scene {
     this.progressBar.set(1);
     this.strip.markDone();
     s.audio.play('stage-complete');
-    if (s.save.get('settings.vibration')) s.platform.vibrate?.(30);
     if (!s.save.get('tutorial')?.[this.family]) s.save.update((st) => (st.tutorial[this.family] = true)).catch(() => {});
     await this.wait(600);
     if (!this.alive) return;
@@ -881,8 +984,9 @@ export class LevelScene extends Phaser.Scene {
       onOpenChest: () => this.openChestOffer(),
       onHome: () => this.goMenu(),
       onReplay: () => this.replay(),
-      // the last object for now: Next returns to the object list (Step 8, until more batches)
-      onNext: next ? () => this.goLevel(next) : () => this.goMenu(),
+      // Next opens the next level when it is playable (this completion just unlocked a normal next
+      // level); a VIP next level that is not bought, and the end of the campaign, return to the menu
+      onNext: next && this.services.progression.isPlayable(next) ? () => this.goLevel(next) : () => this.goMenu(),
     });
     // Level chest: the bar runs +20 % for this completion; a full chest is offered right away
     // (and stays offered from the bar if the player chooses "Later").
@@ -1012,6 +1116,33 @@ export class LevelScene extends Phaser.Scene {
     });
   }
 
+  // Level chest opened from the HUD during gameplay: the level pauses (reason 'chest') and resumes
+  // exactly where it was when the offer closes (claimed or skipped).
+  openHudChestOffer() {
+    if (this.chestOffer || this.state !== 'playing' || !this.services.rewards.progressChestState().full) return;
+    this.endStroke();
+    this.hint.hide();
+    this.services.pause.set('chest', true);
+    const close = () => {
+      this.chestOffer?.destroy();
+      this.chestOffer = null;
+      this.services.pause.set('chest', false);
+      this.hudProgressChest.refresh();
+    };
+    this.chestOffer = new ChestOfferModal(this, {
+      rewards: this.services.rewards,
+      onSkip: () => {
+        this.services.rewards.forfeitProgressChest();
+        close();
+      },
+      onOpened: (r, from) => {
+        this.flyToPill(this.coinsPill, 'icon-coin', from, r.coinsBefore, r.coinsAfter, 7);
+        this.flyToPill(this.diamondsPill, 'icon-diamond', from, r.diamondsBefore, r.diamondsAfter, 3, 150);
+        this.time.delayedCall(1700, () => this.chestOffer && close());
+      },
+    });
+  }
+
   closeChestOffer() {
     this.chestOffer?.destroy();
     this.chestOffer = null;
@@ -1055,15 +1186,22 @@ export class LevelScene extends Phaser.Scene {
     this.services.pause.set('user', false);
   }
 
-  applyPause(paused) {
-    if (paused) {
-      this.endStroke();
+  // Any pause reason blocks gameplay input (canInteract) and ends the stroke. Only the real pauses
+  // (player / host / ad playing / navigation / loading) freeze the scene's tweens and timers; overlay
+  // reasons (chest offer, Store, coin-variant offer) keep their own popup animating (2026-10-11: a
+  // frozen chest offer stayed invisible and never closed).
+  applyPause(snap) {
+    const FREEZE = ['user', 'host', 'adBusy', 'navigationBusy', 'assetsLoading'];
+    if (snap.paused) this.endStroke();
+    const freeze = snap.paused && (snap.reasons ?? []).some((r) => FREEZE.includes(r));
+    if (freeze && !this.frozen) {
       this.tweens.pauseAll();
       this.time.paused = true;
-    } else {
+    } else if (!freeze && this.frozen) {
       this.tweens.resumeAll();
       this.time.paused = false;
     }
+    this.frozen = freeze;
   }
 
   // ---- navigation ------------------------------------------------------------------------
@@ -1113,11 +1251,15 @@ export class LevelScene extends Phaser.Scene {
     this.hudProgressChest?.destroy();
     this.selector?.destroy();
     this.selector = null;
-    this.skinModal?.destroy();
-    this.skinModal = null;
-    this.services.pause.set('skinMenu', false);
+    this.toolOffer?.destroy();
+    this.toolOffer = null;
+    this.services.pause.set('toolOffer', false);
+    this.store?.destroy();
+    this.store = null;
+    this.services.pause.set('store', false);
     this.chestOffer?.destroy();
     this.chestOffer = null;
+    this.services.pause.set('chest', false);
     this.settingsModal = null;
     this.tools.destroy();
     this.stack.destroy();

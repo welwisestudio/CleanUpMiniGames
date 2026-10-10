@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { COLORS, FONT_DISPLAY, FONT_UI, TEXT } from './theme.js';
 import { makeText, fitText, centerRow } from './text.js';
-import { nineSlice, fitImage } from './kit.js';
+import { nineSlice, fitImage, shakeX } from './kit.js';
 import { Button } from './Button.js';
 import { refreshTextResolution } from './layout.js';
 import { ASSET_META } from '../content/generated/assetMeta.js';
@@ -124,9 +124,28 @@ export class ChestProgressRow {
 // Compact chest + timer pill. Built in UI units (the scene scales the container by `u`).
 export const TIMED_CHEST_SIZE = { w: 74, h: 84 };
 
+// "Not ready" nudge (2026-10-11): a short horizontal shake of the chest image around its FIXED base
+// position; a new nudge stops the running one and starts from the base again, so rapid taps never
+// accumulate an offset (the old shake tweened the container from its current, already shifted x).
+export function nudge(scene, target) {
+  shakeX(scene, target, 4, { duration: 50, repeat: 2 });
+}
+
+// tap = pointer down AND up on the zone (a gameplay drag that ends over a chest is not a tap)
+function onTap(zone, fn) {
+  zone.on('pointerdown', (p) => (zone.downId = p.id));
+  zone.on('pointerout', () => (zone.downId = null));
+  zone.on('pointerup', (p) => {
+    const own = zone.downId === p.id;
+    zone.downId = null;
+    if (own) fn();
+  });
+}
+
 export class TimedChestWidget {
-  // `interactive: false` = display only (gameplay HUD: a touch there must never claim mid-stroke)
-  constructor(scene, { rewards, onClaimed, interactive = true }) {
+  // `interactive: false` = display only; `canTap` (gameplay HUD): taps are ignored while it returns false
+  constructor(scene, { rewards, onClaimed, interactive = true, canTap = null }) {
+    this.canTap = canTap;
     this.scene = scene;
     this.rewards = rewards;
     this.onClaimed = onClaimed;
@@ -144,7 +163,7 @@ export class TimedChestWidget {
     if (interactive) {
       this.zone = scene.add.zone(0, 0, Math.max(w, 48), Math.max(h, 48)).setInteractive({ useHandCursor: true });
       this.container.add(this.zone);
-      this.zone.on('pointerup', () => this.tap());
+      onTap(this.zone, () => this.tap());
     }
     this.ready = null;
     this.refresh();
@@ -172,11 +191,11 @@ export class TimedChestWidget {
   }
 
   tap() {
-    if (this.scene.settings) return;
+    if (this.scene.settings || (this.canTap && !this.canTap())) return;
     const r = this.rewards.claimTimedChest();
     if (r.status !== 'granted') {
       // not ready yet: a small nudge, the timer stays visible
-      this.scene.tweens.add({ targets: this.container, x: this.container.x + 4 * this.container.scaleX, duration: 50, yoyo: true, repeat: 2 });
+      nudge(this.scene, this.chest);
       return;
     }
     this.scene.services?.audio.play('ui-tap');
@@ -511,7 +530,8 @@ export class ChestOfferModal {
 // Same footprint and pill as the timed chest: chest + "40 %" / "Ready!". Tapping a full chest opens
 // the offer, so a chest skipped with "Later" can always be claimed from the menu.
 export class ProgressChestMini {
-  constructor(scene, { rewards, onOpen, interactive = true }) {
+  constructor(scene, { rewards, onOpen, interactive = true, canTap = null }) {
+    this.canTap = canTap;
     this.scene = scene;
     this.rewards = rewards;
     this.onOpen = onOpen;
@@ -527,7 +547,7 @@ export class ProgressChestMini {
     if (interactive) {
       this.zone = scene.add.zone(0, 0, Math.max(w, 48), Math.max(h, 48)).setInteractive({ useHandCursor: true });
       this.container.add(this.zone);
-      this.zone.on('pointerup', () => this.tap());
+      onTap(this.zone, () => this.tap());
     }
     this.full = null;
     this.refresh();
@@ -551,8 +571,9 @@ export class ProgressChestMini {
   }
 
   tap() {
+    if (this.canTap && !this.canTap()) return;
     if (this.refresh().full) this.onOpen?.();
-    else this.scene.tweens.add({ targets: this.container, x: this.container.x + 4 * this.container.scaleX, duration: 50, yoyo: true, repeat: 2 });
+    else nudge(this.scene, this.chest);
   }
 
   destroy() {

@@ -44,9 +44,64 @@ export const REWARDS = {
   progressChest: { steps: 5, coins: 150, diamonds: 2, placement: 'chest-progress' },
 };
 
+// Level access (2026-10-10): sequential progression; a locked normal level can be opened with a
+// rewarded ad (`adPlacement`); the last five levels are VIP and are bought with diamonds only.
+// PROVISIONAL prices (balance later). Keyed by level id (campaign numbers in the comments).
+export const LEVEL_ACCESS = {
+  adPlacement: 'level-unlock',
+  vip: {
+    'royal-throne': 4, // 46
+    'stone-patio': 5, // 47
+    'carousel-horse': 6, // 48
+    'vintage-tractor': 7, // 49
+    'vintage-car': 8, // 50
+  },
+};
+
+// Store (2026-10-10). PROVISIONAL values (balance later). Sections: Diamonds and Coins (3 tiles each,
+// the first one free for a rewarded ad, daily-capped so ads cannot be farmed into VIP diamonds) and a
+// Bonus section (open the timed chest now for an ad). Diamond packs are real-money products — a
+// dev-only placeholder purchase until the platform payments step; coin packs cost diamonds (work now).
+export const STORE = {
+  adPlacement: 'store-reward',
+  free: {
+    gems: { gems: 2, dailyLimit: 3 },
+    coins: { coins: 40, dailyLimit: 5 },
+    chest: { dailyLimit: 3 }, // opens the timed chest now (its usual coins), timer restarts
+  },
+  gemPacks: [
+    { id: 'gems-25', gems: 25, price: '$0.99' },
+    { id: 'gems-60', gems: 60, price: '$1.99' },
+  ],
+  coinPacks: [
+    { id: 'coins-300', coins: 300, gems: 5 },
+    { id: 'coins-800', coins: 800, gems: 12 },
+  ],
+};
+
+// Wheel of Fortune (2026-10-10): one rewarded ad = one spin (daily limit). Segments clockwise from
+// the top; `weight` = chance share. The tool segment gives a tool variant; already owned → fallback.
+export const WHEEL = {
+  adPlacement: 'wheel-spin',
+  dailyLimit: 5,
+  segments: [
+    { id: 'coins-25', kind: 'coins', amount: 25, weight: 22 },
+    { id: 'gems-2', kind: 'gems', amount: 2, weight: 14 },
+    { id: 'coins-50', kind: 'coins', amount: 50, weight: 18 },
+    { id: 'tool', kind: 'tool', family: 'laser', tool: 'laser-gold', weight: 8, fallback: { kind: 'gems', amount: 5 } },
+    { id: 'coins-100', kind: 'coins', amount: 100, weight: 12 },
+    { id: 'gems-3', kind: 'gems', amount: 3, weight: 10 },
+    { id: 'coins-150', kind: 'coins', amount: 150, weight: 6 },
+    { id: 'gems-5', kind: 'gems', amount: 5, weight: 4 },
+  ],
+};
+
 export const economy = {
   completionReward(levelId) {
     return COMPLETION_REWARDS[levelId] ?? 10;
   },
   rewards: REWARDS,
+  levelAccess: LEVEL_ACCESS,
+  store: STORE,
+  wheel: WHEEL,
 };

@@ -64,6 +64,9 @@ const brush = (id, tool, params, extra = {}) => () => ({ id, tool, mechanic: 'br
 const zone = (region, dim = true) => (region ? { region, dim } : {});
 
 export const S = {
+  // a zone stage whose zone is too thin / fragmented for a clean outline (spear tips, chrome trim,
+  // straps): the hand hint and the zone dim guide the player instead
+  hint: (fn) => (c) => ({ ...fn(c), outline: false }),
   // drag junk / leaves off the object into the bin (or the skimmer net held at the pool side)
   trash: (pointsKey = 'junk', { leaves = false, target = 'trash-bin', id = leaves ? 'leaves' : 'trash' } = {}) => (c) => {
     const pts = c.P[pointsKey] ?? [];
@@ -105,8 +108,8 @@ export const S = {
     targetSeconds: [5, 8],
   }),
   // Step 9 large surfaces: the telescopic pool brush scrubs basins and paving (scrub mode)
-  poolScrub: (clear, region) => brush('scrub', 'pool-brush', { mode: 'scrub', from: 'foam', under: 'scrubbed', clear, radius: 120, aspect: 1.6, threshold: 0.96 }, zone(region)),
-  mitt: (layers, region, id = 'wash-mitt') => brush(id, 'wash-mitt', { mode: 'reveal', layers, radius: 120 }, zone(region)),
+  poolScrub: (clear, region) => brush('scrub', 'pool-brush', { mode: 'scrub', from: 'foam', under: 'scrubbed', clear, radius: 120, aspect: 1.6, threshold: 0.96 }, { family: 'poolBrush', ...zone(region) }),
+  mitt: (layers, region, id = 'wash-mitt') => brush(id, 'wash-mitt', { mode: 'reveal', layers, radius: 120 }, { family: 'mitt', ...zone(region) }),
   crevice: (layers, region, id = 'crevice-brush') => brush(id, 'crevice-brush', { mode: 'reveal', layers, radius: 30 }, zone(region)),
   // scraping a crust with strokes (no chip hunting) — used where chips were tediously long
   scrapeCrust: (layers, region) => brush('scrape', 'wide-scraper', { mode: 'reveal', layers, radius: 48, aspect: 2.0, threshold: 0.94 }, { family: 'scrape', fx: 'chips', ...zone(region) }),
@@ -114,9 +117,20 @@ export const S = {
   mist: (layers, region, id = 'spray-clean') => brush(id, 'spray-bottle', { mode: 'reveal', layers, radius: 88 }, zone(region)),
   blow: (layers, region) => brush('blow', 'air-blower', { mode: 'reveal', layers, radius: 80 }, zone(region)),
   swab: (layers, region) => brush('swab', 'cotton-swab', { mode: 'reveal', layers, radius: 34, threshold: 0.94 }, zone(region)),
-  detail: (layers, region, id = 'detail-brush') => brush(id, 'detail-brush', { mode: 'reveal', layers, radius: 42 }, zone(region)),
+  detail: (layers, region, id = 'detail-brush') => brush(id, 'detail-brush', { mode: 'reveal', layers, radius: 42 }, { family: 'detail', ...zone(region) }),
+  // Step 9 tool variety: a specialised tool for a reveal / scrub job (no card family)
+  toolReveal: (tool, layers, region, id, radius = 60) => brush(id, tool, { mode: 'reveal', layers, radius }, zone(region)),
+  toolScrub: (tool, clear, region, radius = 96) => brush('scrub', tool, { mode: 'scrub', from: 'foam', under: 'scrubbed', clear, radius, threshold: 0.96 }, zone(region)),
+  // ---- tool variety pass 2: tools with their own interaction (footprints = the measured heads) ----
+  blast: (layers, region) => brush('sandblast', 'sandblaster', { mode: 'reveal', layers, radius: 72 }, zone(region)),
+  vacuum: (layers, region, id = 'vacuum') => brush(id, 'wet-vacuum', { mode: 'reveal', layers, radius: 48, aspect: 2.0 }, zone(region)),
+  spinScrub: (clear, region) => brush('scrub', 'spin-scrubber', { mode: 'scrub', from: 'foam', under: 'scrubbed', clear, radius: 65, threshold: 0.96 }, zone(region)),
+  buff: (layers = ['dull'], region) => brush('polish', 'rotary-buffer', { mode: 'reveal', layers, radius: 74 }, zone(region)),
+  cupBrush: (layers, region) => brush('wire-brush', 'cup-brush', { mode: 'reveal', layers, radius: 55, threshold: 0.94 }, zone(region)),
+  razor: (layers, region, id = 'razor', flakeTint = 0x8fa86a) => brush(id, 'razor-scraper', { mode: 'reveal', layers, radius: 32, aspect: 2.0, threshold: 0.94 }, { flakeTint, ...zone(region) }),
+  washBrush: (clear, region) => brush('scrub', 'telescopic-brush', { mode: 'scrub', from: 'foam', under: 'scrubbed', clear, radius: 46, aspect: 2.7, threshold: 0.96 }, zone(region)),
   eraser: (layers, region) => brush('magic-eraser', 'eraser', { mode: 'reveal', layers, radius: 60 }, zone(region)),
-  squeegee: (layers, region) => brush('squeegee', 'squeegee', { mode: 'reveal', layers, radius: 75 }, zone(region)),
+  squeegee: (layers, region) => brush('squeegee', 'squeegee', { mode: 'reveal', layers, radius: 75 }, { family: 'squeegee', ...zone(region) }),
   mop: (layers, region) => brush('mop', 'mop', { mode: 'reveal', layers, radius: 105 }, zone(region)),
   sharpen: (layers, region) => brush('sharpen', 'whetstone', { mode: 'reveal', layers, radius: 40, aspect: 1.6, threshold: 0.94 }, { fx: 'sparks', ...zone(region) }),
   // break a crust / caked mud / barnacles / old paint into chips

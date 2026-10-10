@@ -12,6 +12,10 @@ import { Emitter } from '../core/Emitter.js';
 //   result for an already owned tool grants nothing more;
 // - a purchased / unlocked tool is equipped right away and stays owned permanently;
 // - equipping requires ownership.
+// Unified variants (2026-10-10): visual-only variants (`visual: true`) follow the same rules. A COIN
+// variant the player cannot afford can be unlocked with a rewarded ad instead (`coinFallback`), no
+// coins charged. A visual variant owned as a cosmetic skin in an old save (tools.skins.owned, same
+// id) counts as owned — never charged twice.
 
 export class ToolService extends Emitter {
   constructor({ save, rewards, families, placement = 'tool-unlock' }) {
@@ -32,7 +36,9 @@ export class ToolService extends Emitter {
   isOwned(familyId, toolId) {
     const f = this._family(familyId);
     if (toolId === f.base) return true;
-    return this.save.get('tools.owned').includes(toolId);
+    if (this.save.get('tools.owned').includes(toolId)) return true;
+    const opt = f.options.find((o) => o.tool === toolId);
+    return Boolean(opt?.visual && this.save.get('tools.skins')?.owned?.includes(toolId));
   }
 
   equipped(familyId) {
@@ -74,7 +80,7 @@ export class ToolService extends Emitter {
     const r = { status: 'insufficient', currency: key, price };
     r.savePromise = this.save.update((s) => {
       // re-checked inside the mutation: owned already / balance
-      if (s.tools.owned.includes(toolId)) return void (r.status = 'owned');
+      if (s.tools.owned.includes(toolId) || this.isOwned(familyId, toolId)) return void (r.status = 'owned');
       if (s[key] < price) return;
       r.before = s[key];
       s[key] -= price;
@@ -90,9 +96,9 @@ export class ToolService extends Emitter {
   }
 
   // Rewarded-ad unlock: permanent; the tool is equipped on success.
-  async unlockWithAd(familyId, toolId) {
+  async unlockWithAd(familyId, toolId, { coinFallback = false } = {}) {
     const opt = this._family(familyId).options.find((o) => o.tool === toolId);
-    if (!opt || opt.unlock.type !== 'ad') return { status: 'invalid' };
+    if (!opt || !(opt.unlock.type === 'ad' || (coinFallback && opt.unlock.type === 'coins'))) return { status: 'invalid' };
     if (this.isOwned(familyId, toolId)) return this.equip(familyId, toolId);
     if (this._busy.has(toolId)) return { status: 'busy' };
     this._busy.add(toolId);

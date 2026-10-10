@@ -2,7 +2,7 @@ import { Emitter } from './Emitter.js';
 
 // Independent pause reasons. Removing one reason never clears another:
 // a host resume does not lift the player's own pause.
-export const PAUSE_REASONS = ['user', 'host', 'adBusy', 'navigationBusy', 'assetsLoading', 'skinMenu'];
+export const PAUSE_REASONS = ['user', 'host', 'adBusy', 'navigationBusy', 'assetsLoading', 'toolOffer', 'store', 'chest'];
 
 export class PauseState extends Emitter {
   constructor() {
@@ -13,9 +13,11 @@ export class PauseState extends Emitter {
   set(reason, active) {
     if (!PAUSE_REASONS.includes(reason)) throw new Error(`Unknown pause reason: ${reason}`);
     const before = this.isPaused;
+    const had = this._reasons.has(reason);
     if (active) this._reasons.add(reason);
     else this._reasons.delete(reason);
-    if (before !== this.isPaused || active) this.emit('change', this.snapshot());
+    // also when one reason goes while another stays (listeners may treat reasons differently)
+    if (before !== this.isPaused || active || had !== active) this.emit('change', this.snapshot());
   }
 
   has(reason) {

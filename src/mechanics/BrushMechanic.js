@@ -66,7 +66,7 @@ export class BrushMechanic {
     const src = this.source;
     const scene = this.stack.scene;
     const p = this.stack.childPos(src.x, src.y);
-    this.sourceImg = scene.add.image(p.x, p.y, src.texture);
+    this.sourceImg = scene.add.image(p.x, p.y, paintedSource(scene, src.texture, src.tint));
     this.sourceImg.setScale(src.size / Math.max(this.sourceImg.width, this.sourceImg.height));
     this.stack.overlay.addAt(this.sourceImg, 0);
     this.sourceRing = scene.add.graphics();
@@ -282,4 +282,56 @@ export class BrushMechanic {
     this.sourceRing?.destroy();
     if (this.source) this.stack.scene.tools?.setLoad?.(null);
   }
+}
+
+// The paint inside a paint source (can / tray) shows the stage's paint colour (2026-10-11): the art has
+// one baked paint colour (black can, tan tray); `<texture>-paint-mask` marks the paint, which is
+// recoloured to `tint` keeping its shading (gloss, rim shadow). One canvas texture per texture +
+// colour, built once. Without a mask or a tint the original art is used.
+export function paintedSource(scene, key, tint) {
+  const maskKey = `${key}-paint-mask`;
+  const tex = scene.textures;
+  if (tint == null || !tex.exists(maskKey) || !tex.exists(key)) return key;
+  const out = `${key}-paint-${tint.toString(16).padStart(6, '0')}`;
+  if (tex.exists(out)) return out;
+  const base = tex.get(key).getSourceImage();
+  const mask = tex.get(maskKey).getSourceImage();
+  const w = base.width;
+  const h = base.height;
+  const c = tex.createCanvas(out, w, h);
+  const ctx = c.getContext();
+  ctx.drawImage(base, 0, 0, w, h);
+  const img = ctx.getImageData(0, 0, w, h);
+  const mc = document.createElement('canvas');
+  mc.width = w;
+  mc.height = h;
+  const mctx = mc.getContext('2d');
+  mctx.drawImage(mask, 0, 0, w, h);
+  const m = mctx.getImageData(0, 0, w, h).data;
+  const d = img.data;
+  // mean brightness of the baked paint → relative shading
+  let sum = 0;
+  let n = 0;
+  for (let i = 0; i < d.length; i += 4) {
+    if (Math.min(m[i], m[i + 3]) > 128) {
+      sum += (d[i] + d[i + 1] + d[i + 2]) / 3;
+      n += 1;
+    }
+  }
+  const mean = Math.max(8, n ? sum / n : 128);
+  const tr = (tint >> 16) & 255;
+  const tg = (tint >> 8) & 255;
+  const tb = tint & 255;
+  for (let i = 0; i < d.length; i += 4) {
+    const k = Math.min(m[i], m[i + 3]) / 255; // L mask (alpha 255) or LA mask
+    if (k <= 0) continue;
+    const lum = (d[i] + d[i + 1] + d[i + 2]) / 3;
+    const shade = Math.max(0.6, Math.min(1.45, 0.65 + 0.35 * (lum / mean)));
+    d[i] = d[i] * (1 - k) + Math.min(255, tr * shade) * k;
+    d[i + 1] = d[i + 1] * (1 - k) + Math.min(255, tg * shade) * k;
+    d[i + 2] = d[i + 2] * (1 - k) + Math.min(255, tb * shade) * k;
+  }
+  ctx.putImageData(img, 0, 0);
+  c.refresh();
+  return out;
 }

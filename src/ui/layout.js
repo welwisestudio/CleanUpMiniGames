@@ -50,7 +50,13 @@ export function computeLayout(W, H, dpr = 1) {
 // second, separate finger-room requirement; the tighter of the two limits the scale. The jet is
 // capped at 30 % of the play height (short landscape screens).
 // `bottomReserve` (device px) keeps a band above the bottom free (Step 7 tool cards).
-export function fitObject(layout, target, { reach = 540, jetReach = 0, jetPx = 0, canvasSize = 1024, share = null, bottomReserve = 0, maxLong = null } = {}) {
+// Mobile framing pass (2026-10-10):
+// `fingerExtra` (device px): the finger / jet room below the object may extend this far into the
+//   card band (the finger only drags over the cards — a card reacts only to a tap that STARTED on
+//   it); the object itself still ends above the cards. Lets phone objects be noticeably larger.
+// `centerX` (object-local x): centre the object on this x (its visual mass) instead of the bounds
+//   centre; the width limit then keeps both sides on screen.
+export function fitObject(layout, target, { reach = 540, jetReach = 0, jetPx = 0, canvasSize = 1024, share = null, bottomReserve = 0, maxLong = null, fingerExtra = 0, centerX = null } = {}) {
   const b = typeof target === 'number' ? [canvasSize / 2 - target, canvasSize / 2 - target, canvasSize / 2 + target, canvasSize / 2 + target] : target;
   const objW = b[2] - b[0];
   const objH = b[3] - b[1];
@@ -63,12 +69,18 @@ export function fitObject(layout, target, { reach = 540, jetReach = 0, jetPx = 0
   // Step 6 UI pass: objects may use up to 96 % of the play width (was 84 %) and are centred
   // vertically in the space left after the finger room they need below them (was top-aligned).
   const jp = Math.min(jetPx, playH * 0.3);
-  const jetLimit = jp > 0 ? (playH * 0.97 - jp) / (objH + jetReach) : Infinity;
+  const fingerH = playH + fingerExtra; // where the finger may still work (object stays within playH)
+  const jetLimit = jp > 0 ? (fingerH * 0.97 - jp) / (objH + jetReach) : Infinity;
   const longLimit = maxLong ? (Math.min(playW, playH) * maxLong) / Math.max(objW, objH) : Infinity;
-  const scale = Math.max(minScale, Math.min((playW * 0.96) / objW, (playH * hShare) / objH, (playH * 0.97) / (objH + reach), jetLimit, longLimit));
-  const spare = playH - objH * scale - Math.max(reach * scale, jp > 0 ? jetReach * scale + jp : 0);
-  const boundsTop = top + Math.max(playH * 0.05, spare / 2);
-  const cx = layout.W / 2 - ((b[0] + b[2]) / 2 - canvasSize / 2) * scale;
+  const midX = centerX ?? (b[0] + b[2]) / 2;
+  const halfW = Math.max(midX - b[0], b[2] - midX);
+  // portrait phones: wide objects may use 97 % of the full screen width (was 96 % of the margin-inset
+  // width) — they are width-limited there and read small otherwise
+  const widthRoom = layout.portrait ? Math.max(playW * 0.96, layout.W * 0.97) : playW * 0.96;
+  const scale = Math.max(minScale, Math.min(widthRoom / (2 * halfW), (playH * hShare) / objH, (fingerH * 0.97) / (objH + reach), jetLimit, longLimit));
+  const spare = fingerH - objH * scale - Math.max(reach * scale, jp > 0 ? jetReach * scale + jp : 0);
+  const boundsTop = top + Math.min(Math.max(playH * 0.05, spare / 2), Math.max(playH * 0.05, playH - objH * scale - playH * 0.02));
+  const cx = layout.W / 2 - (midX - canvasSize / 2) * scale;
   const cy = boundsTop - (b[1] - canvasSize / 2) * scale;
   const boundsBottom = boundsTop + objH * scale;
   const R = (Math.min(objW, objH) / 2) * scale;
