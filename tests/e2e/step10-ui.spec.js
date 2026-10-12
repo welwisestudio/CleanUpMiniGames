@@ -109,38 +109,38 @@ async function tapCardOf(page, drv, tool) {
   await tap(page, drv, s.level.toolCards.find((c) => c.tool === tool), 350);
 }
 
-test('unified variants: coin → ad offer, diamonds, visual variants, laser, persistence', async ({ page }, info) => {
+test('unified variants: coin variant → ad badge, diamonds, visual variants, laser, persistence', async ({ page }, info) => {
   test.setTimeout(900_000);
   const drv = await driver(page, info);
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/?qa=1&devAd=not-earned');
   await waitFor(page, (x) => x.scene === 'Menu');
-  await seed(page, 'st.coins = 0; st.diamonds = 6; st.tools = { owned: [], equipped: {}, purchases: 0, skins: { owned: [], equipped: {} } };');
+  await seed(page, 'st.coins = 0; st.diamonds = 56; st.tools = { owned: [], equipped: {}, purchases: 0, skins: { owned: [], equipped: {} } };');
   await page.goto('/?qa=1&devAd=not-earned');
   await openRug(page, drv);
 
-  // ---- foam (3 functional variants): coin variant with 0 coins → rewarded-ad offer ----
+  // ---- foam (3 functional variants): coin variant with 0 coins → ad badge on the card, a tap plays the
+  // ad directly (systems pass 2026-10-12; no separate offer card) ----
   let s = await toStage(page, drv, 'foam-spray');
   s = await waitFor(page, (x) => x.level.toolCards?.every((c) => c.visible));
   expect(cardsOf(s)).toEqual(['foam-sprayer', 'foam-gun', 'foam-cannon']);
   noSkinUi(s);
   oneArea(s, info);
-  await tapCardOf(page, drv, 'foam-gun');
-  s = await waitFor(page, (x) => x.level.toolOffer && x.buttons?.['tool-offer-watch']?.visible, { label: 'coin ad offer' });
+  expect(s.level.toolCards.find((c) => c.tool === 'foam-gun').adFallback).toBe(true);
   await shot(page, info, 'variants-1-offer');
   for (const mode of ['not-earned', 'error']) {
     await setAd(page, mode);
-    await tap(page, drv, s.buttons['tool-offer-watch'], 700);
-    s = await waitFor(page, (x) => x.buttons?.['tool-offer-watch']?.visible, { label: `offer after ${mode}` });
-    expect(s.level.toolOffer).toBe(true);
+    await tapCardOf(page, drv, 'foam-gun');
+    await page.waitForTimeout(500);
+    s = await snap(page);
     expect(s.level.tool.id).toBe('foam-sprayer');
     expect(s.level.toolCards.find((c) => c.tool === 'foam-gun').state).toBe('coins');
     expect(s.coins).toBe(0);
   }
   await setAd(page, 'earned');
-  await tap(page, drv, s.buttons['tool-offer-watch'], 800);
-  s = await waitFor(page, (x) => !x.level.toolOffer && x.level.tool.id === 'foam-gun', { label: 'unlocked by ad' });
+  await tapCardOf(page, drv, 'foam-gun');
+  s = await waitFor(page, (x) => x.level.tool.id === 'foam-gun', { label: 'unlocked by ad' });
   expect(s.coins).toBe(0);
   expect(s.level.toolCards.find((c) => c.tool === 'foam-gun').state).toBe('equipped');
   await shot(page, info, 'variants-2-foam-gun');
@@ -156,16 +156,15 @@ test('unified variants: coin → ad offer, diamonds, visual variants, laser, per
   await shot(page, info, 'variants-3-scrub-four');
   await tapCardOf(page, drv, 'drill-brush');
   s = await waitFor(page, (x) => x.level.tool.id === 'drill-brush', { label: 'drill (diamonds)' });
-  expect(s.level.diamonds).toBe(1);
-  expect(s.level.toolOffer).toBe(false); // diamonds: no ad offer
+  expect(s.level.diamonds).toBe(6);
   await tapCardOf(page, drv, 'scrub-wood');
   s = await waitFor(page, (x) => x.level.tool.id === 'scrub-wood', { label: 'visual variant (ad)' });
   expect(s.level.tool.texture).toBe('tool-scrub-wood');
   expect(s.level.brush.effectiveRadius).toBe(baseRadius); // visual-only: plays like the base tool
   await shot(page, info, 'variants-4-scrub-wood');
 
-  // ---- reload with 40 coins: persistence; a coin VISUAL variant with enough coins (squeegee) ----
-  await seed(page, 'st.coins = 40;');
+  // ---- reload with 175 coins: persistence; a coin VISUAL variant with enough coins (squeegee, 150) ----
+  await seed(page, 'st.coins = 175;');
   await page.goto('/?qa=1&devAd=earned');
   await openRug(page, drv);
   s = await toStage(page, drv, 'foam-spray');
@@ -187,7 +186,6 @@ test('unified variants: coin → ad offer, diamonds, visual variants, laser, per
   await tapCardOf(page, drv, 'pro-squeegee');
   s = await waitFor(page, (x) => x.level.tool.id === 'pro-squeegee', { label: 'pro squeegee (coins)' });
   expect(s.coins).toBe(25);
-  expect(s.level.toolOffer).toBe(false);
   expect(s.level.brush.effectiveRadius).toBe(sqRadius);
   await shot(page, info, 'variants-5-squeegee-visual');
 

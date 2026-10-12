@@ -23,7 +23,7 @@ import { SpotsMechanic } from '../../src/mechanics/SpotsMechanic.js';
 import { PointTargetsMechanic } from '../../src/mechanics/PointTargetsMechanic.js';
 import { TOOLS } from '../../src/content/tools.js';
 import { validateCatalog, getLevel, DISPLAY_ORDER, nextLevelId } from '../../src/content/catalog.js';
-import { economy } from '../../src/content/economy.js';
+import { economy, levelPrice } from '../../src/content/economy.js';
 import { computeLayout, fitObject, UI } from '../../src/ui/layout.js';
 
 const SIZE = 640;
@@ -212,15 +212,16 @@ describe('RewardService', () => {
     const b = rewards.grantLevelCompletion('soccer-ball', 1);
     expect(a).toBe(b);
     expect(listener).toHaveBeenCalledTimes(1);
-    expect(save.get('coins')).toBe(15);
+    expect(save.get('coins')).toBe(economy.completionReward('soccer-ball'));
     rewards.grantLevelCompletion('soccer-ball', 2); // a replay is a new run
-    expect(save.get('coins')).toBe(30);
+    expect(save.get('coins')).toBe(2 * economy.completionReward('soccer-ball'));
     expect(save.get('levels.soccer-ball')).toEqual({ completed: true, completions: 2 });
     await a.savePromise;
   });
 });
 
 describe('Rewards: boost x2…x5, timed chest, level-progress chest (Step 6 reward pass)', () => {
+  const CHAIR = economy.completionReward('chair');
   async function setup({ ad = 'earned', now = 1_000_000 } = {}) {
     const platform = createDevPlatform({ rewardedOutcome: ad, rewardedDelayMs: 1 });
     const save = new SaveService(platform);
@@ -234,23 +235,23 @@ describe('Rewards: boost x2…x5, timed chest, level-progress chest (Step 6 rewa
   it('boost: the locked multiplier (x2 / x3 / x5) pays base × multiplier once; invalid values and repeated / parallel claims pay nothing', async () => {
     for (const m of [2, 3, 5]) {
       const { save, rewards, pause } = await setup();
-      const c = rewards.grantLevelCompletion('chair', 1); // +20
-      expect(rewards.boostOffer(c.completionId)).toMatchObject({ available: true, base: 20, values: [2, 3, 5], zones: [2, 3, 5, 3, 2] });
+      const c = rewards.grantLevelCompletion('chair', 1); // + base
+      expect(rewards.boostOffer(c.completionId)).toMatchObject({ available: true, base: CHAIR, values: [2, 3, 5], zones: [2, 3, 5, 3, 2] });
       const pausedDuringAd = [];
       pause.on('change', (sn) => pausedDuringAd.push(sn.reasons.includes('adBusy')));
       const [a, b] = await Promise.all([rewards.claimBoost(c.completionId, m), rewards.claimBoost(c.completionId, m)]);
       expect([a.status, b.status].sort()).toEqual(['granted', 'unavailable']);
-      expect(save.get('coins')).toBe(20 * m);
+      expect(save.get('coins')).toBe(CHAIR * m);
       expect(pausedDuringAd).toContain(true);
       expect(pause.has('adBusy')).toBe(false);
       expect((await rewards.claimBoost(c.completionId, 5)).status).toBe('unavailable');
-      expect(save.get('coins')).toBe(20 * m);
+      expect(save.get('coins')).toBe(CHAIR * m);
       expect(rewards.boostOffer(c.completionId)).toMatchObject({ available: false, claimed: true, boost: m });
     }
     const { save, rewards } = await setup();
     const c = rewards.grantLevelCompletion('chair', 1);
     for (const bad of [1, 4, 6, 3.5, 10]) expect((await rewards.claimBoost(c.completionId, bad)).status).toBe('invalid');
-    expect(save.get('coins')).toBe(20);
+    expect(save.get('coins')).toBe(CHAIR);
     // an older completion's boost can never be claimed once a newer level is completed
     const c2 = rewards.grantLevelCompletion('rug', 2);
     expect(rewards.boostOffer(c.completionId).available).toBe(false);
@@ -263,7 +264,7 @@ describe('Rewards: boost x2…x5, timed chest, level-progress chest (Step 6 rewa
       const c = rewards.grantLevelCompletion('chair', 1);
       const r = await rewards.claimBoost(c.completionId, 5);
       expect(r.status).toBe(ad);
-      expect(save.get('coins')).toBe(20);
+      expect(save.get('coins')).toBe(CHAIR);
       expect(rewards.boostOffer(c.completionId).available).toBe(true);
     }
   });
@@ -276,7 +277,7 @@ describe('Rewards: boost x2…x5, timed chest, level-progress chest (Step 6 rewa
     await save2.load();
     const r2 = new RewardService({ save: save2, economy, platform });
     expect(r2.boostOffer(c.completionId)).toMatchObject({ available: false, claimed: true, boost: 5 });
-    expect(save2.get('coins')).toBe(100);
+    expect(save2.get('coins')).toBe(CHAIR * 5);
     const old = parseSave(JSON.stringify({ version: 2, lastCompletion: { id: 3, levelId: 'rug', amount: 15, x3: true } }));
     expect(old.lastCompletion).toEqual({ id: 3, levelId: 'rug', amount: 15, boost: 3 });
   });
@@ -357,99 +358,151 @@ describe('Rewards: boost x2…x5, timed chest, level-progress chest (Step 6 rewa
 
   it('save v1 migrates to the current version with empty reward state', () => {
     const st = parseSave(JSON.stringify({ version: 1, coins: 40, levels: { rug: { completed: true, completions: 2 } } }));
-    expect(st).toMatchObject({ version: 3, coins: 40, completionSeq: 0, lastCompletion: null, timedChest: { readyAt: 0 }, progressChest: { steps: 0, opened: 0, forfeited: 0 } });
+    expect(st).toMatchObject({ version: 4, coins: 40, completionSeq: 0, lastCompletion: null, timedChest: { readyAt: 0 }, progressChest: { steps: 0, opened: 0, forfeited: 0 } });
     // level access sets start empty and are derived once from the completion history
-    expect(st.progression).toEqual({ unlocked: [], adUnlocked: [], vip: [], migrated: false });
+    expect(st.progression).toEqual({ unlocked: [], purchased: [], adUnlocked: [], vipAds: [], vip: [], migrated: false, model: 0 });
   });
 });
 
-describe('Level access (progression, ad jumps, VIP)', () => {
-  async function setup({ ad = 'earned', diamonds = 0, levels = null, devUnlockAll = false } = {}) {
+describe('Level access (coins, ad unlock, ad-only VIP — systems pass 2026-10-12)', () => {
+  async function setup({ ad = 'earned', coins = 0, diamonds = 0, levels = null, raw = null, devUnlockAll = false } = {}) {
     const platform = createDevPlatform({ rewardedOutcome: ad, rewardedDelayMs: 1 });
-    if (levels) await platform.saveData(JSON.stringify({ version: 2, coins: 7, diamonds, levels, tools: { owned: ['foam-gun'], equipped: { foam: 'foam-gun' } } }));
+    if (raw) await platform.saveData(JSON.stringify(raw));
+    else if (levels) await platform.saveData(JSON.stringify({ version: 2, coins: 7, diamonds, levels, tools: { owned: ['foam-gun'], equipped: { foam: 'foam-gun' } } }));
     const save = new SaveService(platform);
     await save.load();
-    if (!levels) await save.update((s) => (s.diamonds = diamonds));
+    if (!levels && !raw) await save.update((s) => Object.assign(s, { coins, diamonds }));
     const rewards = new RewardService({ save, economy, platform, pause: new PauseState() });
     const prog = new ProgressionService({ save, rewards, order: DISPLAY_ORDER, config: economy.levelAccess, devUnlockAll });
     return { platform, save, rewards, prog };
   }
   const L = (n) => DISPLAY_ORDER[n - 1];
 
-  it('fresh save: only level 1 is playable; the last five are VIP with config prices', async () => {
+  it('fresh save: only level 1 is playable; exactly three VIP levels spread through the list; a rising coin price curve', async () => {
     const { prog } = await setup();
     expect(DISPLAY_ORDER.filter((id) => prog.isPlayable(id))).toEqual([L(1)]);
-    expect([46, 47, 48, 49, 50].map((n) => prog.vipPrice(L(n)))).toEqual([4, 5, 6, 7, 8]);
-    expect(DISPLAY_ORDER.filter((id) => prog.isVip(id))).toEqual([46, 47, 48, 49, 50].map(L));
+    expect(DISPLAY_ORDER.filter((id) => prog.isVip(id))).toEqual([15, 37, 48].map(L));
+    expect(prog.price(L(1))).toBe(0);
+    expect(prog.price(L(2))).toBe(levelPrice(2, 50));
+    expect(prog.price(L(15))).toBe(null); // VIP: no coin price
+    const prices = DISPLAY_ORDER.map((id) => prog.price(id)).filter((p) => p != null);
+    for (let i = 1; i < prices.length; i++) expect(prices[i]).toBeGreaterThanOrEqual(prices[i - 1]);
+    expect(prices[1]).toBeLessThanOrEqual(economy.store.free.coins.coins); // one coin ad buys an early level
+    expect(prices[prices.length - 1]).toBeGreaterThan(prices[10] * 3); // late levels stay a coin sink
     expect(prog.status(L(2))).toBe('locked');
-    expect(prog.status(L(46))).toBe('vip');
+    expect(prog.status(L(15))).toBe('vip');
   });
 
-  it('completing a level unlocks the next one (not completed, permanently)', async () => {
-    const { prog, rewards, save } = await setup();
+  it('completing a level unlocks nothing; completed levels stay replayable', async () => {
+    const { prog, rewards } = await setup();
     rewards.grantLevelCompletion(L(1), 1);
-    expect(prog.isPlayable(L(2))).toBe(true);
-    expect(prog.status(L(2))).toBe('open');
-    expect(save.get('levels')[L(2)]).toBeUndefined();
-    expect(prog.isPlayable(L(3))).toBe(false);
+    expect(prog.isPlayable(L(2))).toBe(false);
     expect(prog.status(L(1))).toBe('completed');
   });
 
-  it('ad jump: only a watched ad opens THAT level (cancel / fail nothing); it starts its own branch; never VIP', async () => {
-    for (const ad of ['not-earned', 'error']) {
-      const { prog } = await setup({ ad });
-      expect((await prog.unlockWithAd(L(10))).status).toBe(ad);
-      expect(prog.isPlayable(L(10))).toBe(false);
-    }
-    const { prog, rewards, save, platform } = await setup();
-    const [a, b] = await Promise.all([prog.unlockWithAd(L(10)), prog.unlockWithAd(L(10))]);
-    expect([a.status, b.status].sort()).toEqual(['busy', 'unlocked']);
-    expect(platform.dev.rewardedLog).toHaveLength(1);
-    expect(save.get('progression.adUnlocked')).toEqual([L(10)]);
-    expect([2, 3, 9, 11].map((n) => prog.isPlayable(L(n)))).toEqual([false, false, false, false]);
-    expect(save.get('levels')[L(10)]).toBeUndefined(); // not marked completed
-    rewards.grantLevelCompletion(L(10), 1);
-    expect(prog.isPlayable(L(11))).toBe(true);
-    expect(prog.isPlayable(L(9))).toBe(false);
-    expect((await prog.unlockWithAd(L(46))).status).toBe('invalid');
-    expect(prog.isPlayable(L(46))).toBe(false);
-  });
-
-  it('VIP: progression does not open it; diamonds charged once; insufficient changes nothing; persists', async () => {
-    const poor = await setup({ diamonds: 3 });
-    poor.rewards.grantLevelCompletion(L(45), 1);
-    expect(poor.prog.isPlayable(L(46))).toBe(false);
-    expect(poor.prog.purchaseVip(L(46))).toMatchObject({ status: 'insufficient', currency: 'diamonds' });
-    expect(poor.save.get('diamonds')).toBe(3);
-    const { prog, save, platform } = await setup({ diamonds: 10 });
-    const r = prog.purchaseVip(L(46));
-    expect(r.status).toBe('purchased');
-    expect(prog.purchaseVip(L(46)).status).toBe('owned');
-    expect(save.get('diamonds')).toBe(6);
+  it('coins: enough → charged once, THAT level opens (no other); insufficient → nothing changes; persists', async () => {
+    const price = levelPrice(20, 50);
+    const poor = await setup({ coins: price - 1 });
+    expect(poor.prog.canAfford(L(20))).toBe(false);
+    expect(poor.prog.purchase(L(20))).toMatchObject({ status: 'insufficient', currency: 'coins', price });
+    expect(poor.save.get('coins')).toBe(price - 1);
+    expect(poor.prog.isPlayable(L(20))).toBe(false);
+    const { prog, save, platform } = await setup({ coins: price + 5 });
+    const r = prog.purchase(L(20));
+    expect(r).toMatchObject({ status: 'purchased', before: price + 5, after: 5 });
+    expect(prog.purchase(L(20)).status).toBe('open'); // second tap: nothing charged
+    expect(save.get('coins')).toBe(5);
+    expect([2, 19, 21].map((n) => prog.isPlayable(L(n)))).toEqual([false, false, false]);
+    expect(prog.purchase(L(15)).status).toBe('invalid'); // VIP: never for coins
     await r.savePromise;
     const save2 = new SaveService(platform);
     await save2.load();
     const prog2 = new ProgressionService({ save: save2, rewards: null, order: DISPLAY_ORDER, config: economy.levelAccess });
-    expect(prog2.isPlayable(L(46))).toBe(true);
-    expect(prog2.isPlayable(L(47))).toBe(false);
+    expect(prog2.isPlayable(L(20))).toBe(true);
+    expect(save2.get('progression.purchased')).toEqual([L(20)]);
   });
 
-  it('migration of an older save: history kept + replayable, each completed level opens its next; currency / tools untouched', async () => {
+  it('ad unlock of a normal level: only a watched ad opens THAT level, no coins charged; cancel / fail nothing; duplicates once', async () => {
+    for (const ad of ['not-earned', 'error', 'unavailable']) {
+      const { prog, save } = await setup({ ad, coins: 3 });
+      expect((await prog.unlockWithAd(L(10))).status).toBe(ad);
+      expect(prog.isPlayable(L(10))).toBe(false);
+      expect(save.get('coins')).toBe(3);
+    }
+    const { prog, save, platform } = await setup({ coins: 3 });
+    const [a, b] = await Promise.all([prog.unlockWithAd(L(10)), prog.unlockWithAd(L(10))]);
+    expect([a.status, b.status].sort()).toEqual(['busy', 'unlocked']);
+    expect(platform.dev.rewardedLog).toHaveLength(1);
+    expect(save.get('progression.adUnlocked')).toEqual([L(10)]);
+    expect(save.get('coins')).toBe(3);
+    expect([2, 9, 11].map((n) => prog.isPlayable(L(n)))).toEqual([false, false, false]);
+    expect(save.get('levels')[L(10)]).toBeUndefined(); // not marked completed
+    expect((await prog.unlockWithAd(L(10))).status).toBe('open');
+  });
+
+  it('VIP: rewarded ad only (no coins, no diamonds); cancel / fail keep it locked; persists as an ad-unlocked VIP level', async () => {
+    const rich = await setup({ ad: 'not-earned', coins: 99999, diamonds: 999 });
+    expect(rich.prog.purchase(L(37)).status).toBe('invalid');
+    expect((await rich.prog.unlockWithAd(L(37))).status).toBe('not-earned');
+    expect(rich.prog.isPlayable(L(37))).toBe(false);
+    expect([rich.save.get('coins'), rich.save.get('diamonds')]).toEqual([99999, 999]);
+    const { prog, save, platform } = await setup();
+    expect((await prog.unlockWithAd(L(37))).status).toBe('unlocked');
+    expect(platform.dev.rewardedLog.at(-1).placementId).toBe(economy.levelAccess.vipPlacement);
+    expect(save.get('progression.vipAds')).toEqual([L(37)]);
+    await new Promise((r) => setTimeout(r, 5));
+    const save2 = new SaveService(platform);
+    await save2.load();
+    const prog2 = new ProgressionService({ save: save2, rewards: null, order: DISPLAY_ORDER, config: economy.levelAccess });
+    expect(prog2.isPlayable(L(37))).toBe(true);
+    expect(prog2.isPlayable(L(48))).toBe(false);
+  });
+
+  it('migration of a v2 save: history kept + replayable, each completed level opens its next; currency / tools untouched', async () => {
     const { prog, save } = await setup({ levels: { [L(1)]: { completed: true, completions: 3 }, [L(30)]: { completed: true, completions: 1 }, [L(47)]: { completed: true, completions: 1 } }, diamonds: 2 });
     await prog.migrate();
-    expect(save.get('progression.migrated')).toBe(true);
+    expect(save.get('progression')).toMatchObject({ migrated: true, model: 2, vip: [] });
     expect([1, 2, 30, 31, 47].map((n) => prog.isPlayable(L(n)))).toEqual([true, true, true, true, true]);
-    expect([3, 29, 32, 46, 48].map((n) => prog.isPlayable(L(n)))).toEqual([false, false, false, false, false]);
+    expect([3, 29, 32, 46, 48].map((n) => prog.isPlayable(L(n)))).toEqual([false, false, false, false, false]); // 48 = VIP
     expect(save.get('coins')).toBe(7);
     expect(save.get('diamonds')).toBe(2);
     expect(save.get('tools.owned')).toEqual(['foam-gun']);
     expect(prog.migrate()).toBe(null); // once
   });
 
+  it('migration of a v3 save: diamond VIP purchases stay accessible, open normal levels that became VIP stay open, everything else kept', async () => {
+    const raw = {
+      version: 3,
+      coins: 321,
+      diamonds: 17,
+      levels: { [L(46)]: { completed: true, completions: 1 } },
+      tools: { owned: ['foam-gun'], equipped: { foam: 'foam-gun' } },
+      progression: { unlocked: [L(2), L(37)], adUnlocked: [L(15), L(25)], vip: [L(47), L(48)], migrated: true },
+      store: { day: '2026-10-11', claims: { gems: 2 }, purchases: 1 },
+      wheel: { day: '2026-10-11', spins: 3, total: 9 },
+      timedChest: { readyAt: 1234 },
+      progressChest: { steps: 3, opened: 1, forfeited: 0 },
+    };
+    const { prog, save } = await setup({ raw });
+    expect(save.get('progression.model')).toBe(0);
+    await prog.migrate();
+    const p = save.get('progression');
+    expect(p.vip).toEqual([]);
+    expect(p.model).toBe(2);
+    expect(p.unlocked).toEqual([L(2), L(37), L(47)]); // ex-VIP 47 (bought with diamonds) → a normal open level
+    expect(p.vipAds.sort()).toEqual([L(15), L(37), L(48)].sort()); // still / now VIP and already open
+    for (const n of [2, 15, 25, 37, 46, 47, 48]) expect(prog.isPlayable(L(n))).toBe(true);
+    for (const n of [3, 45, 49, 50]) expect(prog.isPlayable(L(n))).toBe(false);
+    expect([save.get('coins'), save.get('diamonds'), save.get('tools.owned'), save.get('timedChest.readyAt'), save.get('progressChest.steps')]).toEqual([321, 17, ['foam-gun'], 1234, 3]);
+    expect(save.get('store')).toMatchObject({ claims: { gems: 2 }, purchases: 1, bundles: {} });
+    expect(save.get('wheel')).toMatchObject({ spins: 3, total: 9, freeDay: '' });
+    expect(prog.migrate()).toBe(null);
+  });
+
   it('dev unlock-all makes every level playable without writing the save', async () => {
     const { prog, save } = await setup({ devUnlockAll: true });
     expect(DISPLAY_ORDER.every((id) => prog.isPlayable(id))).toBe(true);
-    expect(save.get('progression')).toEqual({ unlocked: [], adUnlocked: [], vip: [], migrated: true });
+    expect(save.get('progression')).toEqual({ unlocked: [], purchased: [], adUnlocked: [], vipAds: [], vip: [], migrated: true, model: 2 });
   });
 });
 
@@ -498,24 +551,35 @@ describe('Alternative tools (Step 7)', () => {
     expect(n).toBe(10);
   });
 
-  it('coin variant without enough coins: a watched ad unlocks THAT variant (no coins charged); cancel / fail / duplicates give nothing; diamond variants get no ad', async () => {
+  it('paid variant without enough coins OR diamonds: a watched ad unlocks THAT variant (no currency charged); cancel / fail / duplicates give nothing; affordable → no ad', async () => {
     for (const ad of ['not-earned', 'error']) {
-      const { save, shop } = await setup({ ad, coins: 3 });
-      expect((await shop.unlockWithAd('laser', 'laser-redblack', { coinFallback: true })).status).toBe(ad);
+      const { save, shop } = await setup({ ad, coins: 3, diamonds: 1 });
+      expect((await shop.unlockWithAd('laser', 'laser-redblack')).status).toBe(ad);
+      expect((await shop.unlockWithAd('laser', 'laser-gold')).status).toBe(ad);
       expect(shop.isOwned('laser', 'laser-redblack')).toBe(false);
+      expect(shop.isOwned('laser', 'laser-gold')).toBe(false);
       expect(shop.equipped('laser')).toBe('laser');
-      expect(save.get('coins')).toBe(3);
+      expect([save.get('coins'), save.get('diamonds')]).toEqual([3, 1]);
     }
-    const { platform, save, shop } = await setup({ coins: 3 });
+    const { platform, save, shop } = await setup({ coins: 3, diamonds: 1 });
+    const foamGun = TOOL_FAMILIES.foam.options.find((o) => o.tool === 'foam-gun');
+    expect(shop.adFallback(foamGun)).toBe(true);
     expect(shop.purchase('foam', 'foam-gun').status).toBe('insufficient');
-    expect((await shop.unlockWithAd('foam', 'foam-gun')).status).toBe('invalid'); // only as the explicit fallback
-    const [a, b] = await Promise.all([shop.unlockWithAd('foam', 'foam-gun', { coinFallback: true }), shop.unlockWithAd('foam', 'foam-gun', { coinFallback: true })]);
+    const [a, b] = await Promise.all([shop.unlockWithAd('foam', 'foam-gun'), shop.unlockWithAd('foam', 'foam-gun')]);
     expect([a.status, b.status].sort()).toEqual(['busy', 'unlocked']);
     expect(save.get('coins')).toBe(3);
     expect(shop.equipped('foam')).toBe('foam-gun');
-    expect((await shop.unlockWithAd('foam', 'foam-gun', { coinFallback: true })).status).toBe('equipped'); // owned: no second ad
+    expect((await shop.unlockWithAd('foam', 'foam-gun')).status).toBe('equipped'); // owned: no second ad
     expect(platform.dev.rewardedLog).toHaveLength(1);
-    expect((await shop.unlockWithAd('laser', 'laser-gold', { coinFallback: true })).status).toBe('invalid');
+    // a diamond variant the player cannot afford: the same ad fallback
+    expect((await shop.unlockWithAd('scrub', 'drill-brush')).status).toBe('unlocked');
+    expect(save.get('diamonds')).toBe(1);
+    expect(shop.equipped('scrub')).toBe('drill-brush');
+    // enough currency → a normal purchase, never an ad
+    const rich = await setup({ coins: 10000, diamonds: 1000 });
+    expect(rich.shop.adFallback(TOOL_FAMILIES.laser.options.find((o) => o.tool === 'laser-gold'))).toBe(false);
+    expect((await rich.shop.unlockWithAd('laser', 'laser-gold')).status).toBe('invalid');
+    expect(rich.platform.dev.rewardedLog).toHaveLength(0);
   });
 
   it('a visual variant owned as a cosmetic skin in an old save counts as owned (never charged again)', async () => {
@@ -537,11 +601,12 @@ describe('Alternative tools (Step 7)', () => {
   });
 
   it('coins purchase: charged once (double tap), owned + equipped; insufficient coins change nothing', async () => {
-    const poor = await setup({ coins: 14 });
+    const P = economy.toolPrices['scrub-brush-oval'];
+    const poor = await setup({ coins: P - 1 });
     expect(poor.shop.purchase('scrub', 'scrub-brush-oval')).toMatchObject({ status: 'insufficient', currency: 'coins' });
-    expect(poor.save.get('coins')).toBe(14);
+    expect(poor.save.get('coins')).toBe(P - 1);
     expect(poor.shop.isOwned('scrub', 'scrub-brush-oval')).toBe(false);
-    const { save, shop } = await setup({ coins: 40 });
+    const { save, shop } = await setup({ coins: P + 25 });
     const a = shop.purchase('scrub', 'scrub-brush-oval');
     const b = shop.purchase('scrub', 'scrub-brush-oval');
     expect(a.status).toBe('purchased');
@@ -557,10 +622,11 @@ describe('Alternative tools (Step 7)', () => {
   });
 
   it('diamonds purchase; insufficient diamonds change nothing', async () => {
-    const poor = await setup({ diamonds: 4 });
+    const D = economy.toolPrices['drill-brush'];
+    const poor = await setup({ diamonds: D - 1 });
     expect(poor.shop.purchase('scrub', 'drill-brush')).toMatchObject({ status: 'insufficient', currency: 'diamonds' });
-    expect(poor.save.get('diamonds')).toBe(4);
-    const { save, shop } = await setup({ diamonds: 5, coins: 3 });
+    expect(poor.save.get('diamonds')).toBe(D - 1);
+    const { save, shop } = await setup({ diamonds: D, coins: 3 });
     expect(shop.purchase('scrub', 'drill-brush').status).toBe('purchased');
     expect(save.get('diamonds')).toBe(0);
     expect(save.get('coins')).toBe(3);
@@ -584,13 +650,14 @@ describe('Alternative tools (Step 7)', () => {
     // owned: no second ad needed
     expect((await shop.unlockWithAd('foam', 'foam-cannon')).status).toBe('equipped');
     expect(platform.dev.rewardedLog).toHaveLength(1);
-    // coins / diamonds cannot buy an ad tool, an ad cannot unlock a priced tool
+    // coins / diamonds cannot buy an ad tool; an ad unlocks a priced tool only while it is unaffordable
     expect(shop.purchase('foam', 'foam-cannon').status).toBe('equipped');
+    await save.update((s) => (s.coins = economy.toolPrices['foam-gun']));
     expect((await shop.unlockWithAd('foam', 'foam-gun')).status).toBe('invalid');
   });
 
   it('ownership and equipped tools persist across a reload; bad saved data is sanitised', async () => {
-    const { platform, shop } = await setup({ coins: 20 });
+    const { platform, shop } = await setup({ coins: economy.toolPrices['wipe-sponge'] + 10 });
     await shop.purchase('wipe', 'wipe-sponge').savePromise; // written before the "reload"
     const save2 = new SaveService(platform);
     await save2.load();
@@ -727,7 +794,7 @@ function fakeImage(x = 0, y = 0) {
 }
 function fakeScene() {
   return {
-    add: { image: (x, y) => fakeImage(x, y), graphics: () => ({ clear() {}, lineStyle() {}, beginPath() {}, arc() {}, strokePath() {}, destroy() {} }) },
+    add: { image: (x, y) => fakeImage(x, y), graphics: () => ({ clear() {}, lineStyle() {}, beginPath() {}, arc() {}, strokePath() {}, strokeCircle() {}, destroy() {} }) },
     // tween stub: applies end values immediately
     tweens: { add: (cfg) => { Object.assign(cfg.targets, Object.fromEntries(Object.entries(cfg).filter(([k]) => ['x', 'y', 'alpha', 'angle'].includes(k)))); cfg.onComplete?.(); } },
   };
@@ -1180,62 +1247,144 @@ describe('Step 9 polish pass (shared systems)', () => {
   });
 });
 
-describe('Store and Wheel of Fortune', () => {
-  async function setup({ ad = 'earned', coins = 0, diamonds = 0, random = () => 0 } = {}) {
-    const platform = createDevPlatform({ rewardedOutcome: ad, rewardedDelayMs: 1 });
+describe('Store and Wheel of Fortune (systems pass 2026-10-12)', () => {
+  async function setup({ ad = 'earned', coins = 0, diamonds = 0, random = () => 0, clock = null, platform: pl = null } = {}) {
+    const platform = pl ?? createDevPlatform({ rewardedOutcome: ad, rewardedDelayMs: 1 });
     const save = new SaveService(platform);
     await save.load();
-    await save.update((st) => Object.assign(st, { coins, diamonds }));
+    if (!pl) await save.update((st) => Object.assign(st, { coins, diamonds }));
     const rewards = new RewardService({ save, economy, platform, pause: new PauseState() });
     const toolShop = new ToolService({ save, rewards, families: TOOL_FAMILIES });
-    const store = new StoreService({ save, rewards, platform, config: economy.store, timedChest: economy.rewards.timedChest });
-    const wheel = new WheelService({ save, rewards, toolShop, config: economy.wheel, random });
+    const clk = clock ?? (() => Date.now());
+    const store = new StoreService({ save, rewards, config: economy.store, timedChest: economy.rewards.timedChest, clock: clk });
+    const wheel = new WheelService({ save, rewards, toolShop, config: economy.wheel, random, clock: clk });
     return { platform, save, rewards, toolShop, store, wheel };
   }
 
-  it('rewarded store offers: only a watched ad grants; cancel / fail nothing; parallel results once; daily cap', async () => {
-    for (const ad of ['not-earned', 'error']) {
+  it('no real-money products in the config: diamonds come from one rewarded-ad offer (25), coins from an ad (100–150) and packs paid with diamonds', () => {
+    const cfg = economy.store;
+    expect(cfg.gemPacks).toBeUndefined();
+    expect(JSON.stringify(cfg)).not.toMatch(/\$|price|usd|test/i);
+    expect(cfg.free.gems.gems).toBe(25);
+    expect(cfg.free.coins.coins).toBeGreaterThanOrEqual(100);
+    expect(cfg.free.coins.coins).toBeLessThanOrEqual(150);
+    for (const p of cfg.coinPacks) expect(p.gems).toBeGreaterThan(0);
+  });
+
+  it('rewarded store offers: only a watched ad grants (exactly once); cancel / fail nothing; parallel results once; no daily cap on coins / diamonds', async () => {
+    for (const ad of ['not-earned', 'error', 'unavailable']) {
       const { store, save } = await setup({ ad });
       expect((await store.claimAd('gems')).status).toBe(ad);
-      expect(save.get('diamonds')).toBe(0);
+      expect((await store.claimAd('coins')).status).toBe(ad);
+      expect([save.get('coins'), save.get('diamonds')]).toEqual([0, 0]);
     }
     const { store, save, platform } = await setup();
     const [a, b] = await Promise.all([store.claimAd('gems'), store.claimAd('gems')]);
     expect([a.status, b.status].sort()).toEqual(['busy', 'granted']);
-    expect(save.get('diamonds')).toBe(economy.store.free.gems.gems);
+    expect(save.get('diamonds')).toBe(25);
     expect((await store.claimAd('coins')).status).toBe('granted');
     expect(save.get('coins')).toBe(economy.store.free.coins.coins);
-    for (let i = 1; i < economy.store.free.gems.dailyLimit; i++) await store.claimAd('gems');
-    expect(store.adRemaining('gems')).toBe(0);
-    expect((await store.claimAd('gems')).status).toBe('limit');
-    expect(platform.dev.rewardedLog).toHaveLength(economy.store.free.gems.dailyLimit + 1);
+    for (let i = 0; i < 8; i++) expect((await store.claimAd('gems')).status).toBe('granted');
+    expect(store.adRemaining('gems')).toBe(Infinity);
+    expect(save.get('diamonds')).toBe(25 * 9);
+    expect(platform.dev.rewardedLog).toHaveLength(10);
+    // the chest offer keeps its daily cap
+    expect(store.adRemaining('chest')).toBe(economy.store.free.chest.dailyLimit);
   });
 
-  it('coin packs cost diamonds once; insufficient changes nothing; diamond packs are dev test purchases', async () => {
-    const poor = await setup({ diamonds: 2 });
-    expect(poor.store.buyCoins('coins-300').status).toBe('insufficient');
-    expect(poor.save.get('coins')).toBe(0);
-    const { store, save } = await setup({ diamonds: 6 });
-    expect(store.buyCoins('coins-300').status).toBe('purchased');
-    expect([save.get('coins'), save.get('diamonds')]).toEqual([300, 1]);
-    expect(store.buyGems('gems-25')).toMatchObject({ status: 'purchased', test: true });
-    expect(save.get('diamonds')).toBe(26);
-    const prod = new StoreService({ save, rewards: null, platform: {}, config: economy.store, timedChest: economy.rewards.timedChest });
-    expect(prod.buyGems('gems-25').status).toBe('unavailable');
+  it('coin packs cost diamonds once; insufficient changes nothing', async () => {
+    const pack = economy.store.coinPacks[0];
+    const poor = await setup({ diamonds: pack.gems - 1 });
+    expect(poor.store.buyCoins(pack.id).status).toBe('insufficient');
+    expect([poor.save.get('coins'), poor.save.get('diamonds')]).toEqual([0, pack.gems - 1]);
+    const { store, save } = await setup({ diamonds: pack.gems + 1 });
+    expect(store.buyCoins(pack.id).status).toBe('purchased');
+    expect([save.get('coins'), save.get('diamonds')]).toEqual([pack.coins, 1]);
   });
 
-  it('wheel: ad cancel / fail = no spin; a spin grants the chosen segment once; tool reward → owned, owned → fallback', async () => {
-    for (const ad of ['not-earned', 'error']) {
-      const { wheel, save } = await setup({ ad });
+  it('ad bundles: each watched ad = +1 progress (cancel / fail nothing), saved across a reload; the full pack is claimed exactly once, then it starts again', async () => {
+    const b = economy.store.bundles.find((x) => x.reward.chest);
+    expect(b.ads).toBeGreaterThanOrEqual(3);
+    const { store, save, platform } = await setup();
+    expect(store.bundleState(b.id)).toMatchObject({ progress: 0, ads: b.ads, ready: false });
+    expect(store.claimBundle(b.id).status).toBe('not-ready');
+    const [x, y] = await Promise.all([store.watchBundleAd(b.id), store.watchBundleAd(b.id)]);
+    expect([x.status, y.status].sort()).toEqual(['busy', 'progress']);
+    platform.dev.setRewardedOutcome('not-earned');
+    expect((await store.watchBundleAd(b.id)).status).toBe('not-earned');
+    platform.dev.setRewardedOutcome('error');
+    expect((await store.watchBundleAd(b.id)).status).toBe('error');
+    expect(store.bundleState(b.id).progress).toBe(1);
+    await save.update(() => {});
+    // reload: progress is still there
+    platform.dev.setRewardedOutcome('earned');
+    const s2 = await setup({ platform });
+    expect(s2.store.bundleState(b.id).progress).toBe(1);
+    for (let i = 1; i < b.ads; i++) expect((await s2.store.watchBundleAd(b.id)).status).toBe('progress');
+    expect(s2.store.bundleState(b.id)).toMatchObject({ progress: b.ads, ready: true });
+    expect((await s2.store.watchBundleAd(b.id)).status).toBe('ready'); // no extra ad once complete
+    const t = s2.store.bundleTotals(b);
+    expect(t.coins).toBe(b.reward.coins + economy.store.chest.coins);
+    const before = [s2.save.get('coins'), s2.save.get('diamonds')];
+    const r = s2.store.claimBundle(b.id);
+    expect(r).toMatchObject({ status: 'granted', coins: t.coins, gems: t.gems, chest: 1 });
+    expect(s2.store.claimBundle(b.id).status).toBe('not-ready'); // never twice
+    expect([s2.save.get('coins'), s2.save.get('diamonds')]).toEqual([before[0] + t.coins, before[1] + t.gems]);
+    expect(s2.store.bundleState(b.id)).toMatchObject({ progress: 0, ready: false, claims: 1 });
+    // a 3-ad bundle pays clearly more than three single ads
+    const coinB = economy.store.bundles.find((z) => z.id === 'bundle-coins');
+    expect(coinB.reward.coins).toBeGreaterThan(coinB.ads * economy.store.free.coins.coins * 1.25);
+  });
+
+  it('bundle limits / cooldowns are config-driven', async () => {
+    const now = { t: 1_000_000 };
+    const cfg = { ...economy.store, bundles: [{ id: 'b', title: 'B', ads: 1, reward: { coins: 10 }, dailyLimit: 1, cooldownMin: 30 }] };
+    const platform = createDevPlatform({ rewardedOutcome: 'earned', rewardedDelayMs: 1 });
+    const save = new SaveService(platform);
+    await save.load();
+    const rewards = new RewardService({ save, economy, platform, pause: new PauseState() });
+    const store = new StoreService({ save, rewards, config: cfg, timedChest: economy.rewards.timedChest, clock: () => now.t });
+    expect((await store.watchBundleAd('b')).status).toBe('progress');
+    expect(store.claimBundle('b').status).toBe('granted');
+    expect(store.bundleState('b').blocked).toBe('limit');
+    expect((await store.watchBundleAd('b')).status).toBe('limit');
+    now.t += 24 * 3600 * 1000 + 1;
+    expect(store.bundleState('b').blocked).toBe(null);
+  });
+
+  it('wheel: the first spin of the day is free (no ad); every later spin needs a watched ad, with NO cap; cancel / fail = no spin', async () => {
+    const day = { t: new Date(2026, 9, 12, 10).getTime() };
+    const { wheel, save, platform } = await setup({ ad: 'not-earned', clock: () => day.t });
+    expect(wheel.freeAvailable()).toBe(true);
+    const f = await wheel.spin(); // free even though ads would fail
+    expect(f).toMatchObject({ status: 'granted', free: true });
+    expect(platform.dev.rewardedLog).toHaveLength(0);
+    expect(wheel.freeAvailable()).toBe(false);
+    const coins = save.get('coins');
+    for (const ad of ['not-earned', 'error', 'unavailable']) {
+      platform.dev.setRewardedOutcome(ad);
       expect((await wheel.spin()).status).toBe(ad);
-      expect([save.get('coins'), save.get('diamonds'), save.get('wheel.total')]).toEqual([0, 0, 0]);
     }
+    expect(save.get('coins')).toBe(coins);
+    expect(save.get('wheel.total')).toBe(1);
+    platform.dev.setRewardedOutcome('earned');
+    for (let i = 0; i < 12; i++) expect((await wheel.spin())).toMatchObject({ status: 'granted', free: false });
+    expect(save.get('wheel.total')).toBe(13);
+    expect(platform.dev.rewardedLog.filter((e) => e.result === 'earned')).toHaveLength(12);
+    // next local day: one free spin again
+    day.t += 24 * 3600 * 1000;
+    expect(wheel.freeAvailable()).toBe(true);
+    const logN = platform.dev.rewardedLog.length;
+    expect((await wheel.spin()).free).toBe(true);
+    expect(platform.dev.rewardedLog).toHaveLength(logN);
+  });
+
+  it('wheel: a spin grants the chosen segment once; tool reward → owned, owned → fallback; persists', async () => {
     const segs = economy.wheel.segments;
     const total = segs.reduce((a, x) => a + x.weight, 0);
     const before = (i) => segs.slice(0, i).reduce((a, x) => a + x.weight, 0);
     const toolIdx = segs.findIndex((x) => x.kind === 'tool');
-    // random lands inside the tool segment's weight range
-    const { wheel, save, toolShop } = await setup({ random: () => (before(toolIdx) + 0.5) / total });
+    const { wheel, save, toolShop, platform } = await setup({ random: () => (before(toolIdx) + 0.5) / total });
     const [a, b] = await Promise.all([wheel.spin(), wheel.spin()]);
     expect([a.status, b.status].sort()).toEqual(['busy', 'granted']);
     const r = a.status === 'granted' ? a : b;
@@ -1245,24 +1394,15 @@ describe('Store and Wheel of Fortune', () => {
     const r2 = await wheel.spin();
     expect(r2.reward).toMatchObject({ kind: 'gems', amount: segs[toolIdx].fallback.amount, fallbackFor: 'laser-gold' });
     expect(save.get('diamonds')).toBe(segs[toolIdx].fallback.amount);
+    await save.update(() => {});
+    const save2 = new SaveService(platform);
+    await save2.load();
+    expect(save2.get('diamonds')).toBe(save.get('diamonds'));
+    expect(save2.get('wheel')).toMatchObject({ total: 2, freeDay: save.get('wheel.freeDay') });
     // coins segment
     const c = await setup({ random: () => 0 });
     const r3 = await c.wheel.spin();
     expect(r3.reward).toMatchObject({ kind: 'coins', amount: segs[0].amount });
     expect(c.save.get('coins')).toBe(segs[0].amount);
-  });
-
-  it('wheel daily limit; store / wheel rewards persist after a reload', async () => {
-    const { wheel, store, platform, save } = await setup();
-    for (let i = 0; i < economy.wheel.dailyLimit; i++) expect((await wheel.spin()).status).toBe('granted');
-    expect((await wheel.spin()).status).toBe('limit');
-    await store.claimAd('gems');
-    await save.update(() => {});
-    const save2 = new SaveService(platform);
-    await save2.load();
-    expect(save2.get('coins')).toBe(save.get('coins'));
-    expect(save2.get('diamonds')).toBe(save.get('diamonds'));
-    expect(save2.get('wheel.spins')).toBe(economy.wheel.dailyLimit);
-    expect(save2.get('store.claims').gems).toBe(1);
   });
 });

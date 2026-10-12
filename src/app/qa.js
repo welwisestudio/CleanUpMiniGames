@@ -67,13 +67,19 @@ function snapshot() {
     // level access (read-only): the saved sets + dev unlock-all flag; levelOffer = menu offer open
     progression: s.save.loaded ? { ...JSON.parse(JSON.stringify(s.save.get('progression'))), devUnlockAll: s.progression.devUnlockAll } : null,
     levelOffer: Boolean(scene?.levelOffer),
+    levelOfferKind: scene?.levelOffer?.kind ?? null, // coins · ad · vip
+    vipLevels: [...(s.progression.config.vip ?? [])],
+    diamondsNow: s.save.loaded ? s.save.get('diamonds') : null,
+    // Store bundles / Wheel free-spin day as saved (read-only)
+    storeSave: s.save.loaded ? JSON.parse(JSON.stringify(s.save.get('store'))) : null,
+    wheelSave: s.save.loaded ? { ...s.save.get('wheel') } : null,
     levelOfferX: scene?.levelOffer ? scene.levelOffer.panel.x / (scene.layout?.dpr ?? 1) : null, // CSS px (the panel's base = W / 2)
     // chest images' local x (a not-ready nudge must always return to 0) + the paint source texture
     chestX: { timed: (scene?.timedChest ?? scene?.hudTimedChest)?.chest?.x ?? null, progress: (scene?.progressChest ?? scene?.hudProgressChest)?.chest?.x ?? null },
     paintSource: scene?.mechanic?.sourceImg?.texture?.key ?? null,
     // Store / Wheel (read-only): open flags; wheel state + the segment it chose / landed on
     store: scene?.store ? { open: true } : null,
-    wheel: scene?.wheel ? { state: scene.wheel.state, chosen: scene.wheel.result?.index ?? null, landed: scene.wheel.landedIndex(), spinsLeft: s.wheel.spinsLeft() } : null,
+    wheel: scene?.wheel ? { state: scene.wheel.state, chosen: scene.wheel.result?.index ?? null, landed: scene.wheel.landedIndex(), free: s.wheel.freeAvailable() } : null,
     toolsOwned: s.save.loaded ? [...s.save.get('tools.owned')] : null,
     pause: s.pause.snapshot(),
     build: s.build,
@@ -99,7 +105,7 @@ function snapshot() {
   const layout = scene.layout;
   const buttons = {};
   for (const [id, b] of scene.qaButtons ?? []) buttons[id] = rectToScreen(layout, b.worldRect());
-  for (const [id, r] of scene.qaTargets ?? []) buttons[id] = { ...rectToScreen(layout, r), ...(r.thumb ? { thumb: r.thumb, check: r.check / layout.dpr } : {}), ...(r.state ? { state: r.state } : {}) };
+  for (const [id, r] of scene.qaTargets ?? []) buttons[id] = { ...rectToScreen(layout, r), ...(r.thumb ? { thumb: r.thumb, check: r.check / layout.dpr } : {}), ...(r.state ? { state: r.state } : {}), ...(r.vip ? { vip: true } : {}) };
   base.layout = { W: layout.cssW, H: layout.cssH, dpr: layout.dpr, u: layout.u / layout.dpr, compact: layout.compact, hudBottom: layout.hudBottom / layout.dpr };
   base.buttons = buttons;
   if (scene.scene.key === 'Level' && scene.stack) {
@@ -111,7 +117,6 @@ function snapshot() {
       state: scene.state,
       stageIndex: scene.stageIndex,
       stageId: scene.stage?.id,
-      toolOffer: Boolean(scene.toolOffer), // "Not enough coins" → rewarded-ad offer is open
       fxLog: { ...(scene.fxLog ?? {}) }, // effect events by type (tool variety pass)
       stageCount: scene.level.stages.length,
       progress: scene.mechanic?.progress ?? 0,
@@ -140,6 +145,8 @@ function snapshot() {
       region: scene.stage?.region ?? scene.stage?.params?.region ?? null,
       family: scene.family,
       brush: { radius: scene.stage?.params?.radius ?? null, effectiveRadius: scene.mechanic?.radius ?? null, aspect: scene.stage?.params?.aspect ?? 1, aspectY: scene.mechanic?.aspectY ?? 1, mechanic: scene.stage?.mechanic },
+      // painting cost counters (systems pass 2026-10-12): stamps, render passes, Mpx blitted, JS ms
+      paintStats: scene.stack?.paintStats ? { ...scene.stack.paintStats } : null,
       // active-area indicator: null, 'traced' (region outline) or circles (count still shown)
       outline: scene.stack.outlineRings ? { kind: 'circles', shown: scene.stack.outlineRings.filter((r) => !r.done).length, r: scene.stack.outlineRings[0]?.r ?? null } : scene.stack.outline ? { kind: 'traced' } : null,
       // repair-spot centres of the level (object-local), e.g. the chair holes

@@ -14,10 +14,11 @@ import { WheelModal } from '../ui/wheelModal.js';
 
 // Object selection (reference Menu_screen.PNG, video 00:00 / 08:04–08:16): a vertical list of
 // shelves that scrolls downward, 2 objects per shelf row. Header: currency counters and settings.
-// Level access (2026-10-10, ProgressionService): every level stays visible; completed = clean
-// preview + check, open = dirty preview, locked = dimmed preview + padlock + a small ad chip (a
-// rewarded ad opens THAT level), VIP (last five) = dimmed preview + padlock + "VIP" tag + diamond
-// price (bought with diamonds only).
+// Level access (systems pass 2026-10-12, ProgressionService): every level stays visible; completed =
+// clean preview + check, open = dirty preview, locked = dimmed preview + padlock (a tap opens the
+// unlock card: coins, or a rewarded ad when the player cannot afford it). The three VIP levels sit
+// spread through the list and always carry a purple "VIP" tag; locked VIP = purple-dimmed preview +
+// padlock + tag (rewarded ad only).
 // Step 6 reward pass: the timed chest and the level-progress chest form one column on the left,
 // directly below the counters; the header keeps its approved single-row height. On narrow
 // screens the shelves get a left gutter so the column never covers a level while scrolling.
@@ -34,8 +35,15 @@ export class MenuScene extends Phaser.Scene {
     super('Menu');
   }
 
-  create() {
+  create(data) {
     this.services = this.registry.get('services');
+    // "Next" on a result card whose next level is still locked: the menu opens on that level's
+    // unlock card (scrolled into view). This is the ONLY automatic unlock popup (fix 2026-10-12):
+    // Phaser keeps a scene's start data until new data is passed (`if (data) settings.data = data`),
+    // so the request is consumed here and cleared — a later plain menu start (Pause → Menu, exit,
+    // reload) can never replay it.
+    this.pendingOffer = data?.fromNext && data.offerLevel ? data.offerLevel : null;
+    this.sys.settings.data = {};
     this.leaving = false; // scene objects are reused between visits
     this.services.pause.set('navigationBusy', false);
     this.qaButtons = new Map();
@@ -141,6 +149,17 @@ export class MenuScene extends Phaser.Scene {
     });
     attachResponsiveLayout(this, (l) => this.relayout(l));
     registerQaScene(this);
+    if (this.pendingOffer) {
+      const id = this.pendingOffer;
+      this.pendingOffer = null;
+      this.time.delayedCall(120, () => {
+        // only a level that is still locked gets its card; nothing is ever opened automatically
+        if (this.leaving || this.services.progression.isPlayable(id)) return;
+        const e = this.entries.find((x) => x.levelId === id);
+        if (e?.geo() && this.viewH) this._scrollTo(e.geo().y - this.viewH / 2);
+        this._tapLevel(getLevel(id));
+      });
+    }
   }
 
   relayout(l) {
@@ -286,8 +305,9 @@ export class MenuScene extends Phaser.Scene {
   _levelEntry(level) {
     // a completed level shows its restored (clean) object; the dirty one until then
     const prog = this.services.progression;
-    const state = prog.status(level.id); // completed · open · locked · vip
+    const state = prog.status(level.id); // completed · open · locked · vip (locked VIP)
     const done = state === 'completed';
+    const isVip = prog.isVip(level.id);
     const img = this.add.image(0, 0, done && level.thumbnailClean ? level.thumbnailClean : level.thumbnail).setOrigin(0.5, 0.92);
     const name = makeText(this, 0, 0, level.title, { size: 17, color: state === 'locked' || state === 'vip' ? '#8C8296' : TEXT.navy, weight: '900' });
     const badge = done ? this.add.image(0, 0, 'icon-check') : null;
@@ -295,16 +315,14 @@ export class MenuScene extends Phaser.Scene {
     const locked = state === 'locked' || state === 'vip';
     if (locked) img.setTint(state === 'vip' ? 0x9d93b3 : 0x9a9a9a).setAlpha(0.82);
     const lock = locked ? this.add.graphics() : null;
-    const chip = state === 'vip' ? this.add.container(0, 0) : null; // locked normal levels: padlock only
+    // VIP tag on every VIP level (locked or not): a purple pill on the preview's upper left (the
+    // completion check keeps the upper right); locked normal levels: padlock only, no chips
+    const chip = isVip ? this.add.container(0, 0) : null;
     if (chip) {
-      const vip = state === 'vip';
       const cg = this.add.graphics();
-      // one chip: [ad] for a normal locked level · [VIP ◆ price] for a VIP level
-      const items = vip
-        ? [makeText(this, 0, 0, 'VIP', { size: 14, color: '#8A3FD1', weight: '900' }), fitImageMenu(this, 'icon-diamond', 20), makeText(this, 0, 0, `${prog.vipPrice(level.id)}`, { size: 16, color: '#4B1D7A', weight: '900' })]
-        : [fitImageMenu(this, 'icon-ad-clapper', 24)];
+      const items = [makeText(this, 0, 0, 'VIP', { size: 15, color: '#FFFFFF', weight: '900', stroke: '#5B2A9A', strokeThickness: 3 })];
       chip.add([cg, ...items]);
-      chip.setData({ g: cg, items, vip });
+      chip.setData({ g: cg, items });
     }
     const zone = this.add.zone(0, 0, 10, 10).setInteractive({ useHandCursor: true });
     let base = 1;
@@ -320,6 +338,8 @@ export class MenuScene extends Phaser.Scene {
     });
     const objects = [img, name, zone, ...(badge ? [badge] : []), ...(lock ? [lock] : []), ...(chip ? [chip] : [])];
     return {
+      levelId: level.id,
+      geo: () => geo,
       objects,
       layout: (x, shelfY, size, u, labelY) => {
         // optional per-level preview tweak (level.menuPreview: { scale, dy } as a share of the slot)
@@ -341,13 +361,13 @@ export class MenuScene extends Phaser.Scene {
         if (badge) badge.setScale((CHECK_SIZE * u) / badge.width).setPosition(x + size * 0.38, shelfY - size * 0.8);
         if (lock) drawPadlock(lock, x, shelfY - size * 0.36, size * 0.2);
         if (chip) {
-          // chip on the preview's upper right (where the completion check sits on completed levels)
-          const { g, items, vip } = chip.data.values;
-          items.forEach((o) => o.setScale(o.baseSize ? o.baseSize / Math.max(o.width, o.height) : 1)); // icons keep their fitted size
-          const w = vip ? 84 : 40;
-          g.clear().fillStyle(0xffffff, 0.96).fillRoundedRect(-w / 2, -16, w, 32, 16).lineStyle(3, vip ? 0xb07ae8 : 0xf0b98d, 1).strokeRoundedRect(-w / 2, -16, w, 32, 16);
+          const { g, items } = chip.data.values;
+          items.forEach((o) => o.setScale(1));
+          const w = 54;
+          g.clear().fillStyle(0x3b1f66, 0.22).fillRoundedRect(-w / 2, -12, w, 28, 14);
+          g.fillStyle(0x8a4fe0, 1).fillRoundedRect(-w / 2, -14, w, 28, 14).lineStyle(3, 0xffffff, 1).strokeRoundedRect(-w / 2, -14, w, 28, 14);
           centerRowMenu(items, 0, 0, 4);
-          chip.setScale(u).setPosition(x + size * (vip ? 0.3 : 0.36), shelfY - size * 0.8);
+          chip.setScale(u).setPosition(x - size * 0.34, shelfY - size * 0.8);
         }
         const hit = Math.max(size, UI.minTouch * u);
         zone.setPosition(x, shelfY - size * 0.42).setSize(hit, hit);
@@ -356,7 +376,7 @@ export class MenuScene extends Phaser.Scene {
       qa: () => {
         if (!geo) return;
         const y = geo.y - this.scrollY;
-        this.qaTargets.set(`menu-level-${level.id}`, { x: geo.x, y, w: geo.w, h: geo.h, visible: y - geo.h / 2 > this.headerH && y + geo.h / 2 < this.viewH, thumb: img.texture.key, check: badge ? badge.displayWidth : 0, state });
+        this.qaTargets.set(`menu-level-${level.id}`, { x: geo.x, y, w: geo.w, h: geo.h, visible: y - geo.h / 2 > this.headerH && y + geo.h / 2 < this.viewH, thumb: img.texture.key, check: badge ? badge.displayWidth : 0, state, vip: isVip, contentY: geo.y });
       },
     };
   }
@@ -470,33 +490,36 @@ export class MenuScene extends Phaser.Scene {
     });
   }
 
-  // A tap on a level card: open it when playable, otherwise its offer (ad jump / VIP purchase).
+  // A tap on a level card: open it when playable, otherwise its unlock card — coins when the player
+  // can afford the price, a rewarded ad when not; VIP levels: rewarded ad only.
   _tapLevel(level) {
     if (this.leaving || this.settings || this.chestOffer || this.levelOffer || this.store || this.wheel) return;
     const prog = this.services.progression;
     if (prog.isPlayable(level.id)) return this._openLevel(level.id);
     this.services.audio.play('ui-tap');
     const vip = prog.isVip(level.id);
+    const kind = vip ? 'vip' : prog.canAfford(level.id) ? 'coins' : 'ad';
     const close = () => {
       this.levelOffer?.destroy();
       this.levelOffer = null;
     };
     const offer = new LevelOffer(this, {
-      kind: vip ? 'vip' : 'ad',
+      kind,
       number: prog.number(level.id),
       title: level.title,
       texture: level.thumbnail,
-      price: prog.vipPrice(level.id),
+      price: prog.price(level.id) ?? 0,
+      coins: this.services.save.get('coins'),
       onClose: close,
       onConfirm: async () => {
-        if (vip) {
-          const r = prog.purchaseVip(level.id);
+        if (kind === 'coins') {
+          const r = prog.purchase(level.id);
           if (r.status === 'insufficient') {
-            offer.message('Not enough diamonds');
+            offer.message('Not enough coins');
             offer.shake();
             return;
           }
-          if (r.status === 'purchased') this.diamonds.setValue(r.after);
+          if (r.status === 'purchased') this.coins.setValue(r.after);
           close();
           this._openLevel(level.id);
           return;
@@ -525,14 +548,7 @@ export class MenuScene extends Phaser.Scene {
   }
 }
 
-// small helpers for the locked-card decorations (UI units)
-function fitImageMenu(scene, key, size) {
-  const img = scene.add.image(0, 0, key);
-  img.setScale(size / Math.max(img.width, img.height));
-  img.baseSize = size;
-  return img;
-}
-
+// small helper for the card decorations (UI units)
 function centerRowMenu(items, cx, cy, gap) {
   const total = items.reduce((a, o) => a + o.displayWidth, 0) + gap * (items.length - 1);
   let x = cx - total / 2;

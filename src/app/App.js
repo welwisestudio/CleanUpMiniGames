@@ -32,7 +32,7 @@ export function createApp({ platform, parent }) {
   const q = new URLSearchParams(window.location.search);
   const devUnlockAll = Boolean(platform.dev) && (q.get('unlockAll') === '1' || (q.get('qa') === '1' && q.get('locks') !== '1'));
   const progression = new ProgressionService({ save, rewards, order: DISPLAY_ORDER, config: economy.levelAccess, devUnlockAll });
-  const store = new StoreService({ save, rewards, platform, config: economy.store, timedChest: economy.rewards.timedChest });
+  const store = new StoreService({ save, rewards, config: economy.store, timedChest: economy.rewards.timedChest });
   // dev / test only: `?wheelSeg=N` forces the wheel's chosen segment (QA of each reward)
   const forced = platform.dev && q.get('wheelSeg') != null ? Number(q.get('wheelSeg')) : null;
   const segW = economy.wheel.segments.map((x) => x.weight);

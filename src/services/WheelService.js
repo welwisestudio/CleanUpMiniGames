@@ -1,11 +1,13 @@
 import { Emitter } from '../core/Emitter.js';
 
-// Wheel of Fortune (2026-10-10): one rewarded ad = one spin, a daily limit, config segments.
+// Wheel of Fortune (systems pass 2026-10-12): the first spin of each local day is FREE; after it
+// every spin costs one rewarded ad, with no daily cap. Config segments.
 //
 // Rules:
-// - only an 'earned' ad spins; cancelled / failed / unavailable: no spin, no reward;
-// - one spin in flight; the daily limit is re-checked inside the save mutation, so a duplicate ad
-//   result never grants a second reward;
+// - free spin: available while `wheel.freeDay` is not today; using it records today (re-checked
+//   inside the save mutation, so it can never be used twice);
+// - ad spin: only an 'earned' ad spins; cancelled / failed / unavailable: no spin, no reward;
+// - one spin in flight (a duplicate ad result never grants a second reward);
 // - the winning segment is chosen (weighted) and its reward is saved at the same moment, BEFORE the
 //   wheel animation — closing the wheel mid-spin can neither lose nor duplicate the reward; the UI
 //   then turns the wheel to land exactly on that segment;
@@ -32,9 +34,9 @@ export class WheelService extends Emitter {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
-  spinsLeft() {
-    const w = this.save.get('wheel');
-    return Math.max(0, this.config.dailyLimit - (w.day === this.today() ? w.spins : 0));
+  // the free spin of today is still available (reset on the next local day)
+  freeAvailable() {
+    return this.save.get('wheel').freeDay !== this.today();
   }
 
   pick() {
@@ -56,21 +58,24 @@ export class WheelService extends Emitter {
 
   async spin() {
     if (this.busy) return { status: 'busy' };
-    if (this.spinsLeft() <= 0) return { status: 'limit' };
     this.busy = true;
     try {
-      const ad = await this.rewards.rewardedAd(this.config.adPlacement);
-      if (ad !== 'earned') return { status: ad };
+      const free = this.freeAvailable();
+      if (!free) {
+        const ad = await this.rewards.rewardedAd(this.config.adPlacement);
+        if (ad !== 'earned') return { status: ad };
+      }
       const day = this.today();
       const index = this.pick();
-      const r = { status: 'limit' };
+      const r = { status: 'busy' };
       await this.save.update((s) => {
+        if (free && s.wheel.freeDay === day) return; // the free spin was used meanwhile: never twice
+        if (free) s.wheel.freeDay = day;
         if (s.wheel.day !== day) Object.assign(s.wheel, { day, spins: 0 });
-        if (s.wheel.spins >= this.config.dailyLimit) return; // re-checked: never twice
         s.wheel.spins += 1;
         s.wheel.total += 1;
         const reward = this.rewardOf(index);
-        Object.assign(r, { status: 'granted', index, reward, coinsBefore: s.coins, diamondsBefore: s.diamonds });
+        Object.assign(r, { status: 'granted', free, index, reward, coinsBefore: s.coins, diamondsBefore: s.diamonds });
         if (reward.kind === 'coins') s.coins += reward.amount;
         if (reward.kind === 'gems') s.diamonds += reward.amount;
         if (reward.kind === 'tool' && !s.tools.owned.includes(reward.tool)) s.tools.owned.push(reward.tool);

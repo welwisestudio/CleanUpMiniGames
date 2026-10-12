@@ -55,7 +55,7 @@ export class BootScene extends Phaser.Scene {
     services.ready.then(
       () => {
         services.platform.gameReady();
-        this.scene.start('Menu');
+        this.scene.start('Menu', {});
       },
       (e) => this.label.setText(`Startup failed: ${e.message}`),
     );

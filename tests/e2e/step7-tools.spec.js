@@ -72,7 +72,7 @@ test('alternative tools: buy, ad unlock, switch mid-stage, persistence', async (
   const drv = tag.includes('touch') ? await touchDriver(page) : mouseDriver(page);
   await page.goto('/?qa=1&devAd=not-earned');
   await waitFor(page, (x) => x.scene === 'Menu');
-  await seed(page, 'st.coins = 20; st.diamonds = 4; st.tools = { owned: [], equipped: {}, purchases: 0 };');
+  await seed(page, 'st.coins = 165; st.diamonds = 4; st.tools = { owned: [], equipped: {}, purchases: 0 };');
   await page.goto('/?qa=1&devAd=not-earned');
   await openRug(page, drv);
 
@@ -87,11 +87,11 @@ test('alternative tools: buy, ad unlock, switch mid-stage, persistence', async (
   // coins purchase → equipped
   await tapCard(page, drv, 'foam-gun');
   s = await snap(page);
-  expect(s.coins).toBe(5);
+  expect(s.coins).toBe(15);
   expect(s.level.tool.id).toBe('foam-gun');
   expect(card(s, 'foam-gun').state).toBe('equipped');
   await tapCard(page, drv, 'foam-gun'); // tap the equipped card again: nothing charged
-  expect((await snap(page)).coins).toBe(5);
+  expect((await snap(page)).coins).toBe(15);
   await page.screenshot({ path: `${dir}/02-foam-gun-equipped.png` });
   // partial progress, then switches must keep it exactly
   await partialStrokes(page, drv);
@@ -105,7 +105,7 @@ test('alternative tools: buy, ad unlock, switch mid-stage, persistence', async (
     s = await snap(page);
     expect(s.level.tool.id).toBe('foam-gun');
     expect(s.level.ownedTools).not.toContain('foam-cannon');
-    expect(s.coins).toBe(5);
+    expect(s.coins).toBe(15);
     expect(s.level.progress).toBe(p1);
   }
   await page.screenshot({ path: `${dir}/04-ad-cancelled.png` });
@@ -126,7 +126,7 @@ test('alternative tools: buy, ad unlock, switch mid-stage, persistence', async (
   s = await snap(page);
   expect(s.level.tool.id).toBe('foam-gun');
   expect(s.level.progress).toBe(p1);
-  expect(s.coins).toBe(5);
+  expect(s.coins).toBe(15);
   await page.screenshot({ path: `${dir}/06-switched-same-progress.png` });
   await playStage5(page, drv); // completes with the switched tool
 
@@ -135,15 +135,18 @@ test('alternative tools: buy, ad unlock, switch mid-stage, persistence', async (
   await page.waitForTimeout(500);
   s = await snap(page);
   expect(s.level.toolCards.map((c) => c.state)).toEqual(['equipped', 'coins', 'diamonds', 'ad']); // + the visual Wooden brush (2026-10-10)
+  // not enough coins / diamonds (systems pass 2026-10-12): the card carries the rewarded-ad badge and
+  // a tap plays the ad directly — a cancelled ad changes nothing
+  expect([card(s, 'scrub-brush-oval').adFallback, card(s, 'drill-brush').adFallback]).toEqual([true, true]);
+  await setAd(page, 'not-earned');
   await tapCard(page, drv, 'scrub-brush-oval');
-  // not enough coins → the rewarded-ad offer for that variant (2026-10-10); "No thanks" changes nothing
-  s = await waitFor(page, (x) => x.level.toolOffer && x.buttons?.['tool-offer-cancel']?.visible, { label: 'coin ad offer' });
+  await page.waitForTimeout(600);
   await page.screenshot({ path: `${dir}/07-not-enough-coins.png` });
-  await pressButton(page, drv, 'tool-offer-cancel');
-  s = await waitFor(page, (x) => !x.level.toolOffer, { label: 'offer closed' });
-  expect(s.coins).toBe(5);
+  s = await snap(page);
+  expect(s.coins).toBe(15);
   expect(s.level.tool.id).toBe('scrub-brush');
   await tapCard(page, drv, 'drill-brush');
+  await page.waitForTimeout(600);
   s = await snap(page);
   expect(s.level.diamonds).toBe(4);
   expect(s.level.tool.id).toBe('scrub-brush');
@@ -151,7 +154,7 @@ test('alternative tools: buy, ad unlock, switch mid-stage, persistence', async (
   await playStage5(page, drv); // base tool completes the stage
 
   // ---- reload: ownership + equipped persist; diamond purchase; finish scrub with the drill ----
-  await seed(page, 'st.diamonds = 5;');
+  await seed(page, 'st.diamonds = 50;'); // drill brush: 50 diamonds
   await page.goto('/?qa=1&devAd=not-earned');
   await openRug(page, drv);
   s = await snap(page);

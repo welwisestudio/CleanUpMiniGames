@@ -12,7 +12,6 @@ import { Button } from '../ui/Button.js';
 import { ResultCard, PauseModal, SettingsModal } from '../ui/modals.js';
 import { ChestOfferModal, TimedChestWidget, ProgressChestMini, TIMED_CHEST_SIZE, flyIcons, worldOf } from '../ui/rewards.js';
 import { ToolSelector } from '../ui/toolSelector.js';
-import { CoinAdOffer } from '../ui/coinAdOffer.js';
 import { StoreModal } from '../ui/storeModal.js';
 import { familyOption, TOOL_FAMILIES } from '../content/toolFamilies.js';
 import { registerQaScene } from '../app/qa.js';
@@ -205,7 +204,6 @@ export class LevelScene extends Phaser.Scene {
     this.buildFx(this.objFit.scale / 0.4);
 
     this.result?.layout(l);
-    this.toolOffer?.layout(l);
     this.store?.layout(l);
     for (const [id, pill] of [['hud-plus-coins', this.coinsPill], ['hud-plus-gems', this.diamondsPill]]) {
       const r = pill.plusRect();
@@ -346,6 +344,9 @@ export class LevelScene extends Phaser.Scene {
     const opts = shop.options(fam).map((o) => ({
       ...o,
       affordable: shop.canAfford(o),
+      // a paid variant the player cannot afford: the card shows the rewarded-ad badge and a tap
+      // starts the ad right away (systems pass 2026-10-12)
+      adFallback: !o.owned && shop.adFallback(o),
       busy: o.busy || (this.cardBusy && this.cardBusy === o.tool),
     }));
     if (rebuild || this.selector.familyId !== fam || !this.selector.container.visible) this.selector.setOptions(fam, opts);
@@ -367,13 +368,12 @@ export class LevelScene extends Phaser.Scene {
       if (shop.equip(fam, toolId).status === 'equipped') this.applyTool(toolId);
       return;
     }
-    if (opt.unlock.type === 'coins' || opt.unlock.type === 'diamonds') {
+    // enough coins / diamonds → normal purchase; not enough → the card's rewarded-ad option (below)
+    if ((opt.unlock.type === 'coins' || opt.unlock.type === 'diamonds') && !shop.adFallback(opt)) {
       const r = shop.purchase(fam, toolId);
       if (r.status === 'insufficient') {
         this.selector.shake(toolId);
-        // a COIN variant: offer to unlock this exact variant with a rewarded ad (diamonds: no offer)
-        if (r.currency === 'coins') this.offerToolAd(fam, toolId);
-        else this.selector.toast(`Not enough ${r.currency}`);
+        this.refreshSelector();
         return;
       }
       if (r.status === 'purchased') {
@@ -386,7 +386,9 @@ export class LevelScene extends Phaser.Scene {
       }
       return;
     }
-    // rewarded ad: unlock permanently + equip on a watched ad; anything else changes nothing
+    // rewarded ad ('ad' variant, or a paid variant the player cannot afford): unlock permanently +
+    // equip on a watched ad, no currency charged; anything else changes nothing (the previously
+    // equipped tool stays)
     const idx = this.stageIndex;
     this.cardBusy = toolId;
     this.refreshSelector();
@@ -407,7 +409,7 @@ export class LevelScene extends Phaser.Scene {
   // Store from the "+" next to a counter (2026-10-10): opens at that currency; the game is paused
   // (pause reason 'store') until it is closed; the counters follow every change.
   openStore(focus) {
-    if (this.store || this.toolOffer || this.skinOffer || this.pauseModal || this.settingsModal || this.chestOffer) return;
+    if (this.store || this.pauseModal || this.settingsModal || this.chestOffer) return;
     this.endStroke();
     this.hint.hide();
     this.services.audio.play('ui-tap');
@@ -429,43 +431,6 @@ export class LevelScene extends Phaser.Scene {
         if (this.layout) this.relayout(this.layout);
       },
     });
-  }
-
-  // "Not enough coins" → watch a rewarded ad to unlock THIS coin variant (functional or visual-only),
-  // no coins charged. Success: owned permanently + equipped. Cancelled / failed: nothing changes, the
-  // card stays open with a message (retry or "No thanks"). ToolService guards duplicate results.
-  offerToolAd(fam, toolId) {
-    if (this.toolOffer) return;
-    const tool = getTool(toolId);
-    this.hint.hide();
-    this.services.pause.set('toolOffer', true);
-    const idx = this.stageIndex;
-    const close = () => {
-      this.toolOffer?.destroy();
-      this.toolOffer = null;
-      this.services.pause.set('toolOffer', false);
-    };
-    const offer = new CoinAdOffer(this, {
-      name: tool.name,
-      texture: tool.texture,
-      onClose: close,
-      onWatch: async () => {
-        offer.setBusy(true);
-        const r = await this.services.toolShop.unlockWithAd(fam, toolId, { coinFallback: true });
-        if (!this.alive || this.toolOffer !== offer) return;
-        if (r.status === 'unlocked' || r.status === 'equipped') {
-          close();
-          if (this.stageIndex === idx && this.state === 'playing') {
-            this.applyTool(toolId);
-            this.selector?.pop(toolId);
-          }
-          return;
-        }
-        offer.setBusy(false);
-        offer.message(r.status === 'not-earned' ? 'Ad closed early - no unlock' : 'Ad not available - try again');
-      },
-    });
-    this.toolOffer = offer;
   }
 
   // Mid-stage switch: same job, same progress; only the active tool (sprite, footprint) changes.
@@ -984,9 +949,9 @@ export class LevelScene extends Phaser.Scene {
       onOpenChest: () => this.openChestOffer(),
       onHome: () => this.goMenu(),
       onReplay: () => this.replay(),
-      // Next opens the next level when it is playable (this completion just unlocked a normal next
-      // level); a VIP next level that is not bought, and the end of the campaign, return to the menu
-      onNext: next && this.services.progression.isPlayable(next) ? () => this.goLevel(next) : () => this.goMenu(),
+      // Next opens the next level when it is playable; a locked next level opens the menu on its
+      // unlock card (coins / ad / VIP ad); the end of the campaign returns to the menu
+      onNext: next && this.services.progression.isPlayable(next) ? () => this.goLevel(next) : next ? () => this.goMenu({ offerLevel: next, fromNext: true }) : () => this.goMenu(),
     });
     // Level chest: the bar runs +20 % for this completion; a full chest is offered right away
     // (and stays offered from the bar if the player chooses "Later").
@@ -1216,8 +1181,9 @@ export class LevelScene extends Phaser.Scene {
     fn();
   }
 
-  goMenu() {
-    this.leave(() => this.scene.start('Menu'));
+  // always explicit data (an empty object replaces any older start data of the menu scene)
+  goMenu(data = {}) {
+    this.leave(() => this.scene.start('Menu', data));
   }
 
   replay() {
@@ -1251,9 +1217,6 @@ export class LevelScene extends Phaser.Scene {
     this.hudProgressChest?.destroy();
     this.selector?.destroy();
     this.selector = null;
-    this.toolOffer?.destroy();
-    this.toolOffer = null;
-    this.services.pause.set('toolOffer', false);
     this.store?.destroy();
     this.store = null;
     this.services.pause.set('store', false);

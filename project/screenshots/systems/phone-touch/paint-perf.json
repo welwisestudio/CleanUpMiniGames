@@ -1,0 +1,156 @@
+{
+ "baseline-108": {
+  "wooden-dresser/stain": {
+   "frames": 1353,
+   "mean": 17.1,
+   "p50": 16.7,
+   "p95": 16.8,
+   "max": 216.7,
+   "over50": 2,
+   "over100": 1,
+   "stageMs": 23154,
+   "completed": true,
+   "paint": null
+  },
+  "rowboat/roll": {
+   "frames": 327,
+   "mean": 17.6,
+   "p50": 16.7,
+   "p95": 16.8,
+   "max": 216.6,
+   "over50": 1,
+   "over100": 1,
+   "stageMs": 5786,
+   "completed": true,
+   "paint": null
+  },
+  "carousel-horse/paint": {
+   "frames": 1134,
+   "mean": 17.2,
+   "p50": 16.7,
+   "p95": 16.8,
+   "max": 266.8,
+   "over50": 3,
+   "over100": 1,
+   "stageMs": 19579,
+   "completed": true,
+   "paint": null
+  }
+ },
+ "ab-110": {
+  "batched:wooden-dresser/stain": {
+   "frames": 1313,
+   "mean": 17.2,
+   "p50": 16.7,
+   "p95": 16.8,
+   "max": 233.4,
+   "over50": 5,
+   "over100": 1,
+   "stageMs": 22610,
+   "completed": true,
+   "paint": {
+    "batch": true,
+    "stamps": 1056,
+    "passes": 340,
+    "blitMpx": 356.5,
+    "ms": 161.2,
+    "passesPerStamp": 0.322
+   }
+  },
+  "batched:rowboat/roll": {
+   "frames": 301,
+   "mean": 20,
+   "p50": 16.7,
+   "p95": 33.4,
+   "max": 200,
+   "over50": 2,
+   "over100": 1,
+   "stageMs": 6069,
+   "completed": true,
+   "paint": {
+    "batch": true,
+    "stamps": 249,
+    "passes": 69,
+    "blitMpx": 72.4,
+    "ms": 30.7,
+    "passesPerStamp": 0.277
+   }
+  },
+  "batched:carousel-horse/paint": {
+   "frames": 1136,
+   "mean": 17,
+   "p50": 16.7,
+   "p95": 16.8,
+   "max": 266.6,
+   "over50": 1,
+   "over100": 1,
+   "stageMs": 19319,
+   "completed": true,
+   "paint": {
+    "batch": true,
+    "stamps": 818,
+    "passes": 257,
+    "blitMpx": 269.5,
+    "ms": 154.6,
+    "passesPerStamp": 0.314
+   }
+  },
+  "per-stamp:wooden-dresser/stain": {
+   "frames": 1353,
+   "mean": 17.1,
+   "p50": 16.7,
+   "p95": 16.8,
+   "max": 216.7,
+   "over50": 2,
+   "over100": 1,
+   "stageMs": 23153,
+   "completed": true,
+   "paint": {
+    "batch": false,
+    "stamps": 1056,
+    "passes": 3168,
+    "blitMpx": 1245.7,
+    "ms": 1525.5,
+    "passesPerStamp": 3
+   }
+  },
+  "per-stamp:rowboat/roll": {
+   "frames": 316,
+   "mean": 18.3,
+   "p50": 16.7,
+   "p95": 33.3,
+   "max": 200,
+   "over50": 1,
+   "over100": 1,
+   "stageMs": 5829,
+   "completed": true,
+   "paint": {
+    "batch": false,
+    "stamps": 249,
+    "passes": 249,
+    "blitMpx": 261.1,
+    "ms": 48.7,
+    "passesPerStamp": 1
+   }
+  },
+  "per-stamp:carousel-horse/paint": {
+   "frames": 1142,
+   "mean": 17,
+   "p50": 16.7,
+   "p95": 16.8,
+   "max": 250.1,
+   "over50": 3,
+   "over100": 1,
+   "stageMs": 19442,
+   "completed": true,
+   "paint": {
+    "batch": false,
+    "stamps": 818,
+    "passes": 2454,
+    "blitMpx": 965,
+    "ms": 1235.4,
+    "passesPerStamp": 3
+   }
+  }
+ }
+}

@@ -1,23 +1,28 @@
 import { Emitter } from '../core/Emitter.js';
+import { levelPrice } from '../content/economy.js';
 
-// Level access (2026-10-10): sequential progression, rewarded-ad level jumps and VIP levels.
-// Owns every access rule; the menu / result card only ask and show the result.
+// Level access (systems pass 2026-10-12): normal levels are bought with coins (or unlocked with a
+// rewarded ad when the player cannot afford them); three VIP levels are unlocked only with a
+// rewarded ad. Owns every access rule; the menu / result card only ask and show the result.
 //
-// Save model (separate per-level sets, never one "highest level" number — ad jumps make progress
-// non-linear):
+// Save model (separate per-level sets, never one "highest level" number — the player chooses where
+// to spend coins / ads, so progress is non-linear):
 //   levels[id].completed          – completion history (RewardService writes it)
-//   progression.unlocked          – normal levels opened by completing the previous level
-//   progression.adUnlocked        – normal levels opened with a rewarded ad (a jump)
-//   progression.vip               – VIP levels bought with diamonds
+//   progression.purchased         – normal levels bought with coins
+//   progression.adUnlocked        – normal levels opened with a rewarded ad
+//   progression.unlocked          – normal levels opened by the old sequential progression (kept)
+//   progression.vipAds            – VIP levels opened with a rewarded ad
 //
 // Rules:
-// - the first level is always playable; a normal level is playable when completed, unlocked by
-//   progression or unlocked with an ad; completing a normal level unlocks the NEXT normal level
-//   (an ad jump starts its own branch: completing level 25 unlocks 26, 11–24 stay locked);
-// - VIP levels (economy.levelAccess.vip, last five) are playable only when bought: progression
-//   and ads never open them; diamonds are checked and charged exactly once inside the save mutation;
-// - ad unlock: only an 'earned' result unlocks; cancelled / failed / unavailable change nothing;
-//   one request in flight per level; a duplicate result grants nothing more; never marks completed;
+// - the first `freeLevels` levels are always playable; any completed level stays replayable;
+// - a normal level is playable once bought, ad-unlocked or (legacy) unlocked. Nothing unlocks
+//   automatically — completing a level does not open the next one;
+// - coin purchase: price from the economy curve; checked and charged exactly once inside the save
+//   mutation; insufficient → nothing changes;
+// - ad unlock (normal level the player cannot afford, or any VIP level): only an 'earned' result
+//   unlocks; cancelled / failed / unavailable change nothing; one request in flight per level; a
+//   duplicate result grants nothing more; never marks completed; no coins are charged;
+// - VIP levels (economy.levelAccess.vip): rewarded ad only — no coin or diamond purchase exists;
 // - dev / test only (dev adapter): `devUnlockAll` makes every level playable WITHOUT writing the save.
 export class ProgressionService extends Emitter {
   constructor({ save, rewards, order, config, devUnlockAll = false }) {
@@ -28,10 +33,6 @@ export class ProgressionService extends Emitter {
     this.config = config; // economy.levelAccess
     this.devUnlockAll = devUnlockAll;
     this._busy = new Set();
-    // completing a level unlocks the next normal level (same moment as the completion receipt)
-    rewards?.on?.('granted', (r) => {
-      if (r?.operationId?.startsWith('complete:')) this.onCompleted(r.levelId);
-    });
   }
 
   index(id) {
@@ -48,11 +49,18 @@ export class ProgressionService extends Emitter {
   }
 
   isVip(id) {
-    return id in (this.config.vip ?? {});
+    return (this.config.vip ?? []).includes(id);
   }
 
-  vipPrice(id) {
-    return this.config.vip?.[id] ?? null;
+  // Coin price of a normal level (0 = free; VIP levels have no price).
+  price(id) {
+    if (this.isVip(id) || this.index(id) < 0) return null;
+    return levelPrice(this.number(id), this.order.length, this.config);
+  }
+
+  canAfford(id) {
+    const p = this.price(id);
+    return p != null && this.save.get('coins') >= p;
   }
 
   _p() {
@@ -65,86 +73,95 @@ export class ProgressionService extends Emitter {
 
   isPlayable(id) {
     if (this.devUnlockAll) return true;
+    if (this.index(id) < 0) return false;
+    if (this.isCompleted(id)) return true;
     const p = this._p();
-    if (this.isVip(id)) return p.vip.includes(id);
-    return this.index(id) === 0 || this.isCompleted(id) || p.unlocked.includes(id) || p.adUnlocked.includes(id);
+    if (this.isVip(id)) return p.vipAds.includes(id);
+    return this.price(id) === 0 || p.purchased.includes(id) || p.adUnlocked.includes(id) || p.unlocked.includes(id);
   }
 
-  // menu card state: completed · open · locked (ad jump available) · vip (diamonds)
+  // menu card state: completed · open · locked (coins / ad) · vip (locked VIP, ad only)
   status(id) {
     if (this.isPlayable(id)) return this.isCompleted(id) ? 'completed' : 'open';
     return this.isVip(id) ? 'vip' : 'locked';
   }
 
-  // One-time migration of saves made before level access existed (every level was open then):
-  // completion history is kept and stays replayable, and each completed normal level opens its
-  // next normal level, exactly as if it had been completed now. Nothing else is opened (an "all
-  // levels open" era save does not become permanent progression). A VIP level completed back then
-  // stays replayable (recorded as owned). Idempotent.
+  // Save migration (idempotent):
+  // - v2 saves (made before level access existed): completion history is kept and stays
+  //   replayable, and each completed normal level opens its next normal level (as it did then);
+  // - access model 2 (2026-10-12): a level bought as VIP with diamonds stays accessible — as an
+  //   ad-unlocked VIP level if it is still VIP, otherwise as an unlocked normal level; a level that
+  //   is VIP now but was already open as a normal level stays open (as an ad-unlocked VIP level).
+  //   The old diamond VIP set is emptied afterwards (nothing depends on it any more).
   migrate() {
-    if (this._p().migrated) return null;
+    const p0 = this._p();
+    if (p0.migrated && p0.model >= 2) return null;
     return this.save.update((s) => {
       const p = s.progression;
-      for (const [id, e] of Object.entries(s.levels)) {
-        if (!e?.completed || this.index(id) < 0) continue;
-        if (this.isVip(id)) {
-          if (!p.vip.includes(id)) p.vip.push(id);
-          continue;
+      const add = (list, id) => !list.includes(id) && list.push(id);
+      if (!p.migrated) {
+        for (const [id, e] of Object.entries(s.levels)) {
+          if (!e?.completed || this.index(id) < 0 || this.isVip(id)) continue;
+          const n = this.next(id);
+          if (n && !this.isVip(n)) add(p.unlocked, n);
         }
-        const n = this.next(id);
-        if (n && !this.isVip(n) && !p.unlocked.includes(n)) p.unlocked.push(n);
+        p.migrated = true;
       }
-      p.migrated = true;
+      if (!(p.model >= 2)) {
+        for (const id of p.vip) {
+          if (this.index(id) < 0) continue;
+          add(this.isVip(id) ? p.vipAds : p.unlocked, id);
+        }
+        for (const id of this.config.vip ?? []) {
+          if (p.unlocked.includes(id) || p.adUnlocked.includes(id) || p.purchased.includes(id)) add(p.vipAds, id);
+        }
+        p.vip = [];
+        p.model = 2;
+      }
     });
   }
 
-  onCompleted(id) {
-    const n = this.next(id);
-    if (!n || this.isVip(n) || this.isVip(id) || this._p().unlocked.includes(n)) return;
-    this.save.update((s) => {
-      if (!s.progression.unlocked.includes(n)) s.progression.unlocked.push(n);
+  // Coin purchase of a locked NORMAL level (owned → nothing charged; insufficient → nothing changes).
+  purchase(id) {
+    const price = this.price(id);
+    if (price == null) return { status: 'invalid' };
+    if (this.isPlayable(id)) return { status: 'open' };
+    const r = { status: 'insufficient', currency: 'coins', price };
+    r.savePromise = this.save.update((s) => {
+      if (s.progression.purchased.includes(id)) return void (r.status = 'open'); // re-checked inside
+      if (s.coins < price) return;
+      r.before = s.coins;
+      s.coins -= price;
+      r.after = s.coins;
+      s.progression.purchased.push(id);
+      r.status = 'purchased';
     });
-    this.emit('unlocked', { levelId: n, via: 'progression' });
+    if (r.status === 'purchased') this.emit('unlocked', { levelId: id, via: 'coins', ...r });
+    return r;
   }
 
-  // Rewarded-ad jump to a locked NORMAL level (never VIP). Permanent; does not mark it completed.
+  // Rewarded-ad unlock of a locked level: a normal level (when the player chooses the ad instead of
+  // coins) or a VIP level (the only way to open it). Permanent; never marks it completed.
   async unlockWithAd(id) {
-    if (this.index(id) < 0 || this.isVip(id)) return { status: 'invalid' };
+    if (this.index(id) < 0) return { status: 'invalid' };
     if (this.isPlayable(id)) return { status: 'open' };
     if (this._busy.has(id)) return { status: 'busy' };
+    const vip = this.isVip(id);
     this._busy.add(id);
     try {
-      const ad = await this.rewards.rewardedAd(this.config.adPlacement);
+      const ad = await this.rewards.rewardedAd(vip ? this.config.vipPlacement ?? this.config.adPlacement : this.config.adPlacement);
       if (ad !== 'earned') return { status: ad };
       const r = { status: 'open' };
       await this.save.update((s) => {
-        if (s.progression.adUnlocked.includes(id)) return; // a duplicate result grants nothing more
-        s.progression.adUnlocked.push(id);
+        const list = vip ? s.progression.vipAds : s.progression.adUnlocked;
+        if (list.includes(id)) return; // a duplicate result grants nothing more
+        list.push(id);
         r.status = 'unlocked';
       });
-      if (r.status === 'unlocked') this.emit('unlocked', { levelId: id, via: 'ad' });
+      if (r.status === 'unlocked') this.emit('unlocked', { levelId: id, via: vip ? 'vip-ad' : 'ad' });
       return r;
     } finally {
       this._busy.delete(id);
     }
-  }
-
-  // VIP purchase with diamonds (owned → nothing charged; insufficient → nothing changes; no ads).
-  purchaseVip(id) {
-    const price = this.vipPrice(id);
-    if (price == null) return { status: 'invalid' };
-    if (this._p().vip.includes(id)) return { status: 'owned' };
-    const r = { status: 'insufficient', currency: 'diamonds', price };
-    r.savePromise = this.save.update((s) => {
-      if (s.progression.vip.includes(id)) return void (r.status = 'owned'); // re-checked inside
-      if (s.diamonds < price) return;
-      r.before = s.diamonds;
-      s.diamonds -= price;
-      r.after = s.diamonds;
-      s.progression.vip.push(id);
-      r.status = 'purchased';
-    });
-    if (r.status === 'purchased') this.emit('unlocked', { levelId: id, via: 'vip', ...r });
-    return r;
   }
 }

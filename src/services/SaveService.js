@@ -6,7 +6,9 @@ import { Emitter } from '../core/Emitter.js';
 
 // v2 (Step 6 reward pass): completion receipts, x3, timed chest, level-progress chest.
 // v3 (2026-10-10): level access — progression / ad-unlocked / VIP sets (ProgressionService).
-export const SAVE_VERSION = 3;
+// v4 (2026-10-12): coin-bought levels, ad-unlocked VIP levels, Store ad-bundle progress, the
+// Wheel's free spin of the day. Older saves load unchanged (missing parts start empty).
+export const SAVE_VERSION = 4;
 
 export function createDefaultState() {
   return {
@@ -25,13 +27,17 @@ export function createDefaultState() {
     // Step 7 alternative tools: permanently owned tool ids (base tools are implicit), the equipped
     // tool per family, and a purchase / unlock counter (audit)
     tools: { owned: [], equipped: {}, purchases: 0, skins: { owned: [], equipped: {} } },
-    // Level access (v3): normal levels opened by progression, normal levels opened with a rewarded
-    // ad, VIP levels bought with diamonds. `migrated` = derived once from an older save's history.
-    progression: { unlocked: [], adUnlocked: [], vip: [], migrated: true },
-    // Store / Wheel (2026-10-10): rewarded-ad claims per offer for one local day, purchase log
-    // count, wheel spins of the day and in total
-    store: { day: '', claims: {}, purchases: 0 },
-    wheel: { day: '', spins: 0, total: 0 },
+    // Level access: `unlocked` – normal levels opened by the old sequential progression (kept
+    // playable), `purchased` – normal levels bought with coins (v4), `adUnlocked` – normal levels
+    // opened with a rewarded ad, `vipAds` – VIP levels opened with a rewarded ad (v4), `vip` – legacy
+    // diamond VIP purchases (v3; migrated once, then empty). `migrated` = v2 history derived once;
+    // `model` = access model the sets were migrated to (2 = coins + ad-only VIP).
+    progression: { unlocked: [], purchased: [], adUnlocked: [], vipAds: [], vip: [], migrated: true, model: 2 },
+    // Store / Wheel: rewarded-ad claims per offer for one local day, purchase log count, ad-bundle
+    // progress (v4: { progress, claims, day, dayClaims, lastClaimAt } per bundle id); wheel spins of
+    // the day and in total, and the local day whose free spin was used (v4)
+    store: { day: '', claims: {}, purchases: 0, bundles: {} },
+    wheel: { day: '', spins: 0, total: 0, freeDay: '' },
   };
 }
 
@@ -83,11 +89,17 @@ export function parseSave(serialized) {
   // level access: a v2 save has none → empty sets, migrated once from its completion history
   const pr = raw.progression && typeof raw.progression === 'object' ? raw.progression : {};
   const ids = (a) => [...new Set((Array.isArray(a) ? a : []).filter((x) => typeof x === 'string'))];
-  state.progression = { unlocked: ids(pr.unlocked), adUnlocked: ids(pr.adUnlocked), vip: ids(pr.vip), migrated: pr.migrated === true };
+  // a v3 save has no `model` → ProgressionService.migrate() moves it to the coin / ad-only VIP model
+  state.progression = { unlocked: ids(pr.unlocked), purchased: ids(pr.purchased), adUnlocked: ids(pr.adUnlocked), vipAds: ids(pr.vipAds), vip: ids(pr.vip), migrated: pr.migrated === true, model: toNonNegativeInt(pr.model) };
   const st = raw.store && typeof raw.store === 'object' ? raw.store : {};
-  state.store = { day: typeof st.day === 'string' ? st.day : '', claims: Object.fromEntries(Object.entries(st.claims && typeof st.claims === 'object' ? st.claims : {}).map(([k, v]) => [k, toNonNegativeInt(v)])), purchases: toNonNegativeInt(st.purchases) };
+  const str = (v) => (typeof v === 'string' ? v : '');
+  const bundles = {};
+  for (const [k, b] of Object.entries(st.bundles && typeof st.bundles === 'object' ? st.bundles : {})) {
+    if (b && typeof b === 'object') bundles[k] = { progress: toNonNegativeInt(b.progress), claims: toNonNegativeInt(b.claims), day: str(b.day), dayClaims: toNonNegativeInt(b.dayClaims), lastClaimAt: toNonNegativeInt(b.lastClaimAt) };
+  }
+  state.store = { day: str(st.day), claims: Object.fromEntries(Object.entries(st.claims && typeof st.claims === 'object' ? st.claims : {}).map(([k, v]) => [k, toNonNegativeInt(v)])), purchases: toNonNegativeInt(st.purchases), bundles };
   const wh = raw.wheel && typeof raw.wheel === 'object' ? raw.wheel : {};
-  state.wheel = { day: typeof wh.day === 'string' ? wh.day : '', spins: toNonNegativeInt(wh.spins), total: toNonNegativeInt(wh.total) };
+  state.wheel = { day: str(wh.day), spins: toNonNegativeInt(wh.spins), total: toNonNegativeInt(wh.total), freeDay: str(wh.freeDay) };
   for (const [id, entry] of Object.entries(raw.levels ?? {})) {
     state.levels[id] = {
       completed: Boolean(entry?.completed),

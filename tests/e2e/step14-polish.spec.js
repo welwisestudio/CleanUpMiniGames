@@ -68,10 +68,10 @@ test('ready chests open during a level and the level resumes where it was', asyn
   await playStage5(page, drv, { maxPasses: 1 }).catch(() => {});
   s = await waitFor(page, (x) => x.level?.state === 'playing');
   const before = { stage: s.level.stageId, progress: s.level.progress, tool: s.level.tool.id, coins: s.coins, diamonds: s.rewards.diamonds };
-  // ready timed chest → claimed right away (+15 coins), same stage / progress / tool
+  // ready timed chest → claimed right away (+50 coins, economy 2026-10-12), same stage / progress / tool
   const tc = s.buttons['hud-timed-chest'];
   await drv.tap(tc.x, tc.y);
-  s = await waitFor(page, (x) => x.coins === before.coins + 15, { label: 'timed chest claimed' });
+  s = await waitFor(page, (x) => x.coins === before.coins + 50, { label: 'timed chest claimed' });
   expect([s.level.stageId, s.level.tool.id]).toEqual([before.stage, before.tool]);
   expect(s.level.progress).toBeCloseTo(before.progress, 5);
   await page.waitForTimeout(400);

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { buildChunkMap } from '../../mechanics/chunkMap.js';
+import { strokeRing } from '../../mechanics/rings.js';
 
 // Display of one object as a stack of layers on a common canvas (bottom → top).
 // Mechanics change layers only through this surface API, using OBJECT-LOCAL canvas coordinates
@@ -11,6 +12,22 @@ import { buildChunkMap } from '../../mechanics/chunkMap.js';
 // | { circles: [[x, y, r], …] }. Every region is intersected with the object shape.
 
 const CHUNK_RES_DIVISOR = 2; // label grid = size / 2 → 2 px cells
+
+// Painting performance (systems pass 2026-10-12). Every RenderTexture draw call in Phaser 3.60+ is a
+// separate capture pass that ends with a blit of the WHOLE target texture; the old brush path made
+// one such pass per stamp per layer (a zone stamp even 3, alternating the shared capture buffer
+// between the scratch and the 1024² layer size, which reallocates it). Brush / paint stamps are now
+// queued per layer and drawn once per frame (scene PRE_RENDER) in ONE capture: all stamps (a zone cut
+// ERASE-blended inside the capture for erase stamps), then one blit; painted layers get one object-clip
+// pass after it.
+// The result is the same pixels (erases compose the same way), the stroke still follows the finger
+// in the very frame it is drawn. Any other operation on a layer flushes its queue first.
+// QA only: `?qa=1&paintBatch=0` runs the old per-stamp path for an A/B comparison.
+const PAINT_BATCH = (() => {
+  if (typeof window === 'undefined') return true;
+  const q = new URLSearchParams(window.location.search);
+  return !(q.get('qa') === '1' && q.get('paintBatch') === '0');
+})();
 
 function readAlphaMask(scene, key) {
   const src = scene.textures.get(key).getSourceImage();
@@ -218,6 +235,10 @@ export class ObjectStack {
     }
     this.overlay = scene.add.container(0, 0); // stage-owned sprites (trash items, spot rings) on top
     this.container.add(this.overlay);
+    // queued brush / paint stamps per layer (see PAINT_BATCH) + read-only counters for QA
+    this._pending = new Map();
+    this.paintStats = { batch: PAINT_BATCH, stamps: 0, passes: 0, blitMpx: 0, ms: 0 };
+    scene.events.on('prerender', this.flushStamps, this);
   }
 
   setLayout(cx, cy, scale) {
@@ -328,6 +349,7 @@ export class ObjectStack {
 
   // ---- layer operations ------------------------------------------------------------------
   _rt(id) {
+    if (this._pending.size) this.flushStamps(); // queued stamps land before any other operation
     const entry = this.layers.get(id);
     if (!entry || entry.def.static || entry.def.initial === 'chunks') throw new Error(`Layer ${id} is not editable`);
     return entry.display;
@@ -335,8 +357,16 @@ export class ObjectStack {
 
   erase(id, local, r, aspect = 1, angle = 0, aspectY = 1, regionId = null) {
     const scale = (2 * r) / 128 / 0.82; // brush-soft is fully opaque to ~65 % of its radius
+    this.paintStats.stamps += 1;
+    if (PAINT_BATCH) {
+      this._queue(id, regionId ? `zone:${regionId}` : null, true).push({ key: 'brush-soft', x: local.x, y: local.y, sx: scale * aspect, sy: scale * aspectY, angle });
+      return;
+    }
+    const t0 = performance.now();
     if (!regionId) {
       this._rt(id).stamp('brush-soft', null, local.x, local.y, { erase: true, scaleX: scale * aspect, scaleY: scale * aspectY, angle });
+      this._countPass(this.size);
+      this.paintStats.ms += performance.now() - t0;
       return;
     }
     // Step 9: a zone stage changes pixels only inside its zone (the laser on the blade must not
@@ -357,6 +387,59 @@ export class ObjectStack {
     t.stamp('brush-soft', null, c, c, { scaleX: scale * aspect, scaleY: scale * aspectY, angle });
     t.erase(this.regionOutsideKey(regionId), c - local.x, c - local.y);
     this._rt(id).erase(t, local.x - c, local.y - c);
+    this._countPass(t.width, 2);
+    this._countPass(this.size);
+    this.paintStats.ms += performance.now() - t0;
+  }
+
+  // ---- batched brush / paint stamps (PAINT_BATCH) ----------------------------------------
+  // clip: 'zone:<region>' (erase outside a stage zone) · a texture key (paint: outside the object)
+  _queue(id, clip, erase) {
+    const k = `${id}|${clip ?? ''}|${erase ? 'e' : 'p'}`;
+    let q = this._pending.get(k);
+    if (!q) {
+      q = { id, clip, erase, stamps: [] };
+      this._pending.set(k, q);
+    }
+    return q.stamps;
+  }
+
+  _countPass(side, n = 1) {
+    this.paintStats.passes += n;
+    this.paintStats.blitMpx += (n * side * side) / 1e6;
+  }
+
+  // Draws every queued stamp: per layer ONE capture → clip inside it → ONE blit.
+  flushStamps() {
+    if (!this._pending.size) return;
+    const t0 = performance.now();
+    const queues = [...this._pending.values()];
+    this._pending.clear();
+    for (const q of queues) {
+      const entry = this.layers.get(q.id);
+      if (!entry?.display?.beginDraw || !q.stamps.length) continue;
+      const rt = entry.display;
+      rt.beginDraw();
+      for (const st of q.stamps) rt.stamp(st.key, null, st.x, st.y, { scaleX: st.sx, scaleY: st.sy, angle: st.angle, alpha: st.alpha ?? 1, skipBatch: true });
+      // erase stamps (zones): the zone cut is ERASE-blended inside the same capture
+      const zone = q.erase && q.clip?.startsWith('zone:');
+      if (zone) {
+        const key = this.regionOutsideKey(q.clip.slice(5));
+        const f = this.scene.textures.getFrame(key);
+        rt.stamp(key, null, this.size / 2, this.size / 2, { scaleX: this.size / f.width, scaleY: this.size / f.height, blendMode: Phaser.BlendModes.ERASE, skipBatch: true });
+        rt.renderer?.setBlendMode?.(Phaser.BlendModes.NORMAL); // flushes the clip; the blit must not erase
+      }
+      rt.endDraw(q.erase);
+      this._countPass(this.size);
+      // painted stamps (foam / soap): the object clip is ONE erase pass on the layer after the batch
+      // (an in-capture ERASE wiped the painted foam — fix 2026-10-12); still one clip per frame, not per stamp
+      if (q.clip && !zone) {
+        const f = this.scene.textures.getFrame(q.clip);
+        rt.stamp(q.clip, null, this.size / 2, this.size / 2, { erase: true, scaleX: this.size / f.width, scaleY: this.size / f.height });
+        this._countPass(this.size);
+      }
+    }
+    this.paintStats.ms += performance.now() - t0;
   }
 
   // Inverse of the region mask (white OUTSIDE the zone) on the object canvas, built once.
@@ -376,9 +459,20 @@ export class ObjectStack {
     return key;
   }
 
-  paint(id, stampKey, local, r) {
+  // `clipKey`: outside-of-object mask cut from the new paint (batched path; the old path clips with
+  // clipToObject after the stroke)
+  paint(id, stampKey, local, r, clipKey) {
     const scale = (2 * r) / this.scene.textures.getFrame(stampKey).width / 0.7; // stamp art of any resolution
+    this.paintStats.stamps += 1;
+    if (PAINT_BATCH) {
+      this._queue(id, clipKey ?? this.def.outsideMask ?? 'mask-outside', false).push({ key: stampKey, x: local.x, y: local.y, sx: scale, sy: scale, angle: Math.random() * 360 });
+      return true;
+    }
+    const t0 = performance.now();
     this._rt(id).stamp(stampKey, null, local.x, local.y, { scale, angle: Math.random() * 360 });
+    this._countPass(this.size);
+    this.paintStats.ms += performance.now() - t0;
+    return false;
   }
 
   // Paints a texture centred at a point with a given size and alpha (putty building up).
@@ -462,6 +556,7 @@ export class ObjectStack {
     const key = clipKey ?? this.def.outsideMask ?? 'mask-outside';
     const f = this.scene.textures.getFrame(key);
     this._rt(id).stamp(key, null, this.size / 2, this.size / 2, { erase: true, scaleX: this.size / f.width, scaleY: this.size / f.height });
+    this._countPass(this.size);
   }
 
   // A full-canvas texture (layer art, foam) drawn over the whole object canvas whatever its export
@@ -558,23 +653,16 @@ export class ObjectStack {
     });
   }
 
-  // Discrete repair spots (stage `outline: 'circles'`): one clean dashed green circle per spot,
-  // the same visual language as the putty-dent rings, instead of tracing the patch shape. A ring
-  // fades out once its spot is done (see updateRegionOutline).
+  // Discrete repair spots (stage `outline: 'circles'`): one clean, continuous green circle per
+  // spot (systems pass 2026-10-12: never dashed), the same visual language as the putty-dent rings,
+  // instead of tracing the patch shape. A ring fades out once its spot is done (updateRegionOutline).
   showCircleTargets(regionId) {
     this.hideRegionOutline();
     this.outlineRings = this.regionCircles(regionId).map(([x, y, rr]) => {
       const g = this.scene.add.graphics();
       const p = this.childPos(x, y);
       const r = rr * 1.1; // just outside the patch
-      g.lineStyle(5, 0x00f010, 1);
-      const n = 18;
-      for (let i = 0; i < n; i++) {
-        const a0 = (i / n) * Math.PI * 2;
-        g.beginPath();
-        g.arc(p.x, p.y, r, a0, a0 + Math.PI / n);
-        g.strokePath();
-      }
+      strokeRing(g, p.x, p.y, r);
       this.overlay.add(g);
       return { g, x, y, r: rr, done: false };
     });
@@ -590,8 +678,11 @@ export class ObjectStack {
     }
   }
 
-  // Dashed bright-green outline of a region (reference style, STYLE-GUIDE §3), shown during
-  // localized stages so the active area is obvious. Returns a pulsing image in the overlay.
+  // Bright-green outline of a region (reference style, STYLE-GUIDE §3), shown during localized
+  // stages so the active area is obvious. Returns a pulsing image in the overlay. Systems pass
+  // 2026-10-12: a CONTINUOUS, smooth band (no dashes / dots): it follows the simplified zone shape
+  // at a soft distance (anti-aliased edges from a distance field), so complicated zones read as one
+  // clean contour around the logical cleaning zone.
   showRegionOutline(regionId) {
     this.hideRegionOutline();
     const key = `routline-${this.levelId}-${regionId}`;
@@ -607,26 +698,20 @@ export class ObjectStack {
       c.height = R;
       const ctx = c.getContext('2d');
       const img = ctx.createImageData(R, R);
-      const t = 4; // outline thickness (half-res px), drawn just outside the region
-      for (let y = 0; y < R; y++) {
-        for (let x = 0; x < R; x++) {
-          if (inside[y * R + x]) continue;
-          let near = false;
-          for (let dy = -t; dy <= t && !near; dy++) {
-            for (let dx = -t; dx <= t && !near; dx++) {
-              const nx = x + dx;
-              const ny = y + dy;
-              if (nx >= 0 && ny >= 0 && nx < R && ny < R && inside[ny * R + nx]) near = true;
-            }
-          }
-          if (!near) continue;
-          if (((x + y) >> 3) % 2 === 1 && ((x - y + 4096) >> 3) % 2 === 1) continue; // dashes
-          const i = (y * R + x) * 4;
-          img.data[i] = 0;
-          img.data[i + 1] = 240;
-          img.data[i + 2] = 16;
-          img.data[i + 3] = 255;
-        }
+      // distance (outside the zone) to the zone, chamfer units: 3 per pixel step
+      const dist = chamfer(inside, R);
+      const t0 = 0.6; // band from ~0.6 px …
+      const t1 = 4.4; // … to ~4.4 px outside the zone (half-res px), soft 1 px edges
+      for (let i = 0; i < R * R; i++) {
+        if (inside[i]) continue;
+        const d = dist[i] / 3;
+        const a = Math.min(1, Math.max(0, d - t0 + 0.5), Math.max(0, t1 - d + 0.5));
+        if (a <= 0) continue;
+        const k = i * 4;
+        img.data[k] = 0;
+        img.data[k + 1] = 240;
+        img.data[k + 2] = 16;
+        img.data[k + 3] = Math.round(255 * a);
       }
       ctx.putImageData(img, 0, 0);
       this.scene.textures.addCanvas(key, c);
@@ -862,6 +947,8 @@ export class ObjectStack {
   }
 
   destroy() {
+    this.scene.events.off('prerender', this.flushStamps, this);
+    this._pending.clear();
     this._eraser?.destroy();
     this._clipRT?.destroy();
     this.container.destroy(true);

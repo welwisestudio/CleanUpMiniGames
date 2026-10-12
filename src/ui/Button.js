@@ -82,12 +82,13 @@ export class Button {
     const t = this.label;
     t.setScale(1);
     const gap = this.h * 0.12;
-    const iconW = this.icon ? this.icon.displayWidth + gap : 0;
+    const icon = this.icon?.visible ? this.icon : null;
+    const iconW = icon ? icon.displayWidth + gap : 0;
     const maxW = this.w * 0.8 - iconW;
     if (t.width > maxW) t.setScale(maxW / t.width);
     const groupW = iconW + t.displayWidth;
     const left = -groupW / 2;
-    if (this.icon) this.icon.setX(left + this.icon.displayWidth / 2);
+    if (icon) icon.setX(left + icon.displayWidth / 2);
     t.setX(left + iconW + t.displayWidth / 2);
   }
 
@@ -95,6 +96,14 @@ export class Button {
     if (!this.label) return this;
     this.label.setText(str);
     this._fitContent();
+    return this;
+  }
+
+  // Shows / hides the icon next to the label (the icon must have been created in the constructor).
+  setIcon(visible) {
+    if (!this.icon) return this;
+    this.icon.setVisible(Boolean(visible));
+    if (this.label) this._fitContent();
     return this;
   }
 

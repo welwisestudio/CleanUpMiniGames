@@ -13,7 +13,7 @@
 // Anti-cheat: only the working point inside a target counts; taps outside a target, holding over
 // empty surface or rubbing add nothing. Progress = finished targets / total.
 
-const OUTLINE = 0x00f010;
+import { strokeRing } from './rings.js';
 const TAP_GAP_MS = 120; // a second tap within this time does not count (no double hits)
 
 export class PointTargetsMechanic {
@@ -106,15 +106,7 @@ export class PointTargetsMechanic {
   _ring(t) {
     const g = this.scene.add.graphics();
     const p = this.stack.childPos(t.x, t.y);
-    const r = t.r * 1.1;
-    g.lineStyle(5, OUTLINE, 1);
-    const n = 16;
-    for (let i = 0; i < n; i++) {
-      const a0 = (i / n) * Math.PI * 2;
-      g.beginPath();
-      g.arc(p.x, p.y, r, a0, a0 + Math.PI / n);
-      g.strokePath();
-    }
+    strokeRing(g, p.x, p.y, t.r * 1.1); // continuous ring (systems pass 2026-10-12: never dashed)
     this.stack.overlay.add(g);
     this.scene.tweens.add({ targets: g, alpha: { from: 1, to: 0.45 }, duration: 650, yoyo: true, repeat: -1 });
     return g;

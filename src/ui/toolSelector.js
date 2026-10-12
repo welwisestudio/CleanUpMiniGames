@@ -72,14 +72,37 @@ export class ToolSelector {
     let items;
     if (o.equipped) items = [icon('icon-check', label * 0.78), txt('Equipped', '#1E7A24')];
     else if (o.owned) items = [txt(o.unlock.type === 'default' ? 'Free' : 'Owned', TEXT.navy)];
-    else if (o.unlock.type === 'coins') items = [icon('icon-coin'), txt(`${o.unlock.price}`, o.affordable ? TEXT.navy : '#D93A2B')];
-    else if (o.unlock.type === 'diamonds') items = [icon('icon-diamond'), txt(`${o.unlock.price}`, o.affordable ? TEXT.navy : '#D93A2B')];
     else if (o.busy) items = [txt('…', TEXT.navy)];
+    else if (o.adFallback) items = [icon('icon-ad-clapper'), txt('Free', '#6B2FA8')]; // not enough currency → one ad
+    else if (o.unlock.type === 'coins') items = [icon('icon-coin'), txt(`${o.unlock.price}`, TEXT.navy)];
+    else if (o.unlock.type === 'diamonds') items = [icon('icon-diamond'), txt(`${o.unlock.price}`, TEXT.navy)];
     else items = [icon('icon-ad-clapper'), txt('Ad', TEXT.navy)];
     card.content.add(items);
     const texts = items.filter((i) => i.type === 'Text');
     texts.forEach((t) => fitText(t, w * 0.62));
     centerRow(items, 0, y, 4);
+    // Not enough coins / diamonds (systems pass 2026-10-12): the price stays visible as a small
+    // crossed-out tag on the tile's top-left, and a purple rewarded-ad badge sits on its top-right —
+    // a tap on the card plays the ad and unlocks THIS variant (no currency charged)
+    if (o.adFallback && !o.busy) {
+      const bx = w / 2 - 6;
+      const by = -h / 2 + 6;
+      const badge = s.add.graphics();
+      badge.fillStyle(0x3b1f66, 0.25).fillCircle(bx, by + 2, 15);
+      badge.fillStyle(0x8a4fe0, 1).fillCircle(bx, by, 15).lineStyle(3, 0xffffff, 1).strokeCircle(bx, by, 15);
+      const clap = fitImage(s, 'icon-ad-clapper', 18, bx, by);
+      const cur = fitImage(s, o.unlock.type === 'coins' ? 'icon-coin' : 'icon-diamond', 14);
+      const pt = makeText(s, 0, 0, `${o.unlock.price}`, { size: 12, color: '#8C8296', weight: '900', family: FONT_UI });
+      const tagW = cur.displayWidth + pt.width + 12;
+      const tx = -w / 2 + 4 + tagW / 2;
+      const ty = -h / 2 + 12;
+      const tag = s.add.graphics();
+      tag.fillStyle(0xffffff, 0.92).fillRoundedRect(tx - tagW / 2, ty - 9, tagW, 18, 9);
+      centerRow([cur, pt], tx, ty, 2);
+      const strike = s.add.graphics();
+      strike.lineStyle(2, 0xd93a2b, 0.85).lineBetween(tx - tagW / 2 + 3, ty + 1, tx + tagW / 2 - 3, ty - 1);
+      card.content.add([badge, clap, tag, cur, pt, strike]);
+    }
   }
 
   update(options) {
@@ -123,7 +146,7 @@ export class ToolSelector {
     this.scene.tweens.add({ targets: c.root, scale: k * 1.15, duration: 110, yoyo: true, ease: 'Quad.easeOut' });
   }
 
-  // Short message above the selector ("Not enough coins", "Ad closed early").
+  // Short message above the selector ("Ad closed early").
   toast(msg) {
     this.toastText?.destroy();
     const ext = ToolSelector.extent(this.vertical, Math.max(3, this.cards.length));
@@ -149,7 +172,7 @@ export class ToolSelector {
     return this.cards.map((c) => {
       const m = c.zone.getWorldTransformMatrix();
       const sx = Math.hypot(m.a, m.b);
-      return { tool: c.o.tool, x: m.tx, y: m.ty, w: c.zone.width * sx, h: c.zone.height * sx, state: c.o.equipped ? 'equipped' : c.o.owned ? 'owned' : c.o.unlock.type, price: c.o.unlock.price ?? 0, affordable: Boolean(c.o.affordable), visible: this.container.visible && this.container.alpha > 0.5 };
+      return { tool: c.o.tool, x: m.tx, y: m.ty, w: c.zone.width * sx, h: c.zone.height * sx, state: c.o.equipped ? 'equipped' : c.o.owned ? 'owned' : c.o.unlock.type, price: c.o.unlock.price ?? 0, affordable: Boolean(c.o.affordable), adFallback: Boolean(c.o.adFallback), visible: this.container.visible && this.container.alpha > 0.5 };
     });
   }
 

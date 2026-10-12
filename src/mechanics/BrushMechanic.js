@@ -1,4 +1,5 @@
 import { CoverageGrid } from './CoverageGrid.js';
+import { strokeRing } from './rings.js';
 
 // Reveal / apply / scrub stages.
 //   reveal    – erases the listed layers under the tool head (brush, washer, cloth…)
@@ -18,7 +19,6 @@ import { CoverageGrid } from './CoverageGrid.js';
 // (display) through a small surface API. It never touches rewards, saves or UI.
 
 const SPRAY_RATE = 45; // stamps per second while a jet is held
-const OUTLINE = 0x00f010;
 const DIP_DISTANCE = 70; // movement inside the paint source needed to load the tool
 // Step 9: one dip carries much more paint (a normal paint stage needs only a few reloads)
 export const PAINT_LOAD_MUL = 3.5;
@@ -88,14 +88,7 @@ export class BrushMechanic {
     if (!on) return;
     const t = this.sourceOpening();
     const p = this.stack.childPos(t.x, t.y);
-    g.lineStyle(5, OUTLINE, 1);
-    const n = 18;
-    for (let i = 0; i < n; i++) {
-      const a0 = (i / n) * Math.PI * 2;
-      g.beginPath();
-      g.arc(p.x, p.y, t.r, a0, a0 + Math.PI / n);
-      g.strokePath();
-    }
+    strokeRing(g, p.x, p.y, t.r);
   }
 
   needsLoad() {
@@ -190,8 +183,8 @@ export class BrushMechanic {
     if (this.mode === 'reveal') {
       for (const id of p.layers) this.stack.erase(id, local, r, this.aspect, 0, this.aspectY, this.region);
     } else if (this.mode === 'apply') {
-      this.stack.paint(p.layer, p.stamp, local, r);
-      this._paintedSinceClip = true;
+      // batched painting clips to the object inside the same pass; the old path clips per input
+      if (!this.stack.paint(p.layer, p.stamp, local, r, p.clip)) this._paintedSinceClip = true;
     } else if (this.mode === 'scrub') {
       this.stack.erase(p.from, local, r, this.aspect, 0, this.aspectY, this.region);
       for (const id of p.clear ?? []) this.stack.erase(id, local, r, this.aspect, 0, this.aspectY, this.region);

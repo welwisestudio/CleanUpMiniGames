@@ -10,8 +10,10 @@ import { getTool } from '../content/tools.js';
 // Wheel of Fortune (2026-10-10, reference input/Wheel_Of_Fortune.png): its own popup from the main
 // menu (not part of the Store). Code-drawn wheel: 8 segments (alternating purple / lavender) with
 // the reward icon + amount, a gold rim with bulbs, a pointer at the top and a "LUCKY SPIN!" ribbon;
-// a green SPIN button (rewarded ad) and the spins left today. WheelService chooses AND saves the
-// reward when the ad succeeds; the wheel then accelerates, slows down naturally and stops exactly
+// a green button: "FREE SPIN" (first spin of the day) or [ad] "SPIN" (every later spin, no cap).
+// Systems pass 2026-10-12: vertical stack title → subtitle → ribbon → pointer → wheel → message →
+// button → status, each in its own band (no overlaps). WheelService chooses AND saves the reward when
+// the spin is granted; the wheel then accelerates, slows down naturally and stops exactly
 // on that segment, and a "You won" card shows the reward. Built in UI units, scaled by `u`.
 
 const R = 138; // wheel radius (UI units)
@@ -32,8 +34,8 @@ export class WheelModal {
     this.rotation = 0; // degrees, clockwise
     this.state = 'idle'; // idle · ad · spinning · result
 
-    const title = makeText(scene, 0, -R - 118, 'Spin the Wheel!', { size: 34, color: TEXT.white, family: FONT_DISPLAY, weight: '900', stroke: '#3B1F66', strokeThickness: 8 });
-    const sub = makeText(scene, 0, -R - 78, 'Watch an ad for a free spin', { size: 16, color: '#E8DCFF', weight: '800', family: FONT_UI });
+    this.title = fitText(makeText(scene, 0, -R - 156, 'Spin the Wheel!', { size: 34, color: TEXT.white, family: FONT_DISPLAY, weight: '900', stroke: '#3B1F66', strokeThickness: 8 }), 2 * R + 10);
+    this.sub = makeText(scene, 0, -R - 118, '', { size: 16, color: '#E8DCFF', weight: '800', family: FONT_UI });
     // wheel (rotates)
     this.wheel = scene.add.container(0, 0);
     const g = scene.add.graphics();
@@ -58,21 +60,23 @@ export class WheelModal {
     const hub = scene.add.graphics();
     hub.fillStyle(0xf5c542, 1).fillCircle(0, 0, 22).lineStyle(4, 0xd99a1e, 1).strokeCircle(0, 0, 22);
     hub.fillStyle(0xffffff, 0.8).fillCircle(-6, -7, 6);
+    // pointer: a gold arrow on the rim whose tip reaches into the top segment (the winning one)
     const ptr = scene.add.graphics();
-    ptr.fillStyle(0x000000, 0.2).fillTriangle(-17, -R - 24, 17, -R - 24, 0, -R + 14);
-    ptr.fillStyle(0xf5c542, 1).fillTriangle(-16, -R - 28, 16, -R - 28, 0, -R + 10);
-    ptr.lineStyle(3, 0xd99a1e, 1).strokeTriangle(-16, -R - 28, 16, -R - 28, 0, -R + 10);
-    // ribbon
+    ptr.fillStyle(0x000000, 0.2).fillTriangle(-17, -R - 32, 17, -R - 32, 0, -R + 14);
+    ptr.fillStyle(0xf5c542, 1).fillTriangle(-16, -R - 36, 16, -R - 36, 0, -R + 10);
+    ptr.lineStyle(3, 0xd99a1e, 1).strokeTriangle(-16, -R - 36, 16, -R - 36, 0, -R + 10);
+    ptr.fillStyle(0xfff3b0, 1).fillCircle(0, -R - 28, 5);
+    // ribbon: its own band above the pointer (gap of ~20 units)
     const rb = scene.add.graphics();
-    rb.fillStyle(0xd94a86, 1).fillRoundedRect(-104, -R - 58, 208, 40, 14);
-    rb.fillStyle(0xb2306a, 1).fillTriangle(-104, -R - 46, -122, -R - 30, -104, -R - 22).fillTriangle(104, -R - 46, 122, -R - 30, 104, -R - 22);
-    const rbt = makeText(scene, 0, -R - 38, 'LUCKY SPIN!', { size: 22, color: TEXT.white, family: FONT_DISPLAY, weight: '900', stroke: '#8A1F4F', strokeThickness: 5 });
+    rb.fillStyle(0xd94a86, 1).fillRoundedRect(-104, -R - 98, 208, 36, 14);
+    rb.fillStyle(0xb2306a, 1).fillTriangle(-104, -R - 88, -122, -R - 74, -104, -R - 66).fillTriangle(104, -R - 88, 122, -R - 74, 104, -R - 66);
+    const rbt = makeText(scene, 0, -R - 80, 'LUCKY SPIN!', { size: 21, color: TEXT.white, family: FONT_DISPLAY, weight: '900', stroke: '#8A1F4F', strokeThickness: 5 });
     // controls
-    this.spinBtn = new Button(scene, { id: 'wheel-spin', x: 0, y: R + 78, w: 220, h: 66, label: 'SPIN', style: 'green', icon: 'icon-ad-clapper', iconSize: 0.6, fontSize: 30, onClick: () => this.spin() });
-    this.left = makeText(scene, 0, R + 128, '', { size: 16, color: '#E8DCFF', weight: '800', family: FONT_UI });
-    this.msg = makeText(scene, 0, R + 30, '', { size: 18, color: '#FFD3D3', weight: '900', family: FONT_UI, stroke: '#3B1F66', strokeThickness: 5 });
-    this.closeBtn = new Button(scene, { id: 'wheel-close', x: R + 34, y: -R - 158, w: 48, h: 48, style: 'square', icon: 'icon-close', iconSize: 0.5, onClick: () => this.state !== 'spinning' && this.state !== 'ad' && this.onClose?.() });
-    this.panel.add([title, sub, this.wheel, rim, ...this.bulbs, hub, ptr, rb, rbt, this.msg, this.spinBtn.container, this.left, this.closeBtn.container]);
+    this.msg = makeText(scene, 0, R + 42, '', { size: 18, color: '#FFD3D3', weight: '900', family: FONT_UI, stroke: '#3B1F66', strokeThickness: 5 });
+    this.spinBtn = new Button(scene, { id: 'wheel-spin', x: 0, y: R + 100, w: 236, h: 66, label: 'SPIN', style: 'green', icon: 'icon-ad-clapper', iconSize: 0.6, fontSize: 28, onClick: () => this.spin() });
+    this.left = makeText(scene, 0, R + 152, '', { size: 15, color: '#E8DCFF', weight: '800', family: FONT_UI });
+    this.closeBtn = new Button(scene, { id: 'wheel-close', x: R + 40, y: -R - 156, w: 48, h: 48, style: 'square', icon: 'icon-close', iconSize: 0.5, onClick: () => this.state !== 'spinning' && this.state !== 'ad' && this.onClose?.() });
+    this.panel.add([this.title, this.sub, this.wheel, rim, ...this.bulbs, hub, ptr, rb, rbt, this.msg, this.spinBtn.container, this.left, this.closeBtn.container]);
     this.blink = scene.time.addEvent({ delay: 380, loop: true, callback: () => this._blink() });
     this._update();
     this.layout(scene.layout);
@@ -104,11 +108,14 @@ export class WheelModal {
     this.bulbs.forEach((b, i) => b.setFillStyle((i + (this.blinkOn ? 0 : 1)) % 2 || fast ? 0xfff3b0 : 0xffc94a));
   }
 
+  // FREE SPIN (no ad) while today's free spin is unused; afterwards [ad] SPIN, unlimited
   _update() {
-    const left = this.wheelSvc.spinsLeft();
-    this.left.setText(left > 0 ? `${left} free spins left today` : 'No spins left today - come back tomorrow');
-    this.spinBtn.setEnabled(this.state === 'idle' && left > 0);
-    this.spinBtn.setLabel(this.state === 'ad' ? 'Loading…' : 'SPIN');
+    const free = this.wheelSvc.freeAvailable();
+    this.sub.setText(free ? 'Your first spin today is free!' : 'Watch an ad for another spin');
+    this.left.setText(free ? '' : 'Free spin again tomorrow');
+    this.spinBtn.setEnabled(this.state === 'idle');
+    this.spinBtn.setLabel(this.state === 'ad' ? (free ? 'Spinning…' : 'Loading…') : free ? 'FREE SPIN' : 'SPIN');
+    this.spinBtn.setIcon(!free);
     refreshTextResolution(this.scene);
   }
 
@@ -121,7 +128,7 @@ export class WheelModal {
     if (this.destroyed) return;
     if (r.status !== 'granted') {
       this.state = 'idle';
-      this.msg.setText(r.status === 'not-earned' ? 'Ad closed early - no spin' : r.status === 'limit' ? 'No spins left today' : 'Ad not available - try again');
+      this.msg.setText(r.status === 'not-earned' ? 'Ad closed early - no spin' : r.status === 'busy' ? '' : 'Ad not available - try again');
       this._update();
       return;
     }
@@ -240,15 +247,34 @@ export class WheelModal {
     } else if (c.parentContainer !== this.panel) {
       this.root.remove(c);
       this.panel.add(c);
-      this.closeBtn.setPlacement(R + 34, -R - 158, 1);
+      this.closeBtn.setPlacement(R + 40, -R - 156, 1);
     }
-    const need = { w: 2 * (R + 60), h: 2 * R + 330 };
+    // content spans -R-176 (title top) … R+162 (status line) → centred on its middle
+    const need = { w: 2 * (R + 64), h: 2 * R + 356 };
     const k = Math.min(l.u * 1.1, (l.W * 0.94) / need.w, (l.H * 0.94) / need.h);
-    this.panel.setPosition(l.W / 2, l.H / 2 + 22 * k).setScale(k);
+    this.panel.setPosition(l.W / 2, l.H / 2 + 7 * k).setScale(k);
+    this._qa();
+  }
+
+  // QA (read-only): the vertical bands of the layout in world px (title … status), for overlap checks
+  _qa() {
+    const qa = this.scene.qaTargets;
+    if (!qa) return;
+    const k = this.panel.scaleX;
+    const band = (id, y0, y1, w) => qa.set(`wheel-band-${id}`, { x: this.panel.x, y: this.panel.y + ((y0 + y1) / 2) * k, w: w * k, h: (y1 - y0) * k, visible: true });
+    const th = (t) => t.displayHeight * 0.8; // glyph box (the text frame includes padding / stroke)
+    band('title', this.title.y - th(this.title) / 2, this.title.y + th(this.title) / 2, this.title.displayWidth);
+    band('sub', this.sub.y - th(this.sub) / 2, this.sub.y + th(this.sub) / 2, this.sub.displayWidth);
+    band('ribbon', -R - 98, -R - 62, 244);
+    band('pointer', -R - 36, -R + 10, 32);
+    band('wheel', -R - 15, R + 15, 2 * R + 30);
+    band('button', R + 100 - 33, R + 100 + 33, 236);
+    band('status', this.left.y - th(this.left) / 2, this.left.y + th(this.left) / 2, Math.max(1, this.left.displayWidth));
   }
 
   destroy() {
     this.destroyed = true;
+    for (const id of ['title', 'sub', 'ribbon', 'pointer', 'wheel', 'button', 'status']) this.scene.qaTargets?.delete(`wheel-band-${id}`);
     this.blink?.remove();
     this.spinTween?.stop();
     this.collect?.destroy();

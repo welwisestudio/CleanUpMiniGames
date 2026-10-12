@@ -12,9 +12,9 @@ import { Emitter } from '../core/Emitter.js';
 //   result for an already owned tool grants nothing more;
 // - a purchased / unlocked tool is equipped right away and stays owned permanently;
 // - equipping requires ownership.
-// Unified variants (2026-10-10): visual-only variants (`visual: true`) follow the same rules. A COIN
-// variant the player cannot afford can be unlocked with a rewarded ad instead (`coinFallback`), no
-// coins charged. A visual variant owned as a cosmetic skin in an old save (tools.skins.owned, same
+// Unified variants (2026-10-10): visual-only variants (`visual: true`) follow the same rules. A paid
+// (coins or diamonds, 2026-10-12) variant the player cannot afford can be unlocked with a rewarded
+// ad instead (`adFallback`), no currency charged. A visual variant owned as a cosmetic skin in an old save (tools.skins.owned, same
 // id) counts as owned — never charged twice.
 
 export class ToolService extends Emitter {
@@ -95,11 +95,20 @@ export class ToolService extends Emitter {
     return r;
   }
 
-  // Rewarded-ad unlock: permanent; the tool is equipped on success.
-  async unlockWithAd(familyId, toolId, { coinFallback = false } = {}) {
+  // A paid (coins / diamonds) variant the player cannot afford right now: it can be unlocked with
+  // one rewarded ad instead (systems pass 2026-10-12, coins AND diamonds).
+  adFallback(option) {
+    const t = option.unlock.type;
+    return (t === 'coins' || t === 'diamonds') && !this.canAfford(option);
+  }
+
+  // Rewarded-ad unlock: permanent; the tool is equipped on success. An 'ad' variant always; a paid
+  // variant only while the player cannot afford it (no currency is ever charged for an ad unlock).
+  async unlockWithAd(familyId, toolId) {
     const opt = this._family(familyId).options.find((o) => o.tool === toolId);
-    if (!opt || !(opt.unlock.type === 'ad' || (coinFallback && opt.unlock.type === 'coins'))) return { status: 'invalid' };
+    if (!opt) return { status: 'invalid' };
     if (this.isOwned(familyId, toolId)) return this.equip(familyId, toolId);
+    if (!(opt.unlock.type === 'ad' || this.adFallback(opt))) return { status: 'invalid' };
     if (this._busy.has(toolId)) return { status: 'busy' };
     this._busy.add(toolId);
     try {

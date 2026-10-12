@@ -12,8 +12,9 @@
 //   tool (no radius / toolScale / work modifier), only the look differs. Designer 2026-10-10: one
 //   unified list of variants per tool — 3 for most families, 4 for the important tools (washer,
 //   scrub brush, grinder, hammer, laser); functional alternatives first, visual variants fill in.
-// Every stage stays fully completable with the base tool. Prices follow the reference (5–25 coins,
-// 5 diamonds) and are provisional (Step 10 balance).
+// Every stage stays fully completable with the base tool. Prices live in the economy config
+// (content/economy.js TOOL_PRICES, provisional) and are filled in below.
+import { TOOL_PRICES } from './economy.js';
 
 export const TOOL_FAMILIES = {
   scrub: {
@@ -21,8 +22,8 @@ export const TOOL_FAMILIES = {
     base: 'scrub-brush',
     options: [
       { tool: 'scrub-brush', unlock: { type: 'default' }, card: 0xb9dcff },
-      { tool: 'scrub-brush-oval', unlock: { type: 'coins', price: 15 }, radius: 1.05, card: 0xffc6dd },
-      { tool: 'drill-brush', unlock: { type: 'diamonds', price: 5 }, radius: 1.1, toolScale: 1.4, card: 0xd9c8ff },
+      { tool: 'scrub-brush-oval', unlock: { type: 'coins' }, radius: 1.05, card: 0xffc6dd },
+      { tool: 'drill-brush', unlock: { type: 'diamonds' }, radius: 1.1, toolScale: 1.4, card: 0xd9c8ff },
       { tool: 'scrub-wood', unlock: { type: 'ad' }, visual: true, card: 0xffe2b8 },
     ],
   },
@@ -31,7 +32,7 @@ export const TOOL_FAMILIES = {
     base: 'foam-sprayer',
     options: [
       { tool: 'foam-sprayer', unlock: { type: 'default' }, card: 0xb9dcff },
-      { tool: 'foam-gun', unlock: { type: 'coins', price: 15 }, radius: 1.05, card: 0xfff0a8 },
+      { tool: 'foam-gun', unlock: { type: 'coins' }, radius: 1.05, card: 0xfff0a8 },
       { tool: 'foam-cannon', unlock: { type: 'ad' }, radius: 1.1, card: 0xd9c8ff },
     ],
   },
@@ -40,8 +41,8 @@ export const TOOL_FAMILIES = {
     base: 'cloth',
     options: [
       { tool: 'cloth', unlock: { type: 'default' }, card: 0xc9f2c0 },
-      { tool: 'wipe-sponge', unlock: { type: 'coins', price: 10 }, radius: 1.05, card: 0xfff0a8 },
-      { tool: 'wipe-eraser', unlock: { type: 'diamonds', price: 3 }, radius: 1.1, card: 0xd9c8ff },
+      { tool: 'wipe-sponge', unlock: { type: 'coins' }, radius: 1.05, card: 0xfff0a8 },
+      { tool: 'wipe-eraser', unlock: { type: 'diamonds' }, radius: 1.1, card: 0xd9c8ff },
     ],
   },
   // ---- Step 8 Batch A families (CONTENT-MATRIX §3.2); levels 1–5 keep their approved cards ----
@@ -51,9 +52,9 @@ export const TOOL_FAMILIES = {
     base: 'washer-lance',
     options: [
       { tool: 'washer-lance', unlock: { type: 'default' }, card: 0xb9dcff },
-      { tool: 'turbo-lance', unlock: { type: 'coins', price: 20 }, radius: 1.05, card: 0xffd7a8 },
+      { tool: 'turbo-lance', unlock: { type: 'coins' }, radius: 1.05, card: 0xffd7a8 },
       { tool: 'gold-washer', unlock: { type: 'ad' }, radius: 1.1, card: 0xd9c8ff },
-      { tool: 'washer-neon', unlock: { type: 'diamonds', price: 4 }, visual: true, card: 0xc9f2c0 },
+      { tool: 'washer-neon', unlock: { type: 'diamonds' }, visual: true, card: 0xc9f2c0 },
     ],
   },
   rust: {
@@ -61,8 +62,8 @@ export const TOOL_FAMILIES = {
     base: 'wire-brush',
     options: [
       { tool: 'wire-brush', unlock: { type: 'default' }, card: 0xffd7a8 },
-      { tool: 'rust-steel-wool', unlock: { type: 'coins', price: 10 }, radius: 1.05, card: 0xd8e6f5 },
-      { tool: 'wire-wheel', unlock: { type: 'diamonds', price: 5 }, radius: 1.1, card: 0xd9c8ff },
+      { tool: 'rust-steel-wool', unlock: { type: 'coins' }, radius: 1.05, card: 0xd8e6f5 },
+      { tool: 'wire-wheel', unlock: { type: 'diamonds' }, radius: 1.1, card: 0xd9c8ff },
     ],
   },
   scrape: {
@@ -70,8 +71,8 @@ export const TOOL_FAMILIES = {
     base: 'wide-scraper',
     options: [
       { tool: 'wide-scraper', unlock: { type: 'default' }, card: 0xffd7a8 },
-      { tool: 'scrape-putty-knife', unlock: { type: 'coins', price: 10 }, radius: 1.05, card: 0xb9f0e6 },
-      { tool: 'pro-scraper', unlock: { type: 'diamonds', price: 4 }, radius: 1.1, card: 0xd9c8ff },
+      { tool: 'scrape-putty-knife', unlock: { type: 'coins' }, radius: 1.05, card: 0xb9f0e6 },
+      { tool: 'pro-scraper', unlock: { type: 'diamonds' }, radius: 1.1, card: 0xd9c8ff },
     ],
   },
   sand: {
@@ -79,8 +80,8 @@ export const TOOL_FAMILIES = {
     base: 'sandpaper',
     options: [
       { tool: 'sandpaper', unlock: { type: 'default' }, card: 0xffd7a8 },
-      { tool: 'sanding-block', unlock: { type: 'coins', price: 10 }, radius: 1.05, card: 0xb9dcff },
-      { tool: 'orbital-sander', unlock: { type: 'diamonds', price: 5 }, radius: 1.1, card: 0xd9c8ff },
+      { tool: 'sanding-block', unlock: { type: 'coins' }, radius: 1.05, card: 0xb9dcff },
+      { tool: 'orbital-sander', unlock: { type: 'diamonds' }, radius: 1.1, card: 0xd9c8ff },
     ],
   },
   grind: {
@@ -88,9 +89,9 @@ export const TOOL_FAMILIES = {
     base: 'angle-grinder',
     options: [
       { tool: 'angle-grinder', unlock: { type: 'default' }, card: 0xb9f0e6 },
-      { tool: 'grind-sander', unlock: { type: 'coins', price: 25 }, radius: 1.05, card: 0xe4f7b5 },
+      { tool: 'grind-sander', unlock: { type: 'coins' }, radius: 1.05, card: 0xe4f7b5 },
       { tool: 'gold-grinder', unlock: { type: 'ad' }, radius: 1.1, card: 0xd9c8ff },
-      { tool: 'grinder-industrial', unlock: { type: 'diamonds', price: 4 }, visual: true, card: 0xfff0a8 },
+      { tool: 'grinder-industrial', unlock: { type: 'diamonds' }, visual: true, card: 0xfff0a8 },
     ],
   },
   spray: {
@@ -98,7 +99,7 @@ export const TOOL_FAMILIES = {
     base: 'spray-gun',
     options: [
       { tool: 'spray-gun', unlock: { type: 'default' }, card: 0xd8e6f5 },
-      { tool: 'airbrush', unlock: { type: 'coins', price: 20 }, radius: 1.05, card: 0xffc6dd },
+      { tool: 'airbrush', unlock: { type: 'coins' }, radius: 1.05, card: 0xffc6dd },
       { tool: 'gold-spray-gun', unlock: { type: 'ad' }, radius: 1.1, card: 0xd9c8ff },
     ],
   },
@@ -107,8 +108,8 @@ export const TOOL_FAMILIES = {
     base: 'polisher',
     options: [
       { tool: 'polisher', unlock: { type: 'default' }, card: 0xfff0a8 },
-      { tool: 'orbital-polisher', unlock: { type: 'coins', price: 20 }, radius: 1.05, card: 0xb9dcff },
-      { tool: 'gold-polisher', unlock: { type: 'diamonds', price: 6 }, radius: 1.1, card: 0xd9c8ff },
+      { tool: 'orbital-polisher', unlock: { type: 'coins' }, radius: 1.05, card: 0xb9dcff },
+      { tool: 'gold-polisher', unlock: { type: 'diamonds' }, radius: 1.1, card: 0xd9c8ff },
     ],
   },
   screw: {
@@ -116,8 +117,8 @@ export const TOOL_FAMILIES = {
     base: 'screwdriver',
     options: [
       { tool: 'screwdriver', unlock: { type: 'default' }, card: 0xffc6c6 },
-      { tool: 'e-screwdriver', unlock: { type: 'coins', price: 20 }, work: 0.95, card: 0xffd7a8 },
-      { tool: 'gold-screwdriver', unlock: { type: 'diamonds', price: 5 }, work: 0.9, card: 0xd9c8ff },
+      { tool: 'e-screwdriver', unlock: { type: 'coins' }, work: 0.95, card: 0xffd7a8 },
+      { tool: 'gold-screwdriver', unlock: { type: 'diamonds' }, work: 0.9, card: 0xd9c8ff },
     ],
   },
   roll: {
@@ -125,8 +126,8 @@ export const TOOL_FAMILIES = {
     base: 'paint-roller',
     options: [
       { tool: 'paint-roller', unlock: { type: 'default' }, card: 0xb9dcff },
-      { tool: 'wide-roller', unlock: { type: 'coins', price: 15 }, radius: 1.05, card: 0xfff0a8 },
-      { tool: 'foam-roller', unlock: { type: 'diamonds', price: 4 }, radius: 1.1, card: 0xffc6dd },
+      { tool: 'wide-roller', unlock: { type: 'coins' }, radius: 1.05, card: 0xfff0a8 },
+      { tool: 'foam-roller', unlock: { type: 'diamonds' }, radius: 1.1, card: 0xffc6dd },
     ],
   },
   hammer: {
@@ -134,9 +135,9 @@ export const TOOL_FAMILIES = {
     base: 'hammer',
     options: [
       { tool: 'hammer', unlock: { type: 'default' }, card: 0xffd7a8 },
-      { tool: 'mallet', unlock: { type: 'coins', price: 15 }, card: 0xd8e6f5 },
+      { tool: 'mallet', unlock: { type: 'coins' }, card: 0xd8e6f5 },
       { tool: 'gold-hammer', unlock: { type: 'ad' }, card: 0xd9c8ff },
-      { tool: 'hammer-construction', unlock: { type: 'diamonds', price: 3 }, visual: true, card: 0xfff0a8 },
+      { tool: 'hammer-construction', unlock: { type: 'diamonds' }, visual: true, card: 0xfff0a8 },
     ],
   },
 };
@@ -149,9 +150,9 @@ Object.assign(TOOL_FAMILIES, {
     base: 'laser',
     options: [
       { tool: 'laser', unlock: { type: 'default' }, card: 0xffd7a8 },
-      { tool: 'laser-redblack', unlock: { type: 'coins', price: 35 }, visual: true, card: 0xffc6c6 },
+      { tool: 'laser-redblack', unlock: { type: 'coins' }, visual: true, card: 0xffc6c6 },
       { tool: 'laser-blue', unlock: { type: 'ad' }, visual: true, card: 0xb9dcff },
-      { tool: 'laser-gold', unlock: { type: 'diamonds', price: 6 }, visual: true, card: 0xfff0a8 },
+      { tool: 'laser-gold', unlock: { type: 'diamonds' }, visual: true, card: 0xfff0a8 },
     ],
   },
   // Step 9 tool variety: more card families (base free · coins · diamonds or rewarded ad; ±10 %)
@@ -160,7 +161,7 @@ Object.assign(TOOL_FAMILIES, {
     base: 'detail-brush',
     options: [
       { tool: 'detail-brush', unlock: { type: 'default' }, card: 0xd8e6f5 },
-      { tool: 'detail-toothbrush', unlock: { type: 'coins', price: 10 }, radius: 1.05, card: 0xb9f0e6 },
+      { tool: 'detail-toothbrush', unlock: { type: 'coins' }, radius: 1.05, card: 0xb9f0e6 },
       { tool: 'detail-crevice', unlock: { type: 'ad' }, radius: 1.1, card: 0xd9c8ff },
     ],
   },
@@ -169,8 +170,8 @@ Object.assign(TOOL_FAMILIES, {
     base: 'pool-brush',
     options: [
       { tool: 'pool-brush', unlock: { type: 'default' }, card: 0xb9dcff },
-      { tool: 'deck-brush', unlock: { type: 'coins', price: 20 }, radius: 1.05, card: 0xffd7a8 },
-      { tool: 'gold-pool-brush', unlock: { type: 'diamonds', price: 5 }, visual: true, card: 0xd9c8ff },
+      { tool: 'deck-brush', unlock: { type: 'coins' }, radius: 1.05, card: 0xffd7a8 },
+      { tool: 'gold-pool-brush', unlock: { type: 'diamonds' }, visual: true, card: 0xd9c8ff },
     ],
   },
   squeegee: {
@@ -178,7 +179,7 @@ Object.assign(TOOL_FAMILIES, {
     base: 'squeegee',
     options: [
       { tool: 'squeegee', unlock: { type: 'default' }, card: 0xd8e6f5 },
-      { tool: 'pro-squeegee', unlock: { type: 'coins', price: 15 }, visual: true, card: 0xffd7a8 },
+      { tool: 'pro-squeegee', unlock: { type: 'coins' }, visual: true, card: 0xffd7a8 },
       { tool: 'gold-squeegee', unlock: { type: 'ad' }, visual: true, card: 0xd9c8ff },
     ],
   },
@@ -187,11 +188,20 @@ Object.assign(TOOL_FAMILIES, {
     base: 'wash-mitt',
     options: [
       { tool: 'wash-mitt', unlock: { type: 'default' }, card: 0xb9dcff },
-      { tool: 'microfiber-mitt', unlock: { type: 'coins', price: 15 }, radius: 1.05, card: 0xd8e6f5 },
-      { tool: 'wool-mitt', unlock: { type: 'diamonds', price: 4 }, radius: 1.1, card: 0xfff0a8 },
+      { tool: 'microfiber-mitt', unlock: { type: 'coins' }, radius: 1.05, card: 0xd8e6f5 },
+      { tool: 'wool-mitt', unlock: { type: 'diamonds' }, radius: 1.1, card: 0xfff0a8 },
     ],
   },
 });
+
+// prices from the economy config (one source of truth); a paid variant without a price is a bug
+for (const fam of Object.values(TOOL_FAMILIES)) {
+  for (const o of fam.options) {
+    if (o.unlock.type !== 'coins' && o.unlock.type !== 'diamonds') continue;
+    if (!(TOOL_PRICES[o.tool] > 0)) throw new Error(`No price for tool variant ${o.tool}`);
+    o.unlock.price = TOOL_PRICES[o.tool];
+  }
+}
 
 export const TOOL_AD_PLACEMENT = 'tool-unlock';
 

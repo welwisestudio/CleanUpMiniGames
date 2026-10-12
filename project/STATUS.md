@@ -1,9 +1,10 @@
 # Current project status
 
-Updated: 2026-10-11 (rev. 36) · Build **#108** (2026-10-10T21:13:37Z UTC) · Commit: `1429600` + uncommitted Step 8 Batch A + **Step 8 Batch B (levels 16–50) + cosmetic skins** (not committed — waiting for designer review)
+Updated: 2026-10-12 (rev. 37) · Build **#112** · Commit: `9868c96` + uncommitted systems / balance pass (not committed — waiting for designer review)
 
 - **Current stage goal:** Step 8 — **50 playable levels**; levels 16–50 and the cosmetic tool skin system implemented, **waiting for designer review** (build #63, http://localhost:4173/; #63 = menu list centring fix). Levels 1–15 = accepted baseline (unchanged).
-- **Fixes (build #108, waiting for review):** no-drift shake for the VIP offer (shared helper), Wheel close top-right on desktop, vibration removed.
+- **Systems / balance pass (2026-10-12, waiting for review):** no real-money purchases; Store = 25-diamond ad, 120-coin ad, coin packs for diamonds, 3 multi-ad bundles (saved progress); provisional rebalance (all values in `src/content/economy.js`); unaffordable tool variants unlock with an ad from the card itself; continuous outlines; batched painting (≈9× fewer render passes on zone paint stages); Wheel = daily free spin then unlimited ad spins; normal levels bought with coins (40 → 750) or an ad; 3 ad-only VIP levels (#15 Porcelain Vase, #37 Vintage Motorcycle, #48 Carousel Horse); save v4. Tests: unit 81/81, `tests/e2e/step16-systems.spec.js`, `tests/e2e/step16-paint-perf.spec.js` (DECISIONS 2026-10-12). Superseded e2e removed: step12-progression, step13 offer / wheel tests, step15 VIP-shake test.
+- **Fixes (build #108):** no-drift shake for the VIP offer (shared helper), Wheel close top-right on desktop, vibration removed.
 - **Final polish (build #107):** exact menu centring, stable chest nudge, ready chests openable during a level, paint can / tray in the stage colour; `tests/e2e/step14-polish.spec.js` passed.
 - **Top-bar polish (build #104; Wheel aligned with the top chest, round "+", padlock-only locked cards):** Store next to Settings, new wheel / storefront icons, Wheel CTA below, polished counters with "+".
 - **Store + Wheel of Fortune (build #98):** Store page with Diamonds / Coins / Bonus offers, "+" deep links on both counters (menu + level), separate Wheel of Fortune popup (button under Settings), rewarded spins; `tests/e2e/step13-store.spec.js` passed on desktop and phone.

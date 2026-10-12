@@ -1,12 +1,12 @@
 // Spot targets (chair: wood putty into the dents, reference 05:28–05:40 + Reference_putty_dip).
-// Each spot is a dashed green circle. With a `source` (putty tub), the knife must first be dipped
+// Each spot is a continuous green circle. With a `source` (putty tub), the knife must first be dipped
 // into the tub (tool working point inside the tub opening, with some movement) to load putty;
 // a loaded knife shows a putty blob on the blade. Rubbing the loaded knife inside a spot builds
 // the putty up (distance of tool movement inside the spot); a spot is done at `fillDistance` and
 // uses up the load. Progress = completed spots / total. Taps, holding still, rubbing outside the
 // spots or rubbing with an empty knife add nothing.
 
-const OUTLINE = 0x00f010;
+import { strokeRing } from './rings.js';
 const DIP_DISTANCE = 60; // movement inside the tub needed to load the knife
 
 export class SpotsMechanic {
@@ -21,7 +21,7 @@ export class SpotsMechanic {
     this.doneCount = 0;
     this.rings = this.spots.map((s) => {
       const g = scene.add.graphics();
-      this._drawDashed(g, s);
+      this._drawRing(g, s);
       stack.overlay.add(g);
       return g;
     });
@@ -39,27 +39,20 @@ export class SpotsMechanic {
     }
   }
 
-  _drawDashed(g, s, r = s.r * 1.15) {
+  // one continuous green ring (systems pass 2026-10-12: never dashed)
+  _drawRing(g, s, r = s.r * 1.15) {
     const p = this.stack.childPos(s.x, s.y);
     g.clear();
-    g.lineStyle(5, OUTLINE, 1);
-    const n = 18;
-    for (let i = 0; i < n; i++) {
-      const a0 = (i / n) * Math.PI * 2;
-      const a1 = a0 + (Math.PI * 2) / n / 2;
-      g.beginPath();
-      g.arc(p.x, p.y, r, a0, a1);
-      g.strokePath();
-    }
+    strokeRing(g, p.x, p.y, r);
   }
 
-  // Dashed ring around the tub opening while the knife is empty (where to dip).
+  // Ring around the tub opening while the knife is empty (where to dip).
   _drawTubRing(on) {
     if (!this.tubRing) return;
     this.tubRing.clear();
     if (!on) return;
     const t = this.tubOpening();
-    this._drawDashed(this.tubRing, { x: t.x, y: t.y, r: t.r }, t.r);
+    this._drawRing(this.tubRing, { x: t.x, y: t.y, r: t.r }, t.r);
   }
 
   // Tub opening (object-local): the upper part of the tub sprite.
