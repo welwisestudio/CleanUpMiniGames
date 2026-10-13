@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { toolSound } from '../content/audio.js';
 import { getLevel, nextLevelId } from '../content/catalog.js';
 import { getTool } from '../content/tools.js';
 import { FX_CHUNKS, levelAssets, lazyAssetKeys } from '../content/assets.js';
@@ -373,10 +374,12 @@ export class LevelScene extends Phaser.Scene {
       const r = shop.purchase(fam, toolId);
       if (r.status === 'insufficient') {
         this.selector.shake(toolId);
+        this.services.audio.play('error');
         this.refreshSelector();
         return;
       }
       if (r.status === 'purchased') {
+        this.services.audio.play('unlock');
         (r.currency === 'coins' ? this.coinsPill : this.diamondsPill).setValue(r.after);
         (r.currency === 'coins' ? this.coinsPill : this.diamondsPill).pulse();
       }
@@ -396,6 +399,7 @@ export class LevelScene extends Phaser.Scene {
     this.cardBusy = null;
     if (!this.alive) return;
     if (r.status === 'unlocked' || r.status === 'equipped') {
+      if (r.status === 'unlocked') this.services.audio.play('unlock');
       if (this.stageIndex === idx && this.state === 'playing') {
         this.applyTool(toolId);
         this.selector.pop(toolId);
@@ -452,7 +456,31 @@ export class LevelScene extends Phaser.Scene {
     refreshTextResolution(this);
   }
 
+  // Step 9: tool sounds follow REAL work only — the mechanic's valid-contact counter grew this frame
+  // while the finger is down (a jet off the object, a brush beside the zone or a still finger make
+  // no sound). Loops sustain, squeaks pulse, hammers hit once per strike. Discrete steps (a part
+  // pulled / placed, an item dropped) get a one-shot.
+  updateToolAudio() {
+    const m = this.mechanic;
+    const audio = this.services.audio;
+    if (m.validContacts !== this.sfxContacts) {
+      const spec = toolSound(this.tool, this.stage);
+      if (m.validContacts > (this.sfxContacts ?? 0) && (this.activePointerId !== null || spec?.hit)) audio.toolWork(spec);
+      this.sfxContacts = m.validContacts;
+    }
+    const discrete = ['points', 'dragToTarget', 'collect'].includes(this.stage.mechanic);
+    if (discrete && m.progress > (this.sfxProgress ?? 0) + 1e-6) {
+      const mode = this.stage.params?.mode;
+      const hitTool = toolSound(this.tool, this.stage)?.hit;
+      if (!(hitTool && (mode === 'tap' || mode === 'repeatedTap'))) audio.play(mode === 'pull' || this.stage.params?.action === 'remove' ? 'snip' : 'place');
+    }
+    this.sfxProgress = m.progress;
+  }
+
   startStage(i) {
+    this.services.audio.stopTool();
+    this.sfxContacts = null;
+    this.sfxProgress = 0;
     this.stageIndex = i;
     this.stage = this.level.stages[i];
     this.tool = this.toolFor(this.stage);
@@ -554,6 +582,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   endStroke() {
+    this.services.audio.stopTool();
     if (this.activePointerId === null) return;
     this.activePointerId = null;
     if (this.tool?.kind === 'target') this.mechanic.release();
@@ -811,6 +840,7 @@ export class LevelScene extends Phaser.Scene {
   update(time, delta) {
     if (!this.alive) return;
     this.tools.update();
+    this.services.audio.update(); // fades the tool loop out shortly after the work stops
     if (this.state !== 'playing') return;
     // Inactivity hint: no valid action for 5 s while playing (paused time does not count).
     if (this.mechanic.validContacts !== this.lastContacts) {
@@ -842,6 +872,7 @@ export class LevelScene extends Phaser.Scene {
       this.progressBar.set(this.mechanic.progress);
       this.stack.updateRegionOutline(this.mechanic.grid);
     }
+    this.updateToolAudio();
     if (this.mechanic.completed) this.completeStage();
   }
 
@@ -1056,6 +1087,7 @@ export class LevelScene extends Phaser.Scene {
   openChestOffer() {
     const card = this.result;
     if (!card || this.chestOffer || !this.services.rewards.progressChestState().full) return;
+    this.services.audio.play('chest-open');
     card.setEnabled(false);
     // one card at a time: the result card steps back while the chest offer is shown
     this.tweens.add({ targets: card.card, alpha: 0, duration: 160 });
@@ -1200,6 +1232,7 @@ export class LevelScene extends Phaser.Scene {
 
   cleanup() {
     this.alive = false;
+    this.services.audio.stopTool();
     this.services.pause.off('change', this.onPauseChange);
     this.game.events.off('blur', this.endStroke, this);
     this.input.off('pointerdown', this.onPointerDown, this);

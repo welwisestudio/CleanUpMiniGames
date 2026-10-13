@@ -64,16 +64,13 @@ function snapshot() {
     coins: s.save.loaded ? s.save.get('coins') : null,
     levels: s.save.loaded ? JSON.parse(JSON.stringify(s.save.get('levels'))) : null,
     saveStatus: s.save.status,
-    // level access (read-only): the saved sets + dev unlock-all flag; levelOffer = menu offer open
+    // level access (read-only): the saved sets + dev unlock-all flag (no unlock popup since 2026-10-13)
     progression: s.save.loaded ? { ...JSON.parse(JSON.stringify(s.save.get('progression'))), devUnlockAll: s.progression.devUnlockAll } : null,
-    levelOffer: Boolean(scene?.levelOffer),
-    levelOfferKind: scene?.levelOffer?.kind ?? null, // coins · ad · vip
     vipLevels: [...(s.progression.config.vip ?? [])],
     diamondsNow: s.save.loaded ? s.save.get('diamonds') : null,
     // Store bundles / Wheel free-spin day as saved (read-only)
     storeSave: s.save.loaded ? JSON.parse(JSON.stringify(s.save.get('store'))) : null,
     wheelSave: s.save.loaded ? { ...s.save.get('wheel') } : null,
-    levelOfferX: scene?.levelOffer ? scene.levelOffer.panel.x / (scene.layout?.dpr ?? 1) : null, // CSS px (the panel's base = W / 2)
     // chest images' local x (a not-ready nudge must always return to 0) + the paint source texture
     chestX: { timed: (scene?.timedChest ?? scene?.hudTimedChest)?.chest?.x ?? null, progress: (scene?.progressChest ?? scene?.hudProgressChest)?.chest?.x ?? null },
     paintSource: scene?.mechanic?.sourceImg?.texture?.key ?? null,
@@ -83,7 +80,8 @@ function snapshot() {
     toolsOwned: s.save.loaded ? [...s.save.get('tools.owned')] : null,
     pause: s.pause.snapshot(),
     build: s.build,
-    audio: { requested: s.audio.requested, played: s.audio.played },
+    // audio (read-only): counts, plays per event, the music instance and the tool loop now playing
+    audio: { requested: s.audio.requested, played: s.audio.played, log: { ...s.audio.log }, music: s.audio.music ? { playing: s.audio.music.isPlaying, paused: s.audio.music.isPaused, instances: s.audio.sound?.getAll?.('music-main')?.length ?? null } : null, tool: s.audio.toolPlaying, toolVolume: s.audio.tool?.sound?.volume ?? 0, playingLoops: (s.audio.sound?.getAllPlaying?.() ?? []).filter((x) => x.key.startsWith('loop-')).map((x) => x.key), musicPlaying: (s.audio.sound?.getAllPlaying?.() ?? []).filter((x) => x.key === 'music-main').length, canPlay: s.audio.canPlay, locked: Boolean(s.audio.sound?.locked) },
     // reward state (read-only): balances, boost receipt, timed chest, level-progress chest
     rewards: s.save.loaded
       ? {

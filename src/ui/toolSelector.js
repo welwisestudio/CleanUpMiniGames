@@ -82,15 +82,9 @@ export class ToolSelector {
     texts.forEach((t) => fitText(t, w * 0.62));
     centerRow(items, 0, y, 4);
     // Not enough coins / diamonds (systems pass 2026-10-12): the price stays visible as a small
-    // crossed-out tag on the tile's top-left, and a purple rewarded-ad badge sits on its top-right —
-    // a tap on the card plays the ad and unlocks THIS variant (no currency charged)
+    // crossed-out tag on the tile's top-left; the ONLY ad indicator is the bottom [▶ Free] row
+    // (the extra corner badge was removed 2026-10-13) — a tap plays the ad and unlocks THIS variant
     if (o.adFallback && !o.busy) {
-      const bx = w / 2 - 6;
-      const by = -h / 2 + 6;
-      const badge = s.add.graphics();
-      badge.fillStyle(0x3b1f66, 0.25).fillCircle(bx, by + 2, 15);
-      badge.fillStyle(0x8a4fe0, 1).fillCircle(bx, by, 15).lineStyle(3, 0xffffff, 1).strokeCircle(bx, by, 15);
-      const clap = fitImage(s, 'icon-ad-clapper', 18, bx, by);
       const cur = fitImage(s, o.unlock.type === 'coins' ? 'icon-coin' : 'icon-diamond', 14);
       const pt = makeText(s, 0, 0, `${o.unlock.price}`, { size: 12, color: '#8C8296', weight: '900', family: FONT_UI });
       const tagW = cur.displayWidth + pt.width + 12;
@@ -101,7 +95,7 @@ export class ToolSelector {
       centerRow([cur, pt], tx, ty, 2);
       const strike = s.add.graphics();
       strike.lineStyle(2, 0xd93a2b, 0.85).lineBetween(tx - tagW / 2 + 3, ty + 1, tx + tagW / 2 - 3, ty - 1);
-      card.content.add([badge, clap, tag, cur, pt, strike]);
+      card.content.add([tag, cur, pt, strike]);
     }
   }
 

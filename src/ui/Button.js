@@ -70,7 +70,10 @@ export class Button {
       const was = this.pressed;
       this.pressed = false;
       this.container.setScale(this.baseScale);
-      if (was && this.enabled) this.onClick?.();
+      if (was && this.enabled) {
+        this.scene.registry?.get('services')?.audio?.play('ui-tap');
+        this.onClick?.();
+      }
     });
     this.baseScale = 1;
     scene.qaButtons?.set(id, this);

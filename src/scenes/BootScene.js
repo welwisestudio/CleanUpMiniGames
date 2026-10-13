@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { IMAGE_ASSETS } from '../content/assets.js';
+import { AUDIO_FILES, MUSIC_FILE } from '../content/audio.js';
 import { generateProceduralTextures } from '../services/ProceduralTextures.js';
 import { attachResponsiveLayout } from '../ui/layout.js';
 import { makeText } from '../ui/text.js';
@@ -36,6 +37,9 @@ export class BootScene extends Phaser.Scene {
       draw();
     });
     for (const [key, url] of Object.entries(IMAGE_ASSETS)) this.load.image(key, url);
+    // Step 9 audio: all SFX (small) + the music, decoded once and reused for the whole session
+    for (const [key, url] of Object.entries(AUDIO_FILES)) this.load.audio(key, url);
+    this.load.audio(MUSIC_FILE.key, MUSIC_FILE.url);
   }
 
   async create() {
@@ -52,9 +56,11 @@ export class BootScene extends Phaser.Scene {
       /* fall back to system fonts */
     }
     services.pause.set('assetsLoading', false);
+    services.audio.attach(this.sound);
     services.ready.then(
       () => {
         services.platform.gameReady();
+        services.audio.startMusic(); // one instance for every scene; respects the Music setting
         this.scene.start('Menu', {});
       },
       (e) => this.label.setText(`Startup failed: ${e.message}`),

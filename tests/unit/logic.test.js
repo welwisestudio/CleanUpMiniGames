@@ -1406,3 +1406,22 @@ describe('Store and Wheel of Fortune (systems pass 2026-10-12)', () => {
     expect(c.save.get('coins')).toBe(segs[0].amount);
   });
 });
+
+describe('Step 9 audio mapping', () => {
+  it('every working tool maps to a fitting sound or is deliberately silent; foam scrubbing uses the lather loop', async () => {
+    const { toolSound, AUDIO_FILES, SFX } = await import('../../src/content/audio.js');
+    const SILENT = ['screwdriver', 'e-screwdriver', 'gold-screwdriver', 'keycap-puller', 'wet-vacuum'];
+    for (const t of Object.values(TOOLS)) {
+      if (t.kind === 'target' || t.visualOf) continue;
+      const s = toolSound(t, { params: { mode: 'reveal' } });
+      if (SILENT.includes(t.id)) expect(s, t.id).toBe(null);
+      else expect(s, t.id).not.toBe(null);
+      if (s?.loop) expect(AUDIO_FILES[s.loop], t.id).toBeTruthy();
+      if (s?.hit || s?.pulse) expect(SFX[s.hit ?? s.pulse], t.id).toBeTruthy();
+    }
+    expect(toolSound(TOOLS['scrub-brush'], { params: { mode: 'scrub' } }).loop).toBe('loop-lather');
+    expect(toolSound(TOOLS['angle-grinder'], {}).loop).toBe('loop-file');
+    expect(toolSound(TOOLS.hammer, {}).hit).toBe('hit');
+    for (const e of Object.values(SFX)) expect(AUDIO_FILES[e.key], e.key).toBeTruthy();
+  });
+});

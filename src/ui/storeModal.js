@@ -3,7 +3,7 @@ import { TEXT, FONT_UI, FONT_DISPLAY } from './theme.js';
 import { makeText, fitText } from './text.js';
 import { Button } from './Button.js';
 import { fitImage } from './kit.js';
-import { refreshTextResolution } from './layout.js';
+import { refreshTextResolution, UI } from './layout.js';
 import { CurrencyPill } from './hud.js';
 
 // Store screen (2026-10-10, reference input/Store_screen.PNG; systems pass 2026-10-12 — no
@@ -365,6 +365,7 @@ export class StoreModal {
   }
 
   toast(msg, color = '#D93A2B') {
+    if (color === '#D93A2B') this.services.audio?.play('error');
     this.toastText?.destroy();
     const l = this.scene.layout;
     const t = makeText(this.scene, l.W / 2, this.viewTop + this.viewH - 40 * l.u, msg, { size: 22 * l.u, color, weight: '900', family: FONT_UI, stroke: '#FFFFFF', strokeThickness: 6 * l.u });
@@ -391,11 +392,28 @@ export class StoreModal {
     g.fillStyle(0x000000, 0.06).fillRect(0, hh - sw * 0.5, W, 3 * u);
     this.header.setPosition(0, 0).setScale(u);
     const cw = W / u;
-    const compact = cw < 520;
-    this.title.setPosition(cw / 2, compact ? 74 : 40);
-    this.coins.container.setScale(0.78).setPosition(m / u + 4, 30);
-    this.gems.container.setScale(0.78).setPosition(m / u + 4 + this.coins.width * 0.78 + 8, 30);
+    // responsive header (2026-10-13): the counters shrink if the row would reach the close button;
+    // the title stays on the counters' row only when it fits fully between the counters and the
+    // close button (with a gap), otherwise it moves below them — it never overlaps a counter
+    const closeLeft = cw - m / u - 52;
+    const left = m / u + 4;
+    const rowW = (this.coins.width + this.gems.width) * 0.78 + 8;
+    const ks = Math.min(0.78, (0.78 * (closeLeft - 10 - left)) / rowW);
+    this.coins.container.setScale(ks).setPosition(left, 30);
+    this.gems.container.setScale(ks).setPosition(left + this.coins.width * ks + 8, 30);
+    const countersRight = left + (this.coins.width + this.gems.width) * ks + 8;
+    this.title.setScale(1);
+    const tw = this.title.width;
+    const compact = cw / 2 - tw / 2 < countersRight + 16 || cw / 2 + tw / 2 > closeLeft - 16;
+    if (compact && tw > cw - 2 * (m / u) - 20) this.title.setScale((cw - 2 * (m / u) - 20) / tw);
+    this.title.setPosition(cw / 2, compact ? 78 : 40);
     this.close.setPlacement(cw - m / u - 26, 32, 1);
+    const qa = this.scene.qaTargets;
+    if (qa) {
+      qa.set('store-title', { x: cw / 2 * u, y: this.title.y * u, w: this.title.displayWidth * u, h: this.title.displayHeight * 0.72 * u, visible: true });
+      qa.set('store-counter-coins', { x: (left + (this.coins.width * ks) / 2) * u, y: 30 * u, w: this.coins.width * ks * u, h: UI.pillH * 1.18 * ks * u, visible: true });
+      qa.set('store-counter-gems', { x: (left + this.coins.width * ks + 8 + (this.gems.width * ks) / 2) * u, y: 30 * u, w: this.gems.width * ks * u, h: UI.pillH * 1.18 * ks * u, visible: true });
+    }
     // list area below the header
     this.viewTop = hh + (compact ? 24 : 10) * u;
     this.viewH = H - this.viewTop;
@@ -421,6 +439,7 @@ export class StoreModal {
     this._input(false);
     const qa = this.scene.qaTargets;
     ['gems', 'coins', 'bundles', 'bonus'].forEach((id) => qa?.delete(`store-section-${id}`));
+    ['store-title', 'store-counter-coins', 'store-counter-gems'].forEach((id) => qa?.delete(id));
     this.buttons.forEach((b) => b.destroy());
     this.close.destroy();
     this.root.destroy();

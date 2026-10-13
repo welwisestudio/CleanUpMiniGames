@@ -914,6 +914,7 @@ export class ObjectStack {
     if (!chunk || chunk.detaching) return;
     chunk.detaching = true;
     const { img, outlineImg } = chunk;
+    this.scene.services?.audio?.play('chunk-fall');
     outlineImg.setVisible(true);
     const parent = img.parentContainer;
     parent.bringToTop(img);

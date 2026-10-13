@@ -8,17 +8,17 @@ import { Button } from '../ui/Button.js';
 import { SettingsModal } from '../ui/modals.js';
 import { TimedChestWidget, ProgressChestMini, ChestOfferModal, TIMED_CHEST_SIZE, flyIcons } from '../ui/rewards.js';
 import { registerQaScene } from '../app/qa.js';
-import { LevelOffer } from '../ui/levelOffer.js';
 import { StoreModal } from '../ui/storeModal.js';
 import { WheelModal } from '../ui/wheelModal.js';
 
 // Object selection (reference Menu_screen.PNG, video 00:00 / 08:04–08:16): a vertical list of
 // shelves that scrolls downward, 2 objects per shelf row. Header: currency counters and settings.
 // Level access (systems pass 2026-10-12, ProgressionService): every level stays visible; completed =
-// clean preview + check, open = dirty preview, locked = dimmed preview + padlock (a tap opens the
-// unlock card: coins, or a rewarded ad when the player cannot afford it). The three VIP levels sit
-// spread through the list and always carry a purple "VIP" tag; locked VIP = purple-dimmed preview +
-// padlock + tag (rewarded ad only).
+// clean preview + check, open = dirty preview, locked = dimmed preview + padlock + an unlock pill on the
+// card (2026-10-13, no popup): [coin price] — a tap buys it, or plays the rewarded ad when the player
+// cannot afford it (purple ad badge). The three VIP levels sit spread through the list with a purple
+// glow / rays / sparkles backdrop and a "VIP" tag; locked VIP = [▶ Unlock] (rewarded ad only).
+// Names sit on yellow labels; objects stand on the shelf by their visible bottom.
 // Step 6 reward pass: the timed chest and the level-progress chest form one column on the left,
 // directly below the counters; the header keeps its approved single-row height. On narrow
 // screens the shelves get a left gutter so the column never covers a level while scrolling.
@@ -43,6 +43,7 @@ export class MenuScene extends Phaser.Scene {
     // so the request is consumed here and cleared — a later plain menu start (Pause → Menu, exit,
     // reload) can never replay it.
     this.pendingOffer = data?.fromNext && data.offerLevel ? data.offerLevel : null;
+    this.restoreScroll = data?.scrollY ?? null; // an in-place refresh after an unlock keeps the scroll
     this.sys.settings.data = {};
     this.leaving = false; // scene objects are reused between visits
     this.services.pause.set('navigationBusy', false);
@@ -54,7 +55,7 @@ export class MenuScene extends Phaser.Scene {
     this.settings = null;
     this.lastDragMoved = 0;
     this.chestOffer = null;
-    this.levelOffer = null;
+    this.adBusy = false;
     this.store = null;
     this.wheel = null;
 
@@ -138,8 +139,6 @@ export class MenuScene extends Phaser.Scene {
       this.settings = null;
       this.chestOffer?.destroy();
       this.chestOffer = null;
-      this.levelOffer?.destroy();
-      this.levelOffer = null;
       this.store?.destroy();
       this.store = null;
       this.wheel?.destroy();
@@ -153,13 +152,15 @@ export class MenuScene extends Phaser.Scene {
       const id = this.pendingOffer;
       this.pendingOffer = null;
       this.time.delayedCall(120, () => {
-        // only a level that is still locked gets its card; nothing is ever opened automatically
+        // a still-locked next level: scroll it into view and pulse its unlock pill (no popup;
+        // nothing is ever opened or bought automatically)
         if (this.leaving || this.services.progression.isPlayable(id)) return;
         const e = this.entries.find((x) => x.levelId === id);
         if (e?.geo() && this.viewH) this._scrollTo(e.geo().y - this.viewH / 2);
-        this._tapLevel(getLevel(id));
+        if (e?.pill) this.tweens.add({ targets: e.pill, scale: e.pill.scale * 1.18, duration: 220, yoyo: true, repeat: 2 });
       });
     }
+    if (this.restoreScroll != null) this._scrollTo(this.restoreScroll);
   }
 
   relayout(l) {
@@ -218,10 +219,14 @@ export class MenuScene extends Phaser.Scene {
       const y = top + rowH * r + thumb * 1.02;
       s.setScale(shelfW / s.width).setPosition(shelfCx, y);
     });
+    // one vertical structure per shelf row (2026-10-13): both cards share the row's lower shelf
+    // edge, so their pills and their name labels sit on the same lines whatever the state / object
+    const cardX = (i) => shelfCx + (i % 2 === 0 ? -1 : 1) * shelfW * 0.24;
     this.entries.forEach((e, i) => {
       const shelf = this.shelves[Math.floor(i / 2)];
-      const x = shelfCx + (i % 2 === 0 ? -1 : 1) * shelfW * 0.24;
-      e.layout(x, shelf.y - shelf.displayHeight * 0.12, thumb, u, shelf.y + shelf.displayHeight * 0.5 + 14 * u);
+      const x = cardX(i);
+      const rowBottom = Math.max(shelfBottomAt(this, shelf, cardX(0)), shelfBottomAt(this, shelf, cardX(1)));
+      e.layout(x, shelf.y - shelf.displayHeight * 0.12, thumb, u, shelf.y + shelf.displayHeight * 0.5 + 14 * u, rowBottom);
     });
     this.footer.setPosition(shelfCx, top + rowH * this.rows + 4 * u).setScale(u);
     this.contentH = top + rowH * this.rows + 40 * u;
@@ -232,7 +237,6 @@ export class MenuScene extends Phaser.Scene {
     this.badges.layoutTo(l);
     this.settings?.layout(l);
     this.chestOffer?.layout(l);
-    this.levelOffer?.layout(l);
     this.store?.layout(l);
     this.wheel?.layout(l);
     this._updateQa();
@@ -241,7 +245,7 @@ export class MenuScene extends Phaser.Scene {
 
   // ---- scrolling ---------------------------------------------------------------------------
   onDown(pointer) {
-    if (this.settings || this.chestOffer || this.levelOffer || this.store || this.wheel || pointer.y < this.headerH) return;
+    if (this.settings || this.chestOffer || this.store || this.wheel || pointer.y < this.headerH) return;
     this.drag = { startY: pointer.y, lastY: pointer.y, startScroll: this.scrollY, moved: 0, lastT: this.time.now };
     this.lastDragMoved = 0;
     this.velocity = 0;
@@ -265,7 +269,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   onWheel(pointer, over, dx, dy) {
-    if (this.settings || this.chestOffer || this.levelOffer || this.store || this.wheel) return;
+    if (this.settings || this.chestOffer || this.store || this.wheel) return;
     this._scrollTo(this.scrollY + dy);
   }
 
@@ -308,15 +312,22 @@ export class MenuScene extends Phaser.Scene {
     const state = prog.status(level.id); // completed · open · locked · vip (locked VIP)
     const done = state === 'completed';
     const isVip = prog.isVip(level.id);
-    const img = this.add.image(0, 0, done && level.thumbnailClean ? level.thumbnailClean : level.thumbnail).setOrigin(0.5, 0.92);
-    const name = makeText(this, 0, 0, level.title, { size: 17, color: state === 'locked' || state === 'vip' ? '#8C8296' : TEXT.navy, weight: '900' });
-    const badge = done ? this.add.image(0, 0, 'icon-check') : null;
-    // locked / VIP: dimmed preview, padlock, and a small chip for the way to open it
     const locked = state === 'locked' || state === 'vip';
-    if (locked) img.setTint(state === 'vip' ? 0x9d93b3 : 0x9a9a9a).setAlpha(0.82);
+    const key = done && level.thumbnailClean ? level.thumbnailClean : level.thumbnail;
+    // menu polish 2026-10-13: every object stands on the shelf by its VISIBLE bottom (transparent
+    // padding of the thumbnail ignored) and is sized by its visible box → even, level placement
+    const vb = visibleBox(this, key);
+    const img = this.add.image(0, 0, key).setOrigin(vb.ox, vb.oy);
+    if (locked) img.setTint(isVip ? 0xc9b6ea : 0x9a9a9a).setAlpha(0.86);
+    // VIP premium look: soft purple glow, slowly turning light rays and twinkling sparkles behind
+    const vip = isVip ? this._vipFx() : null;
+    vip?.decorate(img);
+    // yellow name label with a dark outline
+    const plate = this.add.graphics();
+    const name = makeText(this, 0, 0, level.title, { size: 14, color: '#4A2C0A', weight: '900' });
+    const badge = done ? this.add.image(0, 0, 'icon-check') : null;
     const lock = locked ? this.add.graphics() : null;
-    // VIP tag on every VIP level (locked or not): a purple pill on the preview's upper left (the
-    // completion check keeps the upper right); locked normal levels: padlock only, no chips
+    // VIP tag on every VIP level (locked or not): purple pill on the preview's upper left
     const chip = isVip ? this.add.container(0, 0) : null;
     if (chip) {
       const cg = this.add.graphics();
@@ -324,9 +335,68 @@ export class MenuScene extends Phaser.Scene {
       chip.add([cg, ...items]);
       chip.setData({ g: cg, items });
     }
+    // unlock pill ON the card (no popup, 2026-10-13): normal locked level = [coin price] (a purple ad
+    // badge when the player cannot afford it — a tap then plays the rewarded ad); locked VIP = [▶ Unlock]
+    const pill = locked ? this.add.container(0, 0) : null; // open / completed levels: no pill (their label keeps the row line)
     const zone = this.add.zone(0, 0, 10, 10).setInteractive({ useHandCursor: true });
     let base = 1;
     let geo = null;
+    const entry = { levelId: level.id, busy: false, pill, geo: () => geo };
+    // Pill layout (2026-10-13 polish): one capsule centred under the object. The price part has a
+    // fixed width (2- and 3-digit prices look the same) with the coin + number centred as a group
+    // on one middle line. Not enough coins: a purple ad cap is joined to the capsule's right end
+    // (one shape, not a floating badge). VIP: one purple [▶ Unlock] capsule.
+    const drawPill = () => {
+      if (!pill) return;
+      pill.removeAll(true);
+      const g = this.add.graphics();
+      const H = 30;
+      const R = H / 2;
+      const afford = !isVip && prog.canAfford(level.id);
+      const cap = !isVip && !afford && !entry.busy ? 34 : 0; // ad cap width
+      const main = 96; // price part width (same for every price)
+      const items = [];
+      let fill;
+      let rim;
+      if (entry.busy) {
+        items.push(makeText(this, 0, 0, 'Loading…', { size: 15, color: '#FFFFFF', weight: '900', stroke: '#4B1D7A', strokeThickness: 3 }));
+        fill = 0x8a4fe0;
+        rim = 0x5b2a9a;
+      } else if (isVip) {
+        items.push(fitImageMenu(this, 'icon-ad-clapper', 20), makeText(this, 0, 0, 'Unlock', { size: 16, color: '#FFFFFF', weight: '900', stroke: '#4B1D7A', strokeThickness: 3 }));
+        fill = 0x8a4fe0;
+        rim = 0x5b2a9a;
+      } else {
+        items.push(fitImageMenu(this, 'icon-coin', 21), makeText(this, 0, 0, `${prog.price(level.id)}`, { size: 17, color: '#FFFFFF', weight: '900', stroke: afford ? '#1F7A2A' : '#4F5763', strokeThickness: 3 }));
+        fill = afford ? 0x4fc84b : 0x98a1ab;
+        rim = afford ? 0x1f7a2a : 0x5e6670;
+      }
+      const textW = items.reduce((a, o) => a + o.displayWidth, 0) + 5 * (items.length - 1);
+      const mainW = Math.max(main, textW + 26);
+      const W = mainW + cap;
+      const x0 = -W / 2;
+      // shadow, body, top gloss, rim
+      // one seamless capsule: the whole shape in the cap colour, the price part laid over it with
+      // exactly the same top / bottom edges (square right end at the divider), then ONE shared
+      // border around everything and a straight divider spanning the full inner height
+      g.fillStyle(0x000000, 0.2).fillRoundedRect(x0, -R + 3, W, H, R);
+      if (cap) {
+        g.fillStyle(0x8a4fe0, 1).fillRoundedRect(x0, -R, W, H, R);
+        g.fillStyle(fill, 1).fillRoundedRect(x0, -R, mainW, H, { tl: R, bl: R, tr: 0, br: 0 });
+      } else {
+        g.fillStyle(fill, 1).fillRoundedRect(x0, -R, W, H, R);
+      }
+      g.fillStyle(0xffffff, 0.2).fillRoundedRect(x0 + R * 0.5, -R + 3, W - R, H * 0.34, H * 0.17);
+      if (cap) g.fillStyle(0xffffff, 0.9).fillRect(x0 + mainW - 1, -R + 2.5, 2, H - 5);
+      g.lineStyle(2.5, 0xffffff, 1).strokeRoundedRect(x0, -R, W, H, R);
+      g.lineStyle(1.5, rim, 0.55).strokeRoundedRect(x0 - 2, -R - 2, W + 4, H + 4, R + 2);
+      pill.add([g, ...items]);
+      // the text glyphs sit a touch high in their box: centre on the visual middle
+      items.forEach((o) => o.type === 'Text' && o.setOrigin(0.5, 0.54));
+      centerRowMenu(items, x0 + mainW / 2, 0, 5);
+      if (cap) pill.add(fitImageMenu(this, 'icon-ad-clapper', 18).setPosition(x0 + mainW + cap / 2, 0));
+    };
+    drawPill();
     zone.on('pointerdown', () => img.setScale(base * 0.95));
     zone.on('pointerout', () => img.setScale(base));
     zone.on('pointerup', (pointer) => {
@@ -334,49 +404,137 @@ export class MenuScene extends Phaser.Scene {
       if (pointer.y < this.headerH) return; // item scrolled under the header
       // a scroll gesture that started on the item must not open it
       if (this.lastDragMoved > 12 * (this.layout?.u ?? 1)) return;
-      this._tapLevel(level);
+      this._tapLevel(level, entry, drawPill);
     });
-    const objects = [img, name, zone, ...(badge ? [badge] : []), ...(lock ? [lock] : []), ...(chip ? [chip] : [])];
+    const objects = [...(vip ? [vip.root] : []), img, plate, name, ...(lock ? [lock] : []), ...(pill ? [pill] : []), zone, ...(badge ? [badge] : []), ...(chip ? [chip] : [])];
+    entry.objects = objects;
+    entry.layout = (x, shelfY, size, u, labelY, shelfBottom = labelY - 14 * u) => {
+      // optional per-level preview scale (level.menuPreview.scale, share of the slot)
+      const mp = level.menuPreview ?? {};
+      // balanced size: normalised between the longest side and the area (flat / wide objects are
+      // not dwarfed by tall ones), the longest side capped so nothing overhangs the slot
+      const longest = Math.max(vb.bw, vb.bh);
+      const norm = Math.sqrt(longest * Math.sqrt(vb.bw * vb.bh));
+      base = Math.min((size * 0.9 * (mp.scale ?? 1)) / norm, (size * 1.1) / longest);
+      // card furniture (label, unlock pill) scales with the card on large screens too
+      const ku = Math.max(u, size / 150);
+      let pillY = 0;
+      // the visible bottom sits on the shelf's top surface (same line for every object)
+      img.setScale(base).setPosition(x, shelfY + size * 0.06);
+      const cy = shelfY + size * 0.06 - vb.bh * base * 0.5; // visible centre
+      if (vip) vip.layout(x, cy, size, u);
+      // name label: yellow plate with a dark outline (wraps long names into two lines)
+      const maxW = size * 1.08;
+      name.setText(level.title).setScale(ku).setLineSpacing(0);
+      if (name.displayWidth > maxW * 1.15 && level.title.includes(' ')) {
+        const mid = level.title.length / 2;
+        const cut = [...level.title].reduce((best, ch, i) => (ch === ' ' && Math.abs(i - mid) < Math.abs(best - mid) ? i : best), -1);
+        name.setText(`${level.title.slice(0, cut)}\n${level.title.slice(cut + 1)}`).setLineSpacing(-4);
+      }
+      fitText(name, maxW, ku);
+      const pw = name.displayWidth + 16 * ku;
+      const ph = name.displayHeight + 4 * ku;
+      // 2026-10-13: the label sits higher, right under the shelf (more air below), but never
+      // over the unlock pill: its top stays at least a small gap below the pill's bottom
+      // 2026-10-13: the label sits right below the shelf's visible front edge AT THIS ITEM (the
+      // shelf is drawn in perspective: its edge is lower on the left), and the unlock pill sits
+      // directly above the label with a small fixed gap — button first, then the name
+      // ...but a pill never climbs onto the object: its centre stays at least just below the
+      // object's base (the visible bottom at shelfY + 6 % of the slot); the label then follows it
+      const gap = 5 * ku;
+      const half = 12.6 * ku;
+      pillY = Math.max(shelfBottom + 3 * ku - gap - half, shelfY + size * 0.06 + half * 0.55); // same for both cards of a row
+      const labelTop = pillY + half + gap;
+      const ly = labelTop + ph / 2;
+      name.setPosition(x, ly);
+      plate.clear();
+      plate.fillStyle(0x000000, 0.18).fillRoundedRect(x - pw / 2, ly - ph / 2 + 3 * ku, pw, ph, 12 * ku);
+      plate.fillStyle(0xffd23f, 1).fillRoundedRect(x - pw / 2, ly - ph / 2, pw, ph, 12 * ku);
+      plate.lineStyle(3 * ku, 0x5a3a12, 1).strokeRoundedRect(x - pw / 2, ly - ph / 2, pw, ph, 12 * ku);
+      // completion check: large and readable, on the preview's upper right
+      if (badge) badge.setScale((CHECK_SIZE * u) / badge.width).setPosition(x + size * 0.38, shelfY - size * 0.8);
+      if (lock) drawPadlock(lock, x, cy - size * 0.04, size * 0.13);
+      if (pill) pill.setScale(ku * 0.74).setPosition(x, pillY);
+      if (chip) {
+        const { g, items } = chip.data.values;
+        items.forEach((o) => o.setScale(1));
+        // polished VIP badge: deep violet capsule, lighter top, gold rim, small gold crown + VIP
+        const w = 82;
+        g.clear().fillStyle(0x2a1150, 0.28).fillRoundedRect(-w / 2, -11, w, 28, 14);
+        g.fillStyle(0x6a2fc0, 1).fillRoundedRect(-w / 2, -14, w, 28, 14);
+        g.fillStyle(0x9a5cf0, 1).fillRoundedRect(-w / 2 + 3, -12, w - 6, 13, { tl: 11, tr: 11, bl: 4, br: 4 });
+        g.lineStyle(2.5, 0xf5c542, 1).strokeRoundedRect(-w / 2, -14, w, 28, 14);
+        const cx = -w / 2 + 17;
+        g.fillStyle(0xf5c542, 1).fillPoints([{ x: cx - 9, y: 6 }, { x: cx - 9, y: -4 }, { x: cx - 4.5, y: 0 }, { x: cx, y: -7 }, { x: cx + 4.5, y: 0 }, { x: cx + 9, y: -4 }, { x: cx + 9, y: 6 }], true);
+        g.fillStyle(0xfff2b8, 1).fillCircle(cx, -7, 1.8).fillCircle(cx - 9, -4, 1.5).fillCircle(cx + 9, -4, 1.5);
+        items[0].setPosition(cx + 31, 0);
+        chip.setScale(Math.max(u, size / 150)).setPosition(x - size * 0.3, shelfY - size * 0.82);
+      }
+      const hit = Math.max(size, UI.minTouch * u);
+      zone.setPosition(x, shelfY - size * 0.42).setSize(hit, hit);
+      geo = { x, y: shelfY - size * 0.42, w: hit, h: hit };
+    };
+    entry.qa = () => {
+      if (!geo) return;
+      const y = geo.y - this.scrollY;
+      this.qaTargets.set(`menu-level-${level.id}`, { x: geo.x, y, w: geo.w, h: geo.h, visible: y - geo.h / 2 > this.headerH && y + geo.h / 2 < this.viewH, thumb: img.texture.key, check: badge ? badge.displayWidth : 0, state, vip: isVip, contentY: geo.y });
+    };
+    return entry;
+  }
+
+  // VIP premium treatment (2026-10-13 rework, cheap and code-drawn): a soft violet bloom (many faint
+  // rings, smooth falloff), a few slim tapered light beams that drift slowly (layered for a soft
+  // gradient, kept inside the bloom), a thin glowing halo ring, a gentle shine sweep + soft outline
+  // glow on the object itself (WebGL preFX) and a few small twinkles. The object stays the focus.
+  // Returns { root, layout, decorate(img) }.
+  _vipFx() {
+    const root = this.add.container(0, 0);
+    const bloom = this.add.graphics();
+    const beams = this.add.graphics();
+    const halo = this.add.graphics();
+    const sparks = [0, 1, 2].map(() => this.add.graphics());
+    root.add([bloom, beams, halo, ...sparks]);
+    this.tweens.add({ targets: beams, angle: 360, duration: 60000, repeat: -1 });
+    this.tweens.add({ targets: halo, alpha: { from: 0.65, to: 1 }, duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    sparks.forEach((s, i) => {
+      s.setAlpha(0).setScale(0.4);
+      this.tweens.add({ targets: s, alpha: { from: 0, to: 0.95 }, scale: { from: 0.4, to: 1 }, angle: { from: 0, to: 45 }, duration: 650, yoyo: true, repeat: -1, delay: 300 + i * 900, repeatDelay: 1500 });
+    });
+    const spots = [[-0.34, -0.36], [0.36, -0.2], [0.26, 0.16]];
     return {
-      levelId: level.id,
-      geo: () => geo,
-      objects,
-      layout: (x, shelfY, size, u, labelY) => {
-        // optional per-level preview tweak (level.menuPreview: { scale, dy } as a share of the slot)
-        const mp = level.menuPreview ?? {};
-        base = (size * (mp.scale ?? 1)) / Math.max(img.width, img.height);
-        img.setScale(base).setPosition(x, shelfY + size * (0.08 + (mp.dy ?? 0)));
-        name.setPosition(x, labelY);
-        // long names never overlap the neighbour: a name much wider than its column breaks into two
-        // lines at the space nearest its middle ("Golden Ball / Trophy"), then shrinks only if needed
-        const maxW = size * 1.36;
-        name.setText(level.title).setScale(u);
-        if (name.displayWidth > maxW * 1.2 && level.title.includes(' ')) {
-          const mid = level.title.length / 2;
-          const cut = [...level.title].reduce((best, ch, i) => (ch === ' ' && Math.abs(i - mid) < Math.abs(best - mid) ? i : best), -1);
-          name.setText(`${level.title.slice(0, cut)}\n${level.title.slice(cut + 1)}`).setLineSpacing(-4);
-        }
-        fitText(name, maxW, u);
-        // completion check: large and readable, on the preview's upper right
-        if (badge) badge.setScale((CHECK_SIZE * u) / badge.width).setPosition(x + size * 0.38, shelfY - size * 0.8);
-        if (lock) drawPadlock(lock, x, shelfY - size * 0.36, size * 0.2);
-        if (chip) {
-          const { g, items } = chip.data.values;
-          items.forEach((o) => o.setScale(1));
-          const w = 54;
-          g.clear().fillStyle(0x3b1f66, 0.22).fillRoundedRect(-w / 2, -12, w, 28, 14);
-          g.fillStyle(0x8a4fe0, 1).fillRoundedRect(-w / 2, -14, w, 28, 14).lineStyle(3, 0xffffff, 1).strokeRoundedRect(-w / 2, -14, w, 28, 14);
-          centerRowMenu(items, 0, 0, 4);
-          chip.setScale(u).setPosition(x - size * 0.34, shelfY - size * 0.8);
-        }
-        const hit = Math.max(size, UI.minTouch * u);
-        zone.setPosition(x, shelfY - size * 0.42).setSize(hit, hit);
-        geo = { x, y: shelfY - size * 0.42, w: hit, h: hit };
+      root,
+      decorate: (img) => {
+        img.preFX?.addGlow(0xc8a2ff, 3, 0, false, 0.1, 10);
+        img.preFX?.addShine(0.45, 0.35, 3.5);
       },
-      qa: () => {
-        if (!geo) return;
-        const y = geo.y - this.scrollY;
-        this.qaTargets.set(`menu-level-${level.id}`, { x: geo.x, y, w: geo.w, h: geo.h, visible: y - geo.h / 2 > this.headerH && y + geo.h / 2 < this.viewH, thumb: img.texture.key, check: badge ? badge.displayWidth : 0, state, vip: isVip, contentY: geo.y });
+      layout: (x, y, size, u) => {
+        root.setPosition(x, y);
+        const R = size * 0.56;
+        bloom.clear();
+        for (let i = 16; i >= 1; i--) {
+          const t = i / 16;
+          bloom.fillStyle(t > 0.6 ? 0xc9a7ff : 0xa874ff, 0.035 * (1.15 - t * 0.6)).fillCircle(0, 0, R * t);
+        }
+        beams.clear();
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * Math.PI * 2 + (i % 2 ? 0.18 : 0);
+          const len = R * (i % 2 ? 0.86 : 1);
+          [[0.075, 0.05], [0.045, 0.07], [0.02, 0.1]].forEach(([wd, al]) => {
+            beams.fillStyle(0xe9dcff, al);
+            beams.fillTriangle(0, 0, Math.cos(a - wd) * len, Math.sin(a - wd) * len, Math.cos(a + wd) * len, Math.sin(a + wd) * len);
+          });
+        }
+        halo.clear();
+        halo.lineStyle(7 * u, 0xb98bff, 0.14).strokeCircle(0, 0, R * 0.8);
+        halo.lineStyle(2 * u, 0xf1e6ff, 0.75).strokeCircle(0, 0, R * 0.8);
+        sparks.forEach((s, i) => {
+          const k = u * (i === 0 ? 1.1 : 0.8);
+          s.clear().fillStyle(0xffffff, 1);
+          s.fillTriangle(0, -9 * k, 2 * k, 0, -2 * k, 0).fillTriangle(0, 9 * k, 2 * k, 0, -2 * k, 0);
+          s.fillTriangle(-9 * k, 0, 0, 2 * k, 0, -2 * k).fillTriangle(9 * k, 0, 0, 2 * k, 0, -2 * k);
+          s.fillStyle(0xf3e6ff, 1).fillCircle(0, 0, 2 * k);
+          s.setPosition(spots[i][0] * size, spots[i][1] * size);
+        });
       },
     };
   }
@@ -418,6 +576,7 @@ export class MenuScene extends Phaser.Scene {
 
   openChestOffer() {
     if (this.chestOffer || this.settings || !this.services.rewards.progressChestState().full) return;
+    this.services.audio.play('chest-open');
     this.chestOffer = new ChestOfferModal(this, {
       rewards: this.services.rewards,
       // skipping after the "lost forever" warning forfeits the chest
@@ -447,7 +606,7 @@ export class MenuScene extends Phaser.Scene {
 
   // Store (2026-10-10): from the "+" next to a counter (opens at that currency) or the Store button.
   openStore(focus) {
-    if (this.store || this.wheel || this.settings || this.chestOffer || this.levelOffer || this.leaving) return;
+    if (this.store || this.wheel || this.settings || this.chestOffer || this.leaving) return;
     this.services.audio.play('ui-tap');
     this.store = new StoreModal(this, {
       services: this.services,
@@ -464,8 +623,8 @@ export class MenuScene extends Phaser.Scene {
 
   // Wheel of Fortune (2026-10-10): its own popup (not inside the Store).
   openWheel() {
-    if (this.store || this.wheel || this.settings || this.chestOffer || this.levelOffer || this.leaving) return;
-    this.services.audio.play('ui-tap');
+    if (this.store || this.wheel || this.settings || this.chestOffer || this.leaving) return;
+    this.services.audio.play('ui-pop');
     this.wheel = new WheelModal(this, {
       services: this.services,
       onChanged: () => this._syncPills(),
@@ -490,62 +649,131 @@ export class MenuScene extends Phaser.Scene {
     });
   }
 
-  // A tap on a level card: open it when playable, otherwise its unlock card — coins when the player
-  // can afford the price, a rewarded ad when not; VIP levels: rewarded ad only.
-  _tapLevel(level) {
-    if (this.leaving || this.settings || this.chestOffer || this.levelOffer || this.store || this.wheel) return;
+  // A tap on a level card (2026-10-13: no popup): open it when playable; a locked normal level is
+  // bought right away when the player has enough coins, otherwise the rewarded ad plays straight from
+  // the card; a locked VIP level plays the rewarded ad (the only way to open it). A successful unlock
+  // refreshes the menu in place (same scroll) — the level is then open; nothing starts by itself.
+  async _tapLevel(level, entry, redraw) {
+    if (this.leaving || this.settings || this.chestOffer || this.store || this.wheel) return;
     const prog = this.services.progression;
     if (prog.isPlayable(level.id)) return this._openLevel(level.id);
+    if (!entry || entry.busy || this.adBusy) return;
     this.services.audio.play('ui-tap');
-    const vip = prog.isVip(level.id);
-    const kind = vip ? 'vip' : prog.canAfford(level.id) ? 'coins' : 'ad';
-    const close = () => {
-      this.levelOffer?.destroy();
-      this.levelOffer = null;
-    };
-    const offer = new LevelOffer(this, {
-      kind,
-      number: prog.number(level.id),
-      title: level.title,
-      texture: level.thumbnail,
-      price: prog.price(level.id) ?? 0,
-      coins: this.services.save.get('coins'),
-      onClose: close,
-      onConfirm: async () => {
-        if (kind === 'coins') {
-          const r = prog.purchase(level.id);
-          if (r.status === 'insufficient') {
-            offer.message('Not enough coins');
-            offer.shake();
-            return;
-          }
-          if (r.status === 'purchased') this.coins.setValue(r.after);
-          close();
-          this._openLevel(level.id);
-          return;
-        }
-        offer.setBusy(true);
-        const r = await prog.unlockWithAd(level.id);
-        if (this.levelOffer !== offer) return;
-        if (r.status === 'unlocked' || r.status === 'open') {
-          close();
-          this._openLevel(level.id);
-          return;
-        }
-        offer.setBusy(false);
-        offer.message(r.status === 'not-earned' ? 'Ad closed early - level still locked' : 'Ad not available - try again');
-      },
-    });
-    this.levelOffer = offer;
+    if (!prog.isVip(level.id) && prog.canAfford(level.id)) {
+      const r = prog.purchase(level.id);
+      if (r.status === 'purchased') this._unlocked(r.savePromise);
+      return;
+    }
+    entry.busy = true;
+    this.adBusy = true;
+    redraw();
+    const r = await prog.unlockWithAd(level.id);
+    this.adBusy = false;
+    if (this.leaving || !this.sys.isActive()) return;
+    entry.busy = false;
+    if (r.status === 'unlocked' || r.status === 'open') return this._unlocked();
+    redraw();
+    this._toast(r.status === 'not-earned' ? 'Ad closed early - still locked' : 'Ad not available - try again', entry.geo());
+  }
+
+  _unlocked(savePromise) {
+    this.services.audio.play('unlock');
+    const go = () => !this.leaving && this.scene.restart({ scrollY: this.scrollY });
+    (savePromise ?? Promise.resolve()).then(go, go);
+  }
+
+  // short message floating above a card (in the scrolling list)
+  _toast(msg, geo) {
+    if (!geo) return;
+    this.services.audio.play('error');
+    const u = this.layout?.u ?? 1;
+    const t = makeText(this, geo.x, geo.y - geo.h * 0.2, msg, { size: 15, color: '#FFFFFF', weight: '900', stroke: '#B0302A', strokeThickness: 4 }).setScale(u).setDepth(60);
+    this.list.add(t);
+    this.tweens.add({ targets: t, y: t.y - 26 * u, alpha: { from: 1, to: 0 }, delay: 1100, duration: 500, onComplete: () => t.destroy() });
   }
 
   _openLevel(levelId) {
-    if (this.leaving || this.settings || this.chestOffer || this.levelOffer) return;
+    if (this.leaving || this.settings || this.chestOffer) return;
     this.leaving = true;
     this.services.audio.play('ui-tap');
     this.services.pause.set('navigationBusy', true);
     this.scene.start('Level', { levelId });
   }
+}
+
+// The shelf art's visible bottom edge (lowest opaque pixel) per column, as a fraction of its height;
+// gives the edge under any x of a placed shelf (the shelf is drawn in perspective). Cached.
+let SHELF_PROFILE = null;
+function shelfBottomAt(scene, shelf, x) {
+  if (!SHELF_PROFILE) {
+    const f = scene.textures.getFrame(shelf.texture.key);
+    const w = f.cutWidth;
+    const h = f.cutHeight;
+    const cols = 64;
+    SHELF_PROFILE = new Array(cols).fill(0.5);
+    try {
+      const c = document.createElement('canvas');
+      c.width = w;
+      c.height = h;
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(f.source.image, f.cutX, f.cutY, w, h, 0, 0, w, h);
+      const d = ctx.getImageData(0, 0, w, h).data;
+      for (let k = 0; k < cols; k++) {
+        const cx = Math.min(w - 1, Math.round(((k + 0.5) / cols) * w));
+        let y = h - 1;
+        while (y > 0 && d[(y * w + cx) * 4 + 3] < 128) y--;
+        SHELF_PROFILE[k] = (y + 1) / h;
+      }
+    } catch {
+      /* keep the defaults */
+    }
+  }
+  const fx = (x - (shelf.x - shelf.displayWidth / 2)) / shelf.displayWidth;
+  const k = Math.max(0, Math.min(SHELF_PROFILE.length - 1, Math.floor(fx * SHELF_PROFILE.length)));
+  return shelf.y - shelf.displayHeight / 2 + SHELF_PROFILE[k] * shelf.displayHeight;
+}
+
+// Visible (non-transparent) box of a texture, as origin fractions + size in texture px; cached.
+const VISIBLE = new Map();
+function visibleBox(scene, key) {
+  if (VISIBLE.has(key)) return VISIBLE.get(key);
+  const f = scene.textures.getFrame(key);
+  const w = f.cutWidth;
+  const h = f.cutHeight;
+  let r = { ox: 0.5, oy: 0.92, bw: w, bh: h };
+  try {
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(f.source.image, f.cutX, f.cutY, w, h, 0, 0, w, h);
+    const d = ctx.getImageData(0, 0, w, h).data;
+    let x0 = w;
+    let y0 = h;
+    let x1 = -1;
+    let y1 = -1;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (d[(y * w + x) * 4 + 3] > 40) {
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+          if (y < y0) y0 = y;
+          if (y > y1) y1 = y;
+        }
+      }
+    }
+    if (x1 >= 0) r = { ox: (x0 + x1 + 1) / 2 / w, oy: (y1 + 1) / h, bw: x1 - x0 + 1, bh: y1 - y0 + 1 };
+  } catch {
+    /* keep the defaults */
+  }
+  VISIBLE.set(key, r);
+  return r;
+}
+
+function fitImageMenu(scene, key, size) {
+  const img = scene.add.image(0, 0, key);
+  img.setScale(size / Math.max(img.width, img.height));
+  return img;
 }
 
 // small helper for the card decorations (UI units)

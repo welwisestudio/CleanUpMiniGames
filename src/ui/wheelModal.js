@@ -153,7 +153,7 @@ export class WheelModal {
       const sg = Math.floor(this.rotation / this.seg);
       if (sg !== lastSeg) {
         lastSeg = sg;
-        this.services.audio?.play('ui-tap');
+        this.services.audio?.play('wheel-tick');
       }
     };
     const o = { v: base };
@@ -220,7 +220,7 @@ export class WheelModal {
     this.panel.add(c);
     this.winCard = c;
     sc.tweens.add({ targets: c, scale: 1, alpha: 1, duration: 260, ease: 'Back.easeOut' });
-    this.services.audio?.play('coins');
+    this.services.audio?.play('reward');
     refreshTextResolution(sc);
   }
 
