@@ -220,7 +220,7 @@ export class WheelModal {
     this.panel.add(c);
     this.winCard = c;
     sc.tweens.add({ targets: c, scale: 1, alpha: 1, duration: 260, ease: 'Back.easeOut' });
-    this.services.audio?.play('reward');
+    this.services.audio?.rewardFor(rw); // jackpot / tool → win jingle; ordinary prizes → soft pop
     refreshTextResolution(sc);
   }
 

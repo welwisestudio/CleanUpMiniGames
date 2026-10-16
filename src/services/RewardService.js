@@ -182,6 +182,7 @@ export class RewardService extends Emitter {
     this.pause?.set('adBusy', true);
     try {
       const res = await this.platform.requestRewarded(placement);
+      if (res?.result === 'earned') this.afterRewarded?.();
       return res?.result ?? 'error';
     } catch {
       return 'error';

@@ -59,7 +59,7 @@ export class StoreService extends Emitter {
     if (this._busy.has(offerId)) return { status: 'busy' };
     this._busy.add(offerId);
     try {
-      const ad = await this.rewards.rewardedAd(this.config.adPlacement);
+      const ad = await this.rewards.rewardedAd(`${this.config.adPlacement}-${offerId}`); // store-reward-gems | -coins | -chest
       if (ad !== 'earned') return { status: ad };
       const day = this.today();
       const now = this.clock();
@@ -140,7 +140,7 @@ export class StoreService extends Emitter {
     if (this._busy.has(id)) return { status: 'busy' };
     this._busy.add(id);
     try {
-      const ad = await this.rewards.rewardedAd(this.config.adPlacement);
+      const ad = await this.rewards.rewardedAd(`${this.config.adPlacement}-${id}`); // store-reward-bundle-coins | -mixed | -mega
       if (ad !== 'earned') return { status: ad };
       const r = { status: 'ready', id };
       await this.save.update((s) => {

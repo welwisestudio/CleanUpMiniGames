@@ -180,6 +180,12 @@ export class SaveService extends Emitter {
     return p;
   }
 
+  // Host pause / important moment: push the current state now (no-op until the save is loaded).
+  flush() {
+    if (!this.loaded) return Promise.resolve();
+    return this._enqueueSave();
+  }
+
   _assertLoaded() {
     if (!this.loaded) throw new Error('SaveService: state is not loaded; writes are disabled');
   }

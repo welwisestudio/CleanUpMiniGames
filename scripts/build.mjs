@@ -1,5 +1,7 @@
 // Production build with a monotonically increasing build number.
-// Usage: npm run build
+// Usage: npm run build              → dist/             (dev adapter profile)
+//        npm run build:youtube      → dist-youtube/     (YouTube Playables release profile)
+//        npm run build:youtube-qa   → dist-youtube-qa/  (same + read-only QA snapshot; mock tests only)
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { build } from 'vite';
@@ -16,14 +18,18 @@ try {
   /* not a git checkout */
 }
 
+const youtube = process.argv.includes('--youtube');
+const qa = youtube && process.argv.includes('--qa');
+if (youtube) process.env.PLATFORM_PROFILE = 'youtube';
+if (qa) process.env.PLATFORM_QA = '1';
+const outDir = youtube ? (qa ? 'dist-youtube-qa' : 'dist-youtube') : 'dist';
+const profile = youtube ? (qa ? 'youtube-playables-qa' : 'youtube-playables') : 'dev-adapter';
+
 process.env.BUILD_NUMBER = String(number);
 process.env.BUILD_TIME = time;
 
 await build({ mode: 'production' });
 
 writeFileSync(counterFile, JSON.stringify({ last: number }, null, 2) + '\n');
-writeFileSync(
-  new URL('../dist/build-info.json', import.meta.url),
-  JSON.stringify({ build: number, time, commit, profile: 'dev-adapter' }, null, 2) + '\n',
-);
-console.log(`\nBuild #${number} at ${time} (base commit ${commit}, platform profile: dev adapter)`);
+writeFileSync(new URL(`../${outDir}/build-info.json`, import.meta.url), JSON.stringify({ build: number, time, commit, profile }, null, 2) + '\n');
+console.log(`\nBuild #${number} at ${time} (base commit ${commit}, platform profile: ${profile}, ${outDir}/)`);

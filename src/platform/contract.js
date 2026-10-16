@@ -1,6 +1,6 @@
 // Internal platform contract (see platform/SDK-CONTRACT.md).
-// Game code talks only to this interface; concrete adapters live in platform/dev/ and,
-// at Step 11, platform/youtube/. No other folder may reference a platform SDK.
+// Game code talks only to this interface; concrete adapters live in platform/dev/ (development
+// profile) and platform/youtube/ (YouTube Playables profile). No other folder may reference a platform SDK.
 
 export const PLATFORM_METHODS = [
   'init', // () => Promise<{ capabilities, audioEnabled, paused }>

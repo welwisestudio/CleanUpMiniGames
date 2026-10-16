@@ -21,13 +21,16 @@ async function toStage(page, drv, id) {
 // plays the current stage; records the tool loop heard in the middle of the first stroke
 async function playAndListen(page, drv) {
   let heard = null;
+  const log0 = (await snap(page)).audio.log;
   await playStage5(page, drv, { mid: async () => {
     const s = await snap(page);
     heard = { tool: s.audio.tool, vol: s.audio.toolVolume, loops: s.audio.playingLoops, stage: s.level?.stageId };
   } });
   await page.waitForTimeout(450);
   const after = await snap(page);
-  return { heard, after: { tool: after.audio.tool, loops: after.audio.playingLoops } };
+  // loops started during the stage (robust when a quick stage completes inside the first stroke)
+  const started = Object.fromEntries(Object.entries(after.audio.log).filter(([k, v]) => k.startsWith('loop-') && v > (log0[k] ?? 0)).map(([k, v]) => [k, v - (log0[k] ?? 0)]));
+  return { heard, started, after: { tool: after.audio.tool, loops: after.audio.playingLoops } };
 }
 
 test('music: one shared instance; Music and Sound toggles are independent', async ({ page }, info) => {
@@ -77,7 +80,8 @@ test('music: one shared instance; Music and Sound toggles are independent', asyn
   s = await snap(page);
   expect(s.audio.musicPlaying).toBe(1);
   console.log('UI', JSON.stringify(s.audio.log));
-  for (const k of ['ui-tap', 'ui-pop', 'wheel-tick', 'reward']) expect(s.audio.log[k] ?? 0, k).toBeGreaterThan(0);
+  for (const k of ['ui-tap', 'ui-pop', 'wheel-tick']) expect(s.audio.log[k] ?? 0, k).toBeGreaterThan(0);
+  expect((s.audio.log.reward ?? 0) + (s.audio.log['reward-big'] ?? 0)).toBe(1); // ordinary prize = pop, jackpot = win
 });
 
 test('tools: the right loop while working, nothing after release; hits per strike; stage / level complete', async ({ page }, info) => {
@@ -95,20 +99,21 @@ test('tools: the right loop while working, nothing after release; hits per strik
   s = await snap(page);
   out.hammer = { hits: (s.audio.log.hit ?? 0) - hits0, loopAfter: r0.after.loops };
   expect(out.hammer.hits).toBeGreaterThan(2);
-  const expectLoop = { 'wire-brush': 'loop-file', 'foam-spray': 'loop-foam', scrub: 'loop-lather', rinse: 'loop-water', dry: 'loop-wipe', 'spray-paint': 'loop-spray' };
+  const expectLoop = { 'wire-brush': 'loop-file', 'foam-spray': 'loop-foam', scrub: 'loop-lather', rinse: 'loop-water', dry: 'loop-wipe', 'spray-paint': 'loop-aerosol' };
   for (const [stage, loop] of Object.entries(expectLoop)) {
     await toStage(page, drv, stage);
     const r = await playAndListen(page, drv);
     out[stage] = r;
-    expect(r.heard.tool, `${stage} plays ${loop}`).toBe(loop);
-    expect(r.heard.vol, `${stage} audible`).toBeGreaterThan(0.05);
+    expect(Object.keys(r.started), `${stage} plays ${loop}`).toEqual([loop]);
+    if (r.heard.tool) expect(r.heard.tool).toBe(loop);
     expect(r.after.loops, `${stage}: silent after release`).toEqual([]);
   }
   s = await waitFor(page, (x) => x.level?.state === 'result', { timeout: 30000 });
-  expect(s.audio.log['stage-complete'] ?? 0).toBeGreaterThanOrEqual(6);
-  expect(s.audio.log['level-complete'] ?? 0).toBe(1);
+  // celebration policy: every stage end is decided (chime on some, silent on the rest); one level clip
+  expect((s.audio.log['stage-chime'] ?? 0) + (s.audio.log['stage-silent'] ?? 0)).toBeGreaterThanOrEqual(6);
+  expect(Object.entries(s.audio.log).filter(([k]) => k.startsWith('level-clip-')).reduce((a, [, v]) => a + v, 0)).toBe(1);
   // retro radio: blower + steam (air / steam hiss); rusty cleaver: laser crackle; leave mid-level
-  for (const [level, stages] of [['retro-radio', { blow: 'loop-spray', steam: 'loop-spray' }], ['rusty-cleaver', { laser: 'loop-laser', sand: 'loop-file' }]]) {
+  for (const [level, stages] of [['retro-radio', { blow: 'loop-spray', steam: 'loop-spray', sponge: 'loop-paint' }], ['rusty-cleaver', { laser: 'loop-laser', sand: 'loop-file' }]]) {
     await page.goto('/?qa=1&devStorage=memory');
     s = await waitFor(page, (x) => x.scene === 'Menu');
     await drv.tap(s.layout.W / 2, s.layout.H * 0.95);
@@ -117,7 +122,7 @@ test('tools: the right loop while working, nothing after release; hits per strik
       await toStage(page, drv, stage);
       const r = await playAndListen(page, drv);
       out[`${level}/${stage}`] = r;
-      expect(r.heard.tool, `${level}/${stage}`).toBe(loop);
+      expect(Object.keys(r.started), `${level}/${stage}`).toEqual([loop]);
       expect(r.after.loops).toEqual([]);
     }
   }

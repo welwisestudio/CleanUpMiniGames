@@ -1425,3 +1425,43 @@ describe('Step 9 audio mapping', () => {
     for (const e of Object.values(SFX)) expect(AUDIO_FILES[e.key], e.key).toBeTruthy();
   });
 });
+
+describe('Audio polish 2026-10-15', () => {
+  it('celebration policy: level complete always plays one clip (never the same twice in a row), wow ~10 %, stage chime ~25 %, big rewards only', async () => {
+    const { CELEBRATION } = await import('../../src/content/audio.js');
+    const audio = new AudioService({ save: null, pause: new PauseState() });
+    const plays = [];
+    audio.play = (e) => plays.push(e); // no sound manager in unit tests; record the events
+    let seed = 11;
+    const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const st = globalThis.setTimeout;
+    globalThis.setTimeout = (f) => f();
+    const res = [];
+    for (let i = 0; i < 3000; i++) res.push(audio.celebrateLevel({ random }));
+    globalThis.setTimeout = st;
+    const clips = Object.entries(audio.log).filter(([k]) => k.startsWith('level-clip-')).reduce((a, [, v]) => a + v, 0);
+    expect(clips).toBe(3000); // every completion has clear feedback
+    for (let k = 1; k < res.length; k++) expect(res[k].clip).not.toBe(res[k - 1].clip);
+    for (let c = 0; c < CELEBRATION.levelClips.length; c++) expect(audio.log[`level-clip-${c}`]).toBeGreaterThan(600); // all clips used
+    const wows = res.map((r, i) => (r.wow ? i : -1)).filter((i) => i >= 0);
+    expect(wows.length / 3000).toBeGreaterThan(0.07);
+    expect(wows.length / 3000).toBeLessThan(0.13);
+    for (let k = 1; k < wows.length; k++) expect(wows[k] - wows[k - 1]).toBeGreaterThan(CELEBRATION.wow.minCompletionsBetween);
+    // stage complete: chime on ~25 % of stages, silent otherwise
+    for (let i = 0; i < 3000; i++) audio.stageComplete({ random });
+    const chimes = plays.filter((e) => e === 'stage-chime').length;
+    expect(chimes / 3000).toBeGreaterThan(0.2);
+    expect(chimes / 3000).toBeLessThan(0.3);
+    expect(audio.log['stage-silent']).toBe(3000 - chimes);
+    // rewards: only big ones celebrate
+    plays.length = 0;
+    for (const r of [{ kind: 'coins', amount: 75 }, { kind: 'gems', amount: 10 }, { kind: 'coins', amount: 400 }, { kind: 'gems', amount: 30 }, { kind: 'tool', tool: 'laser-gold' }]) audio.rewardFor(r);
+    expect(plays).toEqual(['reward', 'reward', 'reward-big', 'reward-big', 'reward-big']);
+  });
+
+  it('volumes: music below every SFX group; nothing above 1', async () => {
+    const { MIX, SFX } = await import('../../src/content/audio.js');
+    for (const g of ['ui', 'reward', 'loop', 'impact', 'wow']) expect(MIX.music, g).toBeLessThan(MIX[g]);
+    for (const e of Object.values(SFX)) expect(MIX[e.group] * e.gain).toBeLessThanOrEqual(1);
+  });
+});

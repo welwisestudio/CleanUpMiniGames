@@ -14,7 +14,11 @@ import { validateCatalog, DISPLAY_ORDER } from '../content/catalog.js';
 import { BootScene } from '../scenes/BootScene.js';
 import { MenuScene } from '../scenes/MenuScene.js';
 import { LevelScene } from '../scenes/LevelScene.js';
+import { MiniGameScene } from '../minigames/MiniGameScene.js';
 import { installQa } from './qa.js';
+import { ScoreService } from '../services/ScoreService.js';
+import { InterstitialService } from '../services/InterstitialService.js';
+import { SCORE, INTERSTITIAL } from '../content/platformConfig.js';
 
 // Composition root: builds services around the injected platform adapter and starts Phaser.
 export function createApp({ platform, parent }) {
@@ -39,6 +43,11 @@ export function createApp({ platform, parent }) {
   const forcedRandom = forced != null && segW[forced] != null ? () => (segW.slice(0, forced).reduce((a2, v) => a2 + v, 0) + segW[forced] / 2) / segW.reduce((a2, v) => a2 + v, 0) : undefined;
   const wheel = new WheelService({ save, rewards, toolShop, config: economy.wheel, ...(forcedRandom ? { random: forcedRandom } : {}) });
   const audio = new AudioService({ save, pause });
+  const score = new ScoreService({ save, platform, config: SCORE, rewards });
+  const interstitial = new InterstitialService({ platform, pause, config: INTERSTITIAL });
+  rewards.afterRewarded = () => interstitial.noteRewarded();
+  // the full level chest is a big reward → the win jingle (CELEBRATION); other grants stay quiet
+  rewards.on('granted', (r) => r?.kind === 'progressChest' && audio.play('reward-big'));
   let runCounter = 0;
 
   const services = {
@@ -51,13 +60,15 @@ export function createApp({ platform, parent }) {
     store,
     wheel,
     audio,
+    score,
+    interstitial,
     economy,
     build: { number: __BUILD_NUMBER__, time: __BUILD_TIME__ },
     nextRunId: () => ++runCounter,
     ready: null,
     display: { dpr: currentDpr() },
   };
-  installQa(services);
+  if (__QA__) installQa(services); // dev / mock-test builds only — never in the YouTube release build
 
   // Responsive canvas at native resolution: the game size is the window size × DPR (≤ 2) and the
   // canvas is displayed at the window size (zoom = 1 / DPR). Input mapping is handled by Phaser.
@@ -70,7 +81,7 @@ export function createApp({ platform, parent }) {
     render: { antialias: true, pixelArt: false, roundPixels: false },
     input: { activePointers: 2 },
     disableContextMenu: true,
-    scene: [BootScene, MenuScene, LevelScene],
+    scene: [BootScene, MenuScene, LevelScene, MiniGameScene],
   });
   game.registry.set('services', services);
 
@@ -92,21 +103,47 @@ export function createApp({ platform, parent }) {
   };
   window.addEventListener('resize', onResize);
   window.visualViewport?.addEventListener('resize', onResize);
-  game.events.once(Phaser.Core.Events.POST_RENDER, () => platform.firstFrameReady());
+  // first rendered frame = the loading screen is visible → firstFrameReady (gameReady follows when
+  // the menu is interactive, see MenuScene)
+  const firstFrame = new Promise((resolve) =>
+    game.events.once(Phaser.Core.Events.POST_RENDER, () => {
+      platform.firstFrameReady();
+      resolve();
+    }),
+  );
 
   services.ready = (async () => {
     const info = await platform.init();
     audio.setPlatformAudio(info.audioEnabled);
     pause.set('host', Boolean(info.paused));
+    // Host lifecycle (YouTube: SDK onPause / onResume / onAudioEnabledChange). A host pause stops
+    // EVERYTHING: the Phaser loop sleeps (no update, tweens, timers, input processing or
+    // rendering), music / sounds stop, and the progress is flushed to the cloud. Host resume lifts
+    // only the host reason — a pause the player opened stays open. A YouTube mute silences all
+    // audio whatever the in-game Music / Sound settings (they only act when YouTube is unmuted).
+    let hostPaused = false;
     platform.subscribe(({ paused, audioEnabled }) => {
-      pause.set('host', Boolean(paused));
       audio.setPlatformAudio(audioEnabled);
+      if (game.sound) game.sound.mute = !audioEnabled;
+      const p = Boolean(paused);
+      if (p === hostPaused) return;
+      hostPaused = p;
+      pause.set('host', p);
+      if (p) {
+        if (save.loaded) save.flush().catch(() => {});
+        game.loop.sleep();
+      } else {
+        game.loop.wake();
+      }
     });
+    // start order: SDK (index) → first frame (loading screen) → cloud read → … → gameReady (menu)
+    await firstFrame;
     await loadSaveWithRetry(save, platform);
     // level access: derive the sets once from an older save's completion history
     await (progression.migrate() ?? Promise.resolve()).catch((e) => platform.reportWarning('progression migrate', e));
     // timed chest: start its first cycle (or repair a clock jump) once the save is loaded
     await rewards.ensureTimedChest().catch((e) => platform.reportWarning('timed chest init', e));
+    score.report(); // the best score from the save (only if the metric is enabled)
   })();
 
   return { game, services };

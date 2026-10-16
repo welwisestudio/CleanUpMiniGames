@@ -1,0 +1,30 @@
+/* Game fonts (OFL, bundled from @fontsource; size pass 2026-10-16): only the Latin subset, WOFF2
+   only (every browser YouTube supports reads WOFF2). The game text is English. */
+@font-face {
+  font-family: 'Rubik';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800;
+  src: url('@fontsource/rubik/files/rubik-latin-800-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Rubik';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 900;
+  src: url('@fontsource/rubik/files/rubik-latin-900-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800;
+  src: url('@fontsource/nunito/files/nunito-latin-800-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 900;
+  src: url('@fontsource/nunito/files/nunito-latin-900-normal.woff2') format('woff2');
+}

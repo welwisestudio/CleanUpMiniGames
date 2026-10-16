@@ -148,6 +148,15 @@ export class MenuScene extends Phaser.Scene {
     });
     attachResponsiveLayout(this, (l) => this.relayout(l));
     registerQaScene(this);
+    // the menu is interactive now → gameReady (sent once per session; the adapter ignores repeats)
+    this.services.platform.gameReady();
+    // dev / QA only: `?minigame=<level id>` opens that post-cleaning minigame directly (once)
+    const mg = new URLSearchParams(window.location.search).get('minigame');
+    if (__QA__ && this.services.platform.dev && mg && !this.registry.get('qaMinigameOpened')) {
+      this.registry.set('qaMinigameOpened', true);
+      const game = this.game;
+      this.scene.start('MiniGame', { levelId: mg, onDone: () => game.scene.start('Menu', {}) });
+    }
     if (this.pendingOffer) {
       const id = this.pendingOffer;
       this.pendingOffer = null;
@@ -213,7 +222,7 @@ export class MenuScene extends Phaser.Scene {
     const shelfCx = W / 2;
     this.listRect = { x: shelfCx, y: H / 2, w: shelfW, h: H, gutter }; // QA: horizontal extent of the list
     const thumb = shelfW * 0.34;
-    const rowH = thumb * 1.62 + 46 * u; // object + shelf + its label, then the next row
+    const rowH = thumb * 1.62 + 14 * u; // object + shelf (+ its unlock pill), then the next row (no name labels)
     const top = headerH + 18 * u;
     this.shelves.forEach((s, r) => {
       const y = top + rowH * r + thumb * 1.02;
@@ -323,8 +332,6 @@ export class MenuScene extends Phaser.Scene {
     const vip = isVip ? this._vipFx() : null;
     vip?.decorate(img);
     // yellow name label with a dark outline
-    const plate = this.add.graphics();
-    const name = makeText(this, 0, 0, level.title, { size: 14, color: '#4A2C0A', weight: '900' });
     const badge = done ? this.add.image(0, 0, 'icon-check') : null;
     const lock = locked ? this.add.graphics() : null;
     // VIP tag on every VIP level (locked or not): purple pill on the preview's upper left
@@ -406,7 +413,7 @@ export class MenuScene extends Phaser.Scene {
       if (this.lastDragMoved > 12 * (this.layout?.u ?? 1)) return;
       this._tapLevel(level, entry, drawPill);
     });
-    const objects = [...(vip ? [vip.root] : []), img, plate, name, ...(lock ? [lock] : []), ...(pill ? [pill] : []), zone, ...(badge ? [badge] : []), ...(chip ? [chip] : [])];
+    const objects = [...(vip ? [vip.root] : []), img, ...(lock ? [lock] : []), ...(pill ? [pill] : []), zone, ...(badge ? [badge] : []), ...(chip ? [chip] : [])];
     entry.objects = objects;
     entry.layout = (x, shelfY, size, u, labelY, shelfBottom = labelY - 14 * u) => {
       // optional per-level preview scale (level.menuPreview.scale, share of the slot)
@@ -423,34 +430,11 @@ export class MenuScene extends Phaser.Scene {
       img.setScale(base).setPosition(x, shelfY + size * 0.06);
       const cy = shelfY + size * 0.06 - vb.bh * base * 0.5; // visible centre
       if (vip) vip.layout(x, cy, size, u);
-      // name label: yellow plate with a dark outline (wraps long names into two lines)
-      const maxW = size * 1.08;
-      name.setText(level.title).setScale(ku).setLineSpacing(0);
-      if (name.displayWidth > maxW * 1.15 && level.title.includes(' ')) {
-        const mid = level.title.length / 2;
-        const cut = [...level.title].reduce((best, ch, i) => (ch === ' ' && Math.abs(i - mid) < Math.abs(best - mid) ? i : best), -1);
-        name.setText(`${level.title.slice(0, cut)}\n${level.title.slice(cut + 1)}`).setLineSpacing(-4);
-      }
-      fitText(name, maxW, ku);
-      const pw = name.displayWidth + 16 * ku;
-      const ph = name.displayHeight + 4 * ku;
-      // 2026-10-13: the label sits higher, right under the shelf (more air below), but never
-      // over the unlock pill: its top stays at least a small gap below the pill's bottom
-      // 2026-10-13: the label sits right below the shelf's visible front edge AT THIS ITEM (the
-      // shelf is drawn in perspective: its edge is lower on the left), and the unlock pill sits
-      // directly above the label with a small fixed gap — button first, then the name
-      // ...but a pill never climbs onto the object: its centre stays at least just below the
-      // object's base (the visible bottom at shelfY + 6 % of the slot); the label then follows it
-      const gap = 5 * ku;
+      // 2026-10-15: no name labels in the menu. The unlock pill sits right under the object's base
+      // on the shelf (centred under its own object), on one line per shelf row: shelfY is shared
+      // by both cards of a row, so coin / ad / VIP pills line up whatever the object or state
       const half = 12.6 * ku;
-      pillY = Math.max(shelfBottom + 3 * ku - gap - half, shelfY + size * 0.06 + half * 0.55); // same for both cards of a row
-      const labelTop = pillY + half + gap;
-      const ly = labelTop + ph / 2;
-      name.setPosition(x, ly);
-      plate.clear();
-      plate.fillStyle(0x000000, 0.18).fillRoundedRect(x - pw / 2, ly - ph / 2 + 3 * ku, pw, ph, 12 * ku);
-      plate.fillStyle(0xffd23f, 1).fillRoundedRect(x - pw / 2, ly - ph / 2, pw, ph, 12 * ku);
-      plate.lineStyle(3 * ku, 0x5a3a12, 1).strokeRoundedRect(x - pw / 2, ly - ph / 2, pw, ph, 12 * ku);
+      pillY = shelfY + size * 0.06 + half + 2 * ku;
       // completion check: large and readable, on the preview's upper right
       if (badge) badge.setScale((CHECK_SIZE * u) / badge.width).setPosition(x + size * 0.38, shelfY - size * 0.8);
       if (lock) drawPadlock(lock, x, cy - size * 0.04, size * 0.13);

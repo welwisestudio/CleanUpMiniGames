@@ -48,3 +48,40 @@ music 0.30 · UI 0.50 · rewards 0.75 · tool loops 0.42 (× per-tool gain eveni
 
 - The music track gets quieter toward its end. The loop is click-free (sample-continuous), but its restart is audible as a phrase restart.
 - Runtime audio is Ogg Vorbis only (as requested). Older iOS Safari versions may not play Ogg.
+
+## Audio polish (2026-10-15, build #141)
+
+New source files (in `reference/input/`): `WaterSound.mp3`, `Painting.mp3`, `laser_zjsudyn_.mp3`, `Win.mp3`, `salamisound-8612318-aerosol-spray-hair-spray.mp3`. All runtime files are rebuilt with `scripts/audio/encode_audio.py`. Loops now use the most continuous window of the source and are loudness-normalised (RMS 0.12 with a soft limiter).
+
+| Was | Now | Where |
+|---|---|---|
+| Right.ogg as the general success sound (stage complete, level complete, coins, unlocks, rewards) | Right.ogg = **sfx-wow** (a voice) only as a rare level-complete celebration; **Win.mp3** = level complete and Wheel reward; **Win.mp3 first 0.45 s** = chime for stage complete, coins, unlocks | completion / rewards |
+| WaterPoor.ogg | **WaterSound.mp3** | washers, hose, pump, skimmer |
+| Cotton.ogg (rollers, stain sponge) and MakeupBrush (paint brush) | **Painting.mp3** | paint brush, rollers, stain sponge |
+| FireCrack.ogg | **laser_zjsudyn_.mp3** | laser |
+| spray.ogg (spray gun, airbrush) and xitkem (foam can) | **aerosol spray** | spray paint guns, aerosol foam can |
+| — | spray.ogg kept | spray bottle, mist, steam, blower, sandblaster (pump hiss fits better than an aerosol can) |
+| — | xitkem kept | foam sprayer / gun / cannon |
+
+No longer shipped: WaterPoor, Cotton, FireCrack. The cotton swab now uses the wipe loop.
+
+**WOW:** `WOW` in `src/content/audio.js` — chance 0.25 per level completion, and never within the next 2 completions. That is about 1 completion in 6 (≈17 %, unit-tested over 3000 completions). The win jingle always plays.
+
+**Mix (`MIX`):** music 0.16 · UI 0.30 · rewards 0.40 · tool loops 0.24 · impacts 0.36 · wow 0.50. The previous values were 0.30 / 0.50 / 0.75 / 0.42 / 0.70.
+
+Runtime audio: 22 files, 791,182 bytes.
+
+## Celebration policy (2026-10-15, build #142)
+
+`CELEBRATION` in `src/content/audio.js` holds all the numbers. Routine successes stay quiet; strong sounds are for real moments.
+
+- **Stage complete:** a short chime on 25 % of stages, otherwise silent.
+- **Level complete:** always one clip, picked at random from three variants (Win.mp3, Win.mp3 slightly higher, the short chime), never the same one twice in a row. The voiced "wow" plays at a 15 % chance per completion and never within the next 3 completions, which is about 1 completion in 10.
+- **Big rewards** (win jingle):
+  - a Wheel prize of ≥ 300 coins, ≥ 25 diamonds, or the tool;
+  - the full level chest.
+- **Subtle soft pop, no victory sound:**
+  - coin pickups and coin flights;
+  - Store grants and bundle claims;
+  - level / tool / VIP unlocks;
+  - ordinary Wheel prizes.

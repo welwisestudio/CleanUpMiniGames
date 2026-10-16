@@ -6,3 +6,5 @@ playwright-report/
 *.log
 .env
 reference/input/*.mp4
+dist-youtube/
+dist-youtube-qa/

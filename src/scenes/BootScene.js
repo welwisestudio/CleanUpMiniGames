@@ -36,6 +36,11 @@ export class BootScene extends Phaser.Scene {
       this.progress = p;
       draw();
     });
+    // a game file that fails to load is its own start error (not a save problem)
+    this.load.on('loaderror', (file) => {
+      this.loadFailed = true;
+      services.platform.reportError('asset load failed', file?.key);
+    });
     for (const [key, url] of Object.entries(IMAGE_ASSETS)) this.load.image(key, url);
     // Step 9 audio: all SFX (small) + the music, decoded once and reused for the whole session
     for (const [key, url] of Object.entries(AUDIO_FILES)) this.load.audio(key, url);
@@ -44,6 +49,18 @@ export class BootScene extends Phaser.Scene {
 
   async create() {
     const services = this.registry.get('services');
+    if (this.loadFailed) {
+      const el = document.getElementById('fatal');
+      el.style.display = 'flex';
+      el.textContent = '';
+      const p = document.createElement('p');
+      p.textContent = 'Some game files could not be loaded. Please try again.';
+      const b = document.createElement('button');
+      b.textContent = 'Retry';
+      b.addEventListener('click', () => window.location.reload(), { once: true });
+      el.append(p, b);
+      return;
+    }
     generateProceduralTextures(this);
     // Fonts are bundled locally; wait so the first text is rendered with the right face.
     try {
@@ -59,9 +76,8 @@ export class BootScene extends Phaser.Scene {
     services.audio.attach(this.sound);
     services.ready.then(
       () => {
-        services.platform.gameReady();
         services.audio.startMusic(); // one instance for every scene; respects the Music setting
-        this.scene.start('Menu', {});
+        this.scene.start('Menu', {}); // the menu reports gameReady once it is interactive
       },
       (e) => this.label.setText(`Startup failed: ${e.message}`),
     );

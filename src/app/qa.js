@@ -67,6 +67,7 @@ function snapshot() {
     // level access (read-only): the saved sets + dev unlock-all flag (no unlock popup since 2026-10-13)
     progression: s.save.loaded ? { ...JSON.parse(JSON.stringify(s.save.get('progression'))), devUnlockAll: s.progression.devUnlockAll } : null,
     vipLevels: [...(s.progression.config.vip ?? [])],
+    minigame: scene?.minigameQa ? scene.minigameQa() : null,
     diamondsNow: s.save.loaded ? s.save.get('diamonds') : null,
     // Store bundles / Wheel free-spin day as saved (read-only)
     storeSave: s.save.loaded ? JSON.parse(JSON.stringify(s.save.get('store'))) : null,

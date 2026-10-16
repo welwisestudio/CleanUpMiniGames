@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { minigameFor } from '../minigames/registry.js';
 import { toolSound } from '../content/audio.js';
 import { getLevel, nextLevelId } from '../content/catalog.js';
 import { getTool } from '../content/tools.js';
@@ -904,7 +905,7 @@ export class LevelScene extends Phaser.Scene {
     if (!this.alive) return;
     this.progressBar.set(1);
     this.strip.markDone();
-    s.audio.play('stage-complete');
+    s.audio.stageComplete(); // a short chime only on some stages (CELEBRATION)
     if (!s.save.get('tutorial')?.[this.family]) s.save.update((st) => (st.tutorial[this.family] = true)).catch(() => {});
     await this.wait(600);
     if (!this.alive) return;
@@ -925,13 +926,44 @@ export class LevelScene extends Phaser.Scene {
     this.levelSeconds = (this.time.now - this.levelStartedAt) / 1000;
     // Reward is accepted first; every animation below only displays it.
     this.reward = s.rewards.grantLevelCompletion(this.levelId, this.runId);
-    s.audio.play('level-complete');
     this.tweens.add({ targets: [this.hud, this.badges], alpha: 0, duration: 250 });
-    this.sparkles();
-    this.confetti();
-    this.wait(1750).then(() => {
+    const celebrate = () => {
       if (!this.alive) return;
-      this.showResult();
+      s.audio.celebrateLevel(); // always one completion clip (varied); the voiced wow only rarely
+      this.sparkles();
+      this.confetti();
+      this.wait(1750).then(() => {
+        if (!this.alive) return;
+        this.showResult();
+      });
+    };
+    // Post-cleaning minigame (2026-10-15): the cleaned object flies into a short themed game, then
+    // the normal completion flow continues. The reward above is already granted (never changed by it).
+    if (minigameFor(this.levelId)) this.runMinigame().then(celebrate);
+    else celebrate();
+  }
+
+  runMinigame() {
+    const st = this.stack;
+    const b = st.bounds;
+    const a = st.toWorld({ x: b[0], y: b[1] });
+    const c = st.toWorld({ x: b[2], y: b[3] });
+    this.minigameOn = true;
+    return new Promise((resolve) => {
+      this.scene.launch('MiniGame', {
+        levelId: this.levelId,
+        from: { x0: a.x, y0: a.y, x1: c.x, y1: c.y },
+        onReady: () => st.container.setVisible(false), // the hero now lives in the minigame
+        onDone: (result) => {
+          this.minigameOn = false;
+          this.minigameResult = result;
+          registerQaScene(this);
+          if (!this.alive) return resolve();
+          st.container.setVisible(true).setAlpha(0);
+          this.tweens.add({ targets: st.container, alpha: 1, duration: 300 });
+          resolve();
+        },
+      });
     });
   }
 
@@ -1232,6 +1264,7 @@ export class LevelScene extends Phaser.Scene {
 
   cleanup() {
     this.alive = false;
+    if (this.minigameOn) this.scene.stop('MiniGame');
     this.services.audio.stopTool();
     this.services.pause.off('change', this.onPauseChange);
     this.game.events.off('blur', this.endStroke, this);

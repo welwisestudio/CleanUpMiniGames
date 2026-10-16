@@ -1,10 +1,8 @@
 // Entrypoint for the DEVELOPMENT platform profile (Steps 2–10).
 // The YouTube Playables profile gets its own entrypoint and adapter at Step 11.
 // Local fonts (OFL, bundled by Vite — no runtime font CDN).
-import '@fontsource/rubik/800.css';
-import '@fontsource/rubik/900.css';
-import '@fontsource/nunito/800.css';
-import '@fontsource/nunito/900.css';
+import './fonts.css'; // Latin-only WOFF2 (size pass 2026-10-16)
+import './styles.css';
 import { createDevPlatform } from './platform/dev/DevPlatform.js';
 import { createApp } from './app/App.js';
 

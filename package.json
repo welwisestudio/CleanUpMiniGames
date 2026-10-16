@@ -13,7 +13,11 @@
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "check": "npm run test && npm run build && npm run test:e2e"
+    "check": "npm run test && npm run build && npm run test:e2e",
+    "build:youtube": "node scripts/build.mjs --youtube",
+    "build:youtube-qa": "node scripts/build.mjs --youtube --qa",
+    "preview:youtube": "node scripts/preview-youtube.mjs",
+    "preview:youtube-qa": "node scripts/preview-youtube.mjs --qa"
   },
   "dependencies": {
     "@fontsource/nunito": "5.3.0",
