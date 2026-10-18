@@ -7,6 +7,7 @@ import { TEXT, FONT_UI, FONT_DISPLAY } from '../ui/theme.js';
 import { Button } from '../ui/Button.js';
 import { registerQaScene } from '../app/qa.js';
 import { MINIGAMES } from './registry.js';
+import { LEVEL_META } from '../content/generated/levelMeta.js';
 
 // the minigame sprites (Nano Banana 2 + Higgsfield Background Remover, 2026-10-15; project/MINIGAMES.md)
 const MG = 'assets/minigames/';
@@ -81,16 +82,29 @@ export class MiniGameScene extends Phaser.Scene {
     this.hintBg = this.add.graphics();
     this.hint = makeText(this, 0, 0, this.def.hint, { size: 15, color: '#FFFFFF', weight: '800', family: FONT_UI });
     this.pips = this.add.graphics();
+    this.livesG = this.add.graphics();
     this.timeBar = this.add.graphics();
     this.timeK = null;
     this.chips = [];
-    this.ui.add([this.title, this.hintBg, this.hint, this.pips, this.timeBar]);
+    this.ui.add([this.title, this.hintBg, this.hint, this.pips, this.livesG, this.timeBar]);
     this.skipBtn = new Button(this, { id: 'minigame-skip', x: 0, y: 0, w: 96, h: 40, label: 'Skip', style: 'white', fontSize: 17, onClick: () => this.finish(null) });
     this.skipBtn.container.setAlpha(0);
+    // Per-game shell state is reset on EVERY start (2026-10-17 fix): Phaser reuses this scene object,
+    // and attempt states / lives / the hand flag of the previous minigame used to leak into the next
+    // one (e.g. Cleaver Throw showed Football's ✓ / ✗ row and never updated).
     this.done = 0;
     this.total = this.def.total;
+    this.pipStates = null;
+    this.lives = null;
+    this.hand = null;
+    this.handDismissed = false;
+    this.result = null;
     this.game_ = new this.def.Game(this);
-    this.input.on('pointerdown', (p) => this.state === 'play' && this.game_.onDown?.(p));
+    this.input.on('pointerdown', (p) => {
+      this.hideHand(); // the tutorial hand goes as soon as the player touches the screen
+      this.handDismissed = true;
+      if (this.state === 'play') this.game_.onDown?.(p);
+    });
     this.input.on('pointermove', (p) => this.state === 'play' && this.game_.onMove?.(p));
     this.input.on('pointerup', (p) => this.state === 'play' && this.game_.onUp?.(p));
     attachResponsiveLayout(this, (l) => this.relayout(l));
@@ -131,6 +145,62 @@ export class MiniGameScene extends Phaser.Scene {
         this.game_.start();
       },
     });
+  }
+
+  // Tutorial hand (2026-10-17): the level's glove hand demonstrating the control, looping softly
+  // until the first touch. spec: { type: 'tap', x, y } · { type: 'drag', x, y, x2, y2 } (press,
+  // pull, release) · { type: 'hold', x, y } (press and hold with a pulsing ring). World px.
+  showHand(spec) {
+    this.hideHand();
+    const l = this.layout;
+    const u = l.u;
+    const tip = LEVEL_META.ui?.['ui-hint-hand']?.tip ?? [0.42, 0.04];
+    const h = this.add.image(spec.x, spec.y, 'ui-hint-hand').setOrigin(tip[0], tip[1]).setAlpha(0);
+    const base = (78 * u) / Math.max(h.width, h.height);
+    h.setScale(base);
+    const ring = this.add.graphics();
+    this.fx.add([ring, h]);
+    const o = { r: 0, a: 0 };
+    const ringTw = this.tweens.add({ targets: o, r: 1, duration: 700, repeat: -1, onUpdate: () => ring.clear().lineStyle(4 * u, 0xffffff, 0.75 * (1 - o.r) * o.a).strokeCircle(h.x, h.y, (14 + 26 * o.r) * u) });
+    let tweens;
+    if (spec.type === 'drag') {
+      tweens = [
+        { alpha: 1, duration: 220, onStart: () => (o.a = 0) },
+        { scale: base * 0.86, duration: 170, onComplete: () => (o.a = 1) },
+        { x: spec.x2, y: spec.y2, duration: 750, ease: 'Sine.easeInOut' },
+        { scale: base, duration: 140, onStart: () => (o.a = 0) },
+        { alpha: 0, duration: 260, delay: 120 },
+        { x: spec.x, y: spec.y, duration: 0 },
+      ];
+    } else if (spec.type === 'hold') {
+      tweens = [
+        { alpha: 1, duration: 220 },
+        { scale: base * 0.86, duration: 170, onComplete: () => (o.a = 1) },
+        { scale: base * 0.86, duration: 1100 },
+        { scale: base, duration: 160, onStart: () => (o.a = 0) },
+        { alpha: 0, duration: 260, delay: 200 },
+      ];
+    } else {
+      tweens = [
+        { alpha: 1, duration: 220 },
+        { scale: base * 0.84, duration: 140, yoyo: true, onStart: () => (o.a = 1), onComplete: () => (o.a = 0) },
+        { scale: base * 0.84, duration: 140, yoyo: true, delay: 160, onStart: () => (o.a = 1), onComplete: () => (o.a = 0) },
+        { alpha: 0, duration: 260, delay: 300 },
+      ];
+    }
+    const chain = this.tweens.chain({ targets: h, tweens, loop: -1, loopDelay: 450 });
+    this.hand = { h, ring, chain, ringTw };
+    return this.hand;
+  }
+
+  hideHand() {
+    const hd = this.hand;
+    if (!hd) return;
+    this.hand = null;
+    hd.chain.stop();
+    hd.ringTw.stop();
+    this.tweens.add({ targets: hd.h, alpha: 0, duration: 150, onComplete: () => hd.h.destroy() });
+    hd.ring.destroy();
   }
 
   // expanding light ring (arrival, impacts)
@@ -174,16 +244,41 @@ export class MiniGameScene extends Phaser.Scene {
   }
 
   // ---- shell services for the games -----------------------------------------------------------
+  // Progress row — two kinds, never mixed in one game:
+  //   progress(n)      SUCCESS COUNT: n of `total` dots filled gold (stuck cleavers, notes, catches …)
+  //   setPips(states)  ATTEMPTS: one dot per attempt — 'ok' gold ✓ · 'miss' red ✗ · null (still to come)
   progress(n) {
+    this.pipStates = null;
     this.done = n;
     this.drawPips();
   }
 
-  // per-pip states instead of a count: 'ok' (gold) · 'miss' (grey cross) · null (open)
   setPips(states) {
     this.pipStates = states;
     this.done = states.filter((x) => x === 'ok').length;
     this.drawPips();
+  }
+
+  // LIVES (games that end after a number of fails): hearts under the progress row, full = left
+  setLives(left, max) {
+    this.lives = { left: Math.max(0, left), max };
+    this.drawLives();
+  }
+
+  drawLives() {
+    const l = this.layout;
+    const g = this.livesG.clear();
+    if (!l || !this.lives) return;
+    const u = l.u;
+    const { left, max } = this.lives;
+    const y = this.pipsY + (this.timeK == null ? 23 : 38) * u;
+    const gap = 24 * u;
+    for (let i = 0; i < max; i++) {
+      const x = l.W / 2 + (i - (max - 1) / 2) * gap;
+      heart(g, x, y + 2 * u, 9 * u, 0x000000, 0.22);
+      heart(g, x, y, 9 * u, i < left ? 0xff4d6d : 0x9aa3ad, 1);
+      if (i < left) g.fillStyle(0xffffff, 0.45).fillCircle(x - 3.5 * u, y - 3.5 * u, 2.2 * u);
+    }
   }
 
   // remaining-time bar under the pips (0..1), null hides it (games with a time limit)
@@ -199,7 +294,7 @@ export class MiniGameScene extends Phaser.Scene {
     const w = Math.min(200 * l.u, l.W * 0.5);
     const h = 8 * l.u;
     const x = l.W / 2 - w / 2;
-    const y = this.pipsY + 17 * l.u;
+    const y = this.pipsY + 17 * l.u; // (a lives row, if any, is drawn below the timer)
     const k = this.timeK;
     g.fillStyle(0x000000, 0.28).fillRoundedRect(x, y + 2 * l.u, w, h, h / 2);
     g.fillStyle(0xffffff, 0.85).fillRoundedRect(x, y, w, h, h / 2);
@@ -362,6 +457,7 @@ export class MiniGameScene extends Phaser.Scene {
     this.hintBg.lineStyle(1.5 * u, 0xffffff, 0.25).strokeRoundedRect(W / 2 - hw / 2, hy - hh / 2, hw, hh, hh / 2);
     this.pipsY = top + 68 * u;
     this.drawPips();
+    this.drawLives();
     this.drawTime();
     this.skipBtn.setPlacement(W - m - 56 * u, H - m - 28 * u, u);
     this.game_?.layout?.(l);
@@ -382,10 +478,13 @@ export class MiniGameScene extends Phaser.Scene {
     for (let i = 0; i < n; i++) {
       const x = l.W / 2 + (i - (n - 1) / 2) * gap;
       const st = this.pipStates ? this.pipStates[i] : i < this.done ? 'ok' : null;
-      g.fillStyle(0x000000, 0.25).fillCircle(x, this.pipsY + 2 * l.u, r);
-      g.fillStyle(st === 'ok' ? 0xffd23f : st === 'miss' ? 0x9aa3ad : 0xffffff, 1).fillCircle(x, this.pipsY, r);
-      g.lineStyle(2.5 * l.u, 0x2f4e8c, 1).strokeCircle(x, this.pipsY, r);
-      if (st === 'miss') g.lineStyle(2.5 * l.u, 0xffffff, 1).lineBetween(x - r * 0.45, this.pipsY - r * 0.45, x + r * 0.45, this.pipsY + r * 0.45).lineBetween(x + r * 0.45, this.pipsY - r * 0.45, x - r * 0.45, this.pipsY + r * 0.45);
+      const y = this.pipsY;
+      g.fillStyle(0x000000, 0.25).fillCircle(x, y + 2 * l.u, r);
+      g.fillStyle(st === 'ok' ? 0xffd23f : st === 'miss' ? 0xff6b6b : 0xffffff, 1).fillCircle(x, y, r);
+      g.lineStyle(2.5 * l.u, 0x2f4e8c, 1).strokeCircle(x, y, r);
+      if (st === 'miss') g.lineStyle(2.4 * l.u, 0xffffff, 1).lineBetween(x - r * 0.42, y - r * 0.42, x + r * 0.42, y + r * 0.42).lineBetween(x + r * 0.42, y - r * 0.42, x - r * 0.42, y + r * 0.42);
+      // attempt rows mark a success with a ✓ (count rows are plain gold: every dot is a success)
+      if (st === 'ok' && this.pipStates) g.lineStyle(2.4 * l.u, 0xb4501e, 1).beginPath().moveTo(x - r * 0.45, y + r * 0.02).lineTo(x - r * 0.1, y + r * 0.38).lineTo(x + r * 0.48, y - r * 0.36).strokePath();
     }
   }
 
@@ -396,8 +495,15 @@ export class MiniGameScene extends Phaser.Scene {
   // QA (read-only)
   minigameQa() {
     const l = this.layout;
-    return { id: this.levelId, state: this.state, done: this.done, total: this.total, result: this.result ?? null, dpr: l.dpr, ...(this.game_?.qa?.() ?? {}) };
+    return { id: this.levelId, state: this.state, done: this.done, total: this.total, result: this.result ?? null, dpr: l.dpr, hand: Boolean(this.hand), pips: this.pipStates ? [...this.pipStates] : null, lives: this.lives ? { ...this.lives } : null, ...(this.game_?.qa?.() ?? {}) };
   }
+}
+
+// a heart (lives row): two circles + a triangle
+function heart(g, x, y, r, color, alpha) {
+  g.fillStyle(color, alpha);
+  g.fillCircle(x - r * 0.48, y - r * 0.2, r * 0.56).fillCircle(x + r * 0.48, y - r * 0.2, r * 0.56);
+  g.fillTriangle(x - r * 1.02, y - r * 0.02, x + r * 1.02, y - r * 0.02, x, y + r * 0.95);
 }
 
 // a glossy gold star (result ribbon)

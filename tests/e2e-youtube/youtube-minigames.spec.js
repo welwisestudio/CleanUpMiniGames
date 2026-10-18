@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
-import { waitFor, mouseDriver, touchDriver, snap, openFromMenu } from '../e2e/helpers.js';
+import { waitFor, mouseDriver, touchDriver, snap, openFromMenu, pressButton } from '../e2e/helpers.js';
 import { playStage5 } from '../e2e/level-play.js';
 
 // YouTube mock-test build (dist-youtube-qa, mock SDK, YouTube CSP, browser storage blocked):
@@ -70,7 +70,13 @@ for (const id of LEVELS) {
     const saves = await page.evaluate(() => (window.__ytLog ?? []).filter((x) => x.e === 'saveData').map((x) => x.data));
     expect(saves.length).toBeGreaterThan(0);
     expect(JSON.parse(saves.at(-1)).levels?.[id]?.completed).toBe(true);
-    console.log('YT MINIGAME', id, info.project.name, result, 'saves', saves.length);
+    // Completed → Next is an approved interstitial placement: the SDK gets requestInterstitialAd
+    // (the session is older than 30 s by now and no rewarded ad was watched)
+    await page.waitForTimeout(1500);
+    await pressButton(page, drv, 'result-next');
+    await page.waitForFunction(() => (window.__ytLog ?? []).some((x) => x.e === 'requestInterstitialAd'), null, { timeout: 15000 });
+    await waitFor(page, (x) => x.scene === 'Menu' || x.level?.state === 'playing', { label: 'continues after the interstitial', timeout: 30000 });
+    console.log('YT MINIGAME', id, info.project.name, result, 'saves', saves.length, 'interstitial requested');
     expect(errors).toEqual([]);
   });
 }

@@ -238,66 +238,58 @@ test('wheel: first spin free, then every spin needs an ad (no cap); cancel / fai
   expect(await adLog(page)).toBe(ads0 + 2 + 6);
 });
 
-test('levels: coin unlock, ad unlock when short of coins, persistence; exactly three VIP levels, ad only', async ({ page }, info) => {
+test('levels: on-card coin unlock, ad unlock when short of coins, gem levels, persistence; four VIP levels, ad only', async ({ page }, info) => {
   test.setTimeout(400_000);
   const drv = await driver(page, info);
   await fresh(page, '&locks=1');
-  await seed(page, 'st.coins = 100; st.diamonds = 999;');
+  await seed(page, 'st.coins = 100; st.diamonds = 200;');
   await page.goto('/?qa=1&locks=1&devAd=earned');
   let s = await waitFor(page, (x) => x.scene === 'Menu' && x.buttons?.['menu-level-rug']);
-  // VIP: exactly three, spread through the list (15 · 37 · 48)
-  expect(s.vipLevels).toEqual(['porcelain-vase', 'vintage-motorcycle', 'carousel-horse']);
+  // VIP: four, spread through the list (15 · 26 · 37 · 48); gem levels: the last two
+  expect(s.vipLevels).toEqual(['porcelain-vase', 'aquarium', 'vintage-motorcycle', 'carousel-horse']);
   const vipFlags = Object.entries(s.buttons).filter(([k, v]) => k.startsWith('menu-level-') && v.vip).map(([k]) => k.slice(11));
-  expect(vipFlags.sort()).toEqual(['carousel-horse', 'porcelain-vase', 'vintage-motorcycle']);
-  // coins: the rug (level 2, 40) with 100 coins → coin card → unlock → it opens; 60 left
+  expect(vipFlags.sort()).toEqual(['aquarium', 'carousel-horse', 'porcelain-vase', 'vintage-motorcycle']);
+  const gemFlags = Object.entries(s.buttons).filter(([k, v]) => k.startsWith('menu-level-') && v.currency === 'gems').map(([k]) => k.slice(11));
+  expect(gemFlags.sort()).toEqual(['vintage-car', 'vintage-tractor']);
+  // coins: the rug (level 2, 40) with 100 coins → tap the card → bought on the card; 60 left
   await pressButton(page, drv, 'menu-level-rug');
-  s = await waitFor(page, (x) => x.levelOffer && x.levelOfferKind === 'coins' && x.buttons?.['level-offer-confirm'], { label: 'coin offer' });
-  await page.waitForTimeout(300);
-  await shot(page, info, 'levels-01-coin-offer');
-  await pressButton(page, drv, 'level-offer-confirm');
-  s = await waitFor(page, (x) => x.level?.id === 'rug', { label: 'rug opened', timeout: 30000 });
+  s = await waitFor(page, (x) => x.scene === 'Menu' && x.progression?.purchased?.includes('rug'), { label: 'rug bought' });
   expect(s.coins).toBe(60);
-  // short of coins: level 10 (90) with 60 → ad card; cancel / fail keep it locked; success opens it
-  await page.goto('/?qa=1&locks=1&devAd=not-earned');
-  await waitFor(page, (x) => x.scene === 'Menu');
-  await openFromMenu(page, drv, 'bathroom-sink');
-  s = await waitFor(page, (x) => x.levelOffer && x.levelOfferKind === 'ad' && x.buttons?.['level-offer-confirm'], { label: 'ad offer' });
-  await page.waitForTimeout(300);
-  await shot(page, info, 'levels-02-ad-offer');
-  await pressButton(page, drv, 'level-offer-confirm');
-  await page.waitForTimeout(900);
+  // short of coins: Wooden Dresser (#25, 110) with 60 → the card's ad; cancel keeps it locked; success opens it
+  await setAd(page, 'not-earned');
+  await openFromMenu(page, drv, 'wooden-dresser');
+  await page.waitForTimeout(1200);
   s = await snap(page);
-  expect(s.levelOffer).toBe(true);
   expect(s.progression.adUnlocked).toEqual([]);
   await setAd(page, 'earned');
-  await pressButton(page, drv, 'level-offer-confirm');
-  s = await waitFor(page, (x) => x.level?.id === 'bathroom-sink', { label: 'opened by ad', timeout: 30000 });
+  await openFromMenu(page, drv, 'wooden-dresser');
+  s = await waitFor(page, (x) => x.scene === 'Menu' && x.progression?.adUnlocked?.includes('wooden-dresser'), { label: 'opened by ad', timeout: 30000 });
   expect(s.coins).toBe(60);
-  // VIP: ad only — even with plenty of coins / diamonds
-  await page.goto('/?qa=1&locks=1&devAd=not-earned');
-  await waitFor(page, (x) => x.scene === 'Menu');
-  await openFromMenu(page, drv, 'porcelain-vase');
-  s = await waitFor(page, (x) => x.levelOffer && x.levelOfferKind === 'vip', { label: 'vip offer' });
-  await page.waitForTimeout(300);
-  await shot(page, info, 'levels-03-vip-offer');
-  await pressButton(page, drv, 'level-offer-confirm');
-  await page.waitForTimeout(900);
-  s = await snap(page);
-  expect(s.progression.vipAds).toEqual([]);
-  expect([s.coins, s.diamondsNow]).toEqual([60, 999]);
-  await setAd(page, 'earned');
-  await pressButton(page, drv, 'level-offer-confirm');
-  s = await waitFor(page, (x) => x.level?.id === 'porcelain-vase', { label: 'vip opened by ad', timeout: 30000 });
-  expect([s.coins, s.diamondsNow]).toEqual([60, 999]);
-  // reload: exactly the three chosen levels are open (+ level 1), nothing in between
+  // VIP (Aquarium, the new one): ad only — coins / gems untouched
+  await openFromMenu(page, drv, 'aquarium');
+  s = await waitFor(page, (x) => x.scene === 'Menu' && x.progression?.vipAds?.includes('aquarium'), { label: 'vip opened by ad', timeout: 30000 });
+  expect([s.coins, s.diamondsNow]).toEqual([60, 200]);
+  // gem level: Vintage Car (150 gems) with 200 → bought with gems; coins untouched
+  await openFromMenu(page, drv, 'vintage-car');
+  s = await waitFor(page, (x) => x.scene === 'Menu' && x.progression?.purchased?.includes('vintage-car'), { label: 'gem level bought', timeout: 30000 });
+  expect([s.coins, s.diamondsNow]).toEqual([60, 50]);
+  await page.waitForTimeout(400);
+  await shot(page, info, 'levels-05-gem-levels');
+  // Vintage Tractor (125) with 50 gems: no ad fallback — a message, the Store opens at diamonds
+  const adsBefore = await adLog(page);
+  await openFromMenu(page, drv, 'vintage-tractor');
+  s = await waitFor(page, (x) => x.store, { label: 'store opens for gems', timeout: 15000 });
+  expect(await adLog(page)).toBe(adsBefore);
+  expect(s.progression.purchased).not.toContain('vintage-tractor');
+  // reload: exactly the chosen levels are open (+ level 1), saved
   await page.goto('/?qa=1&locks=1');
   s = await waitFor(page, (x) => x.scene === 'Menu' && x.buttons?.['menu-level-rug']);
-  expect(s.progression).toMatchObject({ purchased: ['rug'], adUnlocked: ['bathroom-sink'], vipAds: ['porcelain-vase'] });
+  expect(s.progression).toMatchObject({ purchased: ['rug', 'vintage-car'], adUnlocked: ['wooden-dresser'], vipAds: ['aquarium'] });
   const st = (id) => s.buttons[`menu-level-${id}`].state;
-  expect(['soccer-ball', 'rug', 'bathroom-sink', 'porcelain-vase'].map(st)).toEqual(['open', 'open', 'open', 'open']);
-  expect(['golden-trophy', 'toolbox', 'desk-fan'].map(st)).toEqual(['locked', 'locked', 'locked']);
-  // menu shots around each VIP level (tag where the level sits)
-  for (const id of ['porcelain-vase', 'vintage-motorcycle', 'carousel-horse']) {
+  expect(['soccer-ball', 'rug', 'wooden-dresser', 'aquarium', 'vintage-car'].map(st)).toEqual(['open', 'open', 'open', 'open', 'open']);
+  expect(['golden-trophy', 'porcelain-vase', 'vintage-tractor'].map(st)).toEqual(['locked', 'vip', 'locked']);
+  // menu shots around each VIP level
+  for (const id of ['porcelain-vase', 'aquarium', 'vintage-motorcycle', 'carousel-horse']) {
     for (let i = 0; i < 60; i++) {
       s = await snap(page);
       const b = s.buttons[`menu-level-${id}`];

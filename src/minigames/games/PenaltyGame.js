@@ -1,11 +1,12 @@
 // Soccer Ball → Penalty Kick (polished 2026-10-15). The level's own stadium backdrop provides the
 // goal (its opening is mapped from the image), a generated goalkeeper defends it. Pull back from the
-// ball — an aim arrow with a power fill appears — and let go. 3 shots; 2 goals win.
+// ball — an aim arrow with a power fill appears — and let go. 5 shots; 3 goals win (2026-10-17: a
+// little longer; two misses allowed). A glove hand shows the pull-back-and-release at the start.
 // Fairness: the keeper shuffles calmly; after the kick he reacts (≈0.12 s) and dives towards the
 // ball but his reach is limited — a shot into a corner away from him always scores; a shot close to
 // him is saved.
-const SHOTS = 3;
-const NEED = 2;
+const SHOTS = 5;
+const NEED = 3;
 // goal opening in the backdrop image (fractions): landscape / portrait art differ
 const GOAL = { landscape: [0.1, 0.175, 0.9, 0.752], portrait: [0.095, 0.205, 0.905, 0.388] };
 
@@ -15,7 +16,7 @@ export class PenaltyGame {
     this.ownsHero = true;
     this.shots = 0;
     this.goals = 0;
-    this.results = [null, null, null];
+    this.results = Array(SHOTS).fill(null);
     this.t = 0;
     this.aim = null;
     this.ball = null;
@@ -65,6 +66,12 @@ export class PenaltyGame {
   start() {
     this.layout(this.s.layout);
     this.resetBall();
+    // tutorial hand: press the ball, pull straight back (down), let go
+    const p = this.heroPose(this.s.layout);
+    const u = this.s.layout.u;
+    this.s.time.delayedCall(250, () => {
+      if (!this.s.handDismissed && this.s.state === 'play' && !this.ball) this.s.showHand({ type: 'drag', x: p.x, y: p.y, x2: p.x - 34 * u, y2: Math.max(p.y + 45 * u, Math.min(this.s.layout.H - this.s.layout.margin - 110 * u, p.y + 80 * u)) });
+    });
   }
 
   resetBall() {

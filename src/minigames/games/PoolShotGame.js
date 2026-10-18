@@ -2,7 +2,8 @@
 // idea — no diver). Three striped swim rings (generated sprite) drift on the cleaned pool's water;
 // a beach ball (generated sprite) waits on the deck. Pull back from the ball and let go: the dotted
 // guide shows exactly where it will splash down (longer pull = farther). Land it inside a ring.
-// 3 balls, 2 rings win. Splash, trail and water spray on every landing.
+// 3 balls, 2 rings win — all three balls are always played (2026-10-17). Splash, trail and water
+// spray on every landing. A ball left alone for 9 s plops into the water (a miss).
 import { BaseGame, Swipe, arcPoint, drawGuide, clamp, rand } from '../systems/kit.js';
 
 const BALLS = 3;
@@ -12,7 +13,8 @@ const WATER = { x: 0.48, y: 0.5, rx: 0.2, ry: 0.12 }; // where the rings drift (
 
 export class PoolShotGame extends BaseGame {
   constructor(shell) {
-    super(shell, { time: 16 });
+    super(shell);
+    this.idle = 0;
     this.swipe = new Swipe({ minLen: 30 });
     this.guide = this.gfx(shell.fx);
     this.shadow = this.gfx(shell.fx);
@@ -70,6 +72,7 @@ export class PoolShotGame extends BaseGame {
     if (this.fly || !this.playing) return;
     const sw = this.swipe.up(p, this.u);
     if (!sw) return;
+    this.idle = 0;
     const q = this.target(sw.dx, sw.dy);
     // a ring that will be under the landing point when the ball arrives: the ball homes onto its
     // centre (clean "swish"), otherwise it lands exactly where the guide showed
@@ -89,7 +92,10 @@ export class PoolShotGame extends BaseGame {
     for (const p of this.pinned) p.img.setPosition(p.ring.img.x, p.ring.img.y);
     const g = this.guide.clear();
     const sg = this.shadow.clear();
-    if (!this.fly) this.tickClock(dt);
+    if (!this.fly && this.playing) {
+      this.idle += dt;
+      if (this.idle > 9 && !this.swipe.active) this.tooSlow();
+    }
     if (this.swipe.active && !this.fly && this.playing) {
       const a = this.swipe.active;
       const dx = a.x - a.x0;
@@ -147,8 +153,7 @@ export class PoolShotGame extends BaseGame {
       s.tweens.add({ targets: this.ball, alpha: 0, scale: this.ball.scale * 0.6, duration: 380 });
     }
     const ok = this.res.filter((x) => x === 'ok').length;
-    if (ok >= NEED) return s.time.delayedCall(700, () => this.end(true));
-    if (this.res.length - ok > BALLS - NEED) return s.time.delayedCall(700, () => this.end(false));
+    if (this.res.length >= BALLS) return s.time.delayedCall(700, () => this.end(ok >= NEED));
     s.time.delayedCall(800, () => {
       // a fresh ball rolls in
       if (r) this.ball = this.img('mg-beachball', 100, s.fx);
@@ -161,8 +166,12 @@ export class PoolShotGame extends BaseGame {
     return Math.hypot(p.x - c.x, (p.y - c.y) * 1.6) < this.ringSize * 0.55;
   }
 
-  timeUp() {
-    this.end(false);
+  // a ball left alone too long: it rolls off the deck into the water (a miss), the next one comes
+  tooSlow() {
+    this.idle = 0;
+    const q = { x: this.home.x + 40 * this.u, y: this.home.y - 140 * this.u };
+    this.fly = { x1: q.x, y1: q.y, k: 0, ring: null };
+    this.s.flash('TOO SLOW', q.x, q.y - 60 * this.u, '#FFFFFF', '#5C6B85');
   }
 
   // pull back from the ball, away from where a free ring will be when the ball arrives

@@ -34,9 +34,12 @@ async function kick(page, drv, m, tx, ty) {
 }
 
 async function penalty(page, drv, info, aimAtKeeper) {
-  await open(page, 'soccer-ball');
+  const s0 = await open(page, 'soccer-ball');
+  await page.waitForTimeout(500);
+  expect((await mg(page)).hand).toBe(true); // tutorial hand shows the pull-back
   await shot(page, info, 'penalty-start');
-  for (let k = 0; k < 3; k++) {
+  void s0;
+  for (let k = 0; k < 5; k++) {
     const m = await waitFor(page, (x) => x.minigame?.state !== 'play' || (!x.minigame.flying && x.minigame.shots === k), { label: `shot ${k}` }).then((s) => s.minigame);
     if (m.state !== 'play') break;
     await page.waitForTimeout(250);
@@ -72,12 +75,18 @@ test('cleaver: timed throws stick (win); throwing into a stuck cleaver clangs (f
   const drv = await driver(page, info);
   let s = await open(page, 'rusty-cleaver');
   await shot(page, info, 'cleaver-start');
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 800; i++) {
     const m = await mg(page);
     if (m.state !== 'play') break;
+    // throw only when the predicted impact point is well clear of every stuck cleaver
+    const clear = !m.flying && m.stuckAngles.every((a) => Math.abs(((m.impactNow - a + 540) % 360) - 180) > 30);
+    if (!clear) {
+      await page.waitForTimeout(10);
+      continue;
+    }
     await drv.tap(s.layout.W / 2, s.layout.H * 0.7);
-    await page.waitForTimeout(i === 1 ? 230 : 900);
-    if (i === 1) await shot(page, info, 'cleaver-stick');
+    await page.waitForTimeout(m.hits === 1 ? 230 : 420);
+    if (m.hits === 1) await shot(page, info, 'cleaver-stick');
   }
   const win = await result(page, info, 'cleaver-win');
   console.log('CLEAVER win', JSON.stringify({ result: win.result, hits: win.hits, misses: win.misses }));
@@ -100,7 +109,8 @@ test('cleaver: timed throws stick (win); throwing into a stuck cleaver clangs (f
   }
   const fail = await result(page, info, 'cleaver-fail');
   console.log('CLEAVER fail', JSON.stringify({ result: fail.result, hits: fail.hits, misses: fail.misses }));
-  expect(win.hits + fail.misses).toBeGreaterThan(0);
+  expect(win.result).toBe('win');
+  expect(win.hits).toBe(8);
   expect(fail.result).toBe('lose');
 });
 
@@ -195,7 +205,7 @@ test('real hand-off: soccer ball cleaned → penalty WIN → normal reward card;
   const coins = s.coins;
   expect(coins).toBeGreaterThan(0); // the completion reward was granted before the minigame
   await shot(page, info, 'handoff-1-minigame');
-  for (let k = 0; k < 3; k++) {
+  for (let k = 0; k < 5; k++) {
     const m = await waitFor(page, (x) => x.minigame?.state !== 'play' || (!x.minigame.flying && x.minigame.shots === k)).then((q) => q.minigame);
     if (!m || m.state !== 'play') break;
     await page.waitForTimeout(250);

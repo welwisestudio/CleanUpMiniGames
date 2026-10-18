@@ -52,15 +52,28 @@ export class ProgressionService extends Emitter {
     return (this.config.vip ?? []).includes(id);
   }
 
-  // Coin price of a normal level (0 = free; VIP levels have no price).
+  // Gem level (2026-10-17): bought with the existing diamond / gem currency only — no coin price, no
+  // rewarded unlock.
+  isGemLevel(id) {
+    return this.config.gems?.[id] != null;
+  }
+
+  // 'coins' · 'gems' (gem level, paid with diamonds) · null (VIP: ad only)
+  currency(id) {
+    if (this.isVip(id)) return null;
+    return this.isGemLevel(id) ? 'gems' : 'coins';
+  }
+
+  // Price of a normal level in its currency (0 = free; VIP levels have no price).
   price(id) {
     if (this.isVip(id) || this.index(id) < 0) return null;
+    if (this.isGemLevel(id)) return this.config.gems[id];
     return levelPrice(this.number(id), this.order.length, this.config);
   }
 
   canAfford(id) {
     const p = this.price(id);
-    return p != null && this.save.get('coins') >= p;
+    return p != null && this.save.get(this.currency(id) === 'gems' ? 'diamonds' : 'coins') >= p;
   }
 
   _p() {
@@ -93,9 +106,11 @@ export class ProgressionService extends Emitter {
   //   ad-unlocked VIP level if it is still VIP, otherwise as an unlocked normal level; a level that
   //   is VIP now but was already open as a normal level stays open (as an ad-unlocked VIP level).
   //   The old diamond VIP set is emptied afterwards (nothing depends on it any more).
+  // - model 3 (2026-10-17): a level that became VIP (Aquarium) stays open for a player who had
+  //   already bought / unlocked it as a normal level (moved to the ad-unlocked VIP set).
   migrate() {
     const p0 = this._p();
-    if (p0.migrated && p0.model >= 2) return null;
+    if (p0.migrated && p0.model >= 3) return null;
     return this.save.update((s) => {
       const p = s.progression;
       const add = (list, id) => !list.includes(id) && list.push(id);
@@ -118,32 +133,41 @@ export class ProgressionService extends Emitter {
         p.vip = [];
         p.model = 2;
       }
+      if (!(p.model >= 3)) {
+        for (const id of this.config.vip ?? []) {
+          if (p.unlocked.includes(id) || p.adUnlocked.includes(id) || p.purchased.includes(id)) add(p.vipAds, id);
+        }
+        p.model = 3;
+      }
     });
   }
 
-  // Coin purchase of a locked NORMAL level (owned → nothing charged; insufficient → nothing changes).
+  // Purchase of a locked NORMAL level with its currency — coins, or diamonds for a gem level
+  // (owned → nothing charged; insufficient → nothing changes).
   purchase(id) {
     const price = this.price(id);
     if (price == null) return { status: 'invalid' };
     if (this.isPlayable(id)) return { status: 'open' };
-    const r = { status: 'insufficient', currency: 'coins', price };
+    const gems = this.currency(id) === 'gems';
+    const key = gems ? 'diamonds' : 'coins';
+    const r = { status: 'insufficient', currency: gems ? 'gems' : 'coins', price };
     r.savePromise = this.save.update((s) => {
       if (s.progression.purchased.includes(id)) return void (r.status = 'open'); // re-checked inside
-      if (s.coins < price) return;
-      r.before = s.coins;
-      s.coins -= price;
-      r.after = s.coins;
+      if (s[key] < price) return;
+      r.before = s[key];
+      s[key] -= price;
+      r.after = s[key];
       s.progression.purchased.push(id);
       r.status = 'purchased';
     });
-    if (r.status === 'purchased') this.emit('unlocked', { levelId: id, via: 'coins', ...r });
+    if (r.status === 'purchased') this.emit('unlocked', { levelId: id, via: gems ? 'gems' : 'coins', ...r });
     return r;
   }
 
   // Rewarded-ad unlock of a locked level: a normal level (when the player chooses the ad instead of
   // coins) or a VIP level (the only way to open it). Permanent; never marks it completed.
   async unlockWithAd(id) {
-    if (this.index(id) < 0) return { status: 'invalid' };
+    if (this.index(id) < 0 || this.isGemLevel(id)) return { status: 'invalid' }; // gem levels: diamonds only
     if (this.isPlayable(id)) return { status: 'open' };
     if (this._busy.has(id)) return { status: 'busy' };
     const vip = this.isVip(id);

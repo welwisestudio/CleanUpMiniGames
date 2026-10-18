@@ -32,7 +32,7 @@ export function createDefaultState() {
     // opened with a rewarded ad, `vipAds` – VIP levels opened with a rewarded ad (v4), `vip` – legacy
     // diamond VIP purchases (v3; migrated once, then empty). `migrated` = v2 history derived once;
     // `model` = access model the sets were migrated to (2 = coins + ad-only VIP).
-    progression: { unlocked: [], purchased: [], adUnlocked: [], vipAds: [], vip: [], migrated: true, model: 2 },
+    progression: { unlocked: [], purchased: [], adUnlocked: [], vipAds: [], vip: [], migrated: true, model: 3 },
     // Store / Wheel: rewarded-ad claims per offer for one local day, purchase log count, ad-bundle
     // progress (v4: { progress, claims, day, dayClaims, lastClaimAt } per bundle id); wheel spins of
     // the day and in total, and the local day whose free spin was used (v4)

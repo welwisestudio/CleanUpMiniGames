@@ -172,3 +172,26 @@ No new minigames, and no changes to the core logic, rewards, win / fail or Skip.
 - The result ribbon sits on the top layer, with a soft dim behind it.
 
 Tests: `step21-minigames2.spec.js` now takes its mid-game screenshot just after the second success (so it shows a chip and attached objects).
+
+## Changes 2026-10-17
+
+- **Tutorial hands** (shell `showHand` / `hideHand`, the level's glove art): Football shows the pull-back and release, Balloon Breeze shows press-and-hold, Key Rush taps the popped-up on-screen key. Each hand loops softly and disappears on the first touch.
+- **Penalty Kick:** 5 shots, 3 goals win (was 3 / 2); the keeper is unchanged.
+- **Cleaver Throw:** 8 cleavers (was 4), collision gap 16° (was 22°), 3 lives, speed ramp 85 → 140 °/s.
+- **Pool Shot:** all 3 balls are always played (the win is still 2 rings). There is no overall timer; a ball left alone for 9 s rolls into the water as a miss.
+
+## Progress indicators fix (2026-10-17, cleanup pass)
+
+**What was wrong:** Phaser reuses the minigame scene object, and the shell never cleared its per-game state on a new start. A game that marks attempts (✓ / ✗ per shot: Football, Pool, Pancake …) left its attempt states behind. The next game counting successes (Cleaver Throw, Key Rush …) then drew the previous game's mixed row, and its own count changes stayed hidden behind it ("strange circles, not updating"). The tutorial-hand flag leaked the same way. Cleaver's lives were small red dots in the bottom-left corner.
+
+**Fix (shell):**
+- All per-game state is reset on every start: attempt states, lives, hand, result.
+- `progress(n)` always draws a plain success count, and two kinds of rows are never mixed:
+  - **success count:** n gold dots, for stuck cleavers, notes, catches, pairs and rounds;
+  - **attempts:** one dot per attempt, gold ✓ for a success, red ✗ for a miss, white for still to come. Used by Football, Pancake, Grill, Clock, Brass Ring, Flower, Pool, Wishing and Tune In.
+- **New lives row:** hearts right under the progress row (`setLives`).
+  - Cleaver Throw: 8 success dots plus 3 hearts (the corner dots are gone).
+  - Shield Block, Puddle Run, Simon and the three Drive games show their lives too; before, these lives were invisible.
+- Every indicator updates in the same frame as the throw / hit / miss.
+- QA: `?minigame=a,b,c` plays minigames one after another in the same scene (tests the reset).
+

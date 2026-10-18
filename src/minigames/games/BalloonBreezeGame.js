@@ -44,6 +44,13 @@ export class BalloonBreezeGame extends BaseGame {
     this.fan = { x: hb.x, y: hb.y - hb.h * 0.15 };
   }
 
+  begin() {
+    // tutorial hand: press and HOLD (the ring pulses while held)
+    this.s.time.delayedCall(300, () => {
+      if (!this.s.handDismissed && this.playing) this.s.showHand({ type: 'hold', x: this.l.W * (this.l.W < this.l.H ? 0.66 : 0.6), y: (this.top + this.bottom) / 2 });
+    });
+  }
+
   onDown() {
     this.blowing = true;
   }

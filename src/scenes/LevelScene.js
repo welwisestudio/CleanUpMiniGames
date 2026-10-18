@@ -1010,11 +1010,11 @@ export class LevelScene extends Phaser.Scene {
       chest: { from: this.reward.chestStepsBefore / max },
       onBoost: () => this.claimBoost(),
       onOpenChest: () => this.openChestOffer(),
-      onHome: () => this.goMenu(),
-      onReplay: () => this.replay(),
+      onHome: () => this.goMenu({}, 'result-menu'),
+      onReplay: () => this.replay('result-restart'),
       // Next opens the next level when it is playable; a locked next level opens the menu on its
       // unlock card (coins / ad / VIP ad); the end of the campaign returns to the menu
-      onNext: next && this.services.progression.isPlayable(next) ? () => this.goLevel(next) : next ? () => this.goMenu({ offerLevel: next, fromNext: true }) : () => this.goMenu(),
+      onNext: next && this.services.progression.isPlayable(next) ? () => this.goLevel(next, 'result-next') : next ? () => this.goMenu({ offerLevel: next, fromNext: true }, 'result-next') : () => this.goMenu({}, 'result-next'),
     });
     // Level chest: the bar runs +20 % for this completion; a full chest is offered right away
     // (and stays offered from the bar if the player chooses "Later").
@@ -1131,6 +1131,7 @@ export class LevelScene extends Phaser.Scene {
         this.closeChestOffer();
         card.setChestReady(false);
         card.chestRow.set(0);
+        this.services.interstitial.maybeShow('chest-skip');
       },
       onOpened: (r, from) => {
         this.flyToPill(this.coinsPill, 'icon-coin', from, r.coinsBefore, r.coinsAfter, 7);
@@ -1163,6 +1164,7 @@ export class LevelScene extends Phaser.Scene {
       onSkip: () => {
         this.services.rewards.forfeitProgressChest();
         close();
+        this.services.interstitial.maybeShow('chest-skip');
       },
       onOpened: (r, from) => {
         this.flyToPill(this.coinsPill, 'icon-coin', from, r.coinsBefore, r.coinsAfter, 7);
@@ -1188,9 +1190,12 @@ export class LevelScene extends Phaser.Scene {
     this.services.pause.set('user', true);
     this.hint.hide();
     this.pauseModal = new PauseModal(this, {
-      onResume: () => this.closePause(),
-      onRestart: () => this.replay(),
-      onMenu: () => this.goMenu(),
+      onResume: () => {
+        this.closePause();
+        this.services.interstitial.maybeShow('pause-resume'); // the ad pauses the level itself (adBusy)
+      },
+      onRestart: () => this.replay('pause-restart'),
+      onMenu: () => this.goMenu({}, 'pause-menu'),
       onSettings: () => this.openSettings(),
     });
   }
@@ -1234,7 +1239,9 @@ export class LevelScene extends Phaser.Scene {
   }
 
   // ---- navigation ------------------------------------------------------------------------
-  leave(fn) {
+  // `placement` (an approved interstitial placement): the interstitial may play first (pacing in
+  // InterstitialService); the navigation continues whatever the ad result is.
+  leave(fn, placement = null) {
     if (this.leaving) return;
     this.leaving = true;
     this.result?.setEnabled(false);
@@ -1242,20 +1249,21 @@ export class LevelScene extends Phaser.Scene {
     const s = this.services;
     s.pause.set('user', false);
     s.pause.set('navigationBusy', true);
-    fn();
+    if (!placement) return fn();
+    s.interstitial.maybeShow(placement).then(fn, fn);
   }
 
   // always explicit data (an empty object replaces any older start data of the menu scene)
-  goMenu(data = {}) {
-    this.leave(() => this.scene.start('Menu', data));
+  goMenu(data = {}, placement = null) {
+    this.leave(() => this.scene.start('Menu', data), placement);
   }
 
-  replay() {
-    this.leave(() => this.scene.start('Level', { levelId: this.levelId }));
+  replay(placement = null) {
+    this.leave(() => this.scene.start('Level', { levelId: this.levelId }), placement);
   }
 
-  goLevel(id) {
-    this.leave(() => this.scene.start('Level', { levelId: id }));
+  goLevel(id, placement = null) {
+    this.leave(() => this.scene.start('Level', { levelId: id }), placement);
   }
 
   wait(ms) {

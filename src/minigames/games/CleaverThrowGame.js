@@ -1,11 +1,12 @@
 // Rusty Cleaver → Cleaver Throw (polished 2026-10-15). A real log (generated sprite) spins in the
-// workshop; tap to throw the freshly sharpened cleaver up into it. Stick 4 cleavers; a throw into a
-// cleaver that is already stuck bounces off with a CLANG (2 bounces end the round as "nice try").
-// Ramp: 95 → 115 → 135 °/s, direction flips after every hit; the gap rule is generous (22°).
-const NEED = 4;
-const LIVES = 2;
-const GAP_DEG = 22;
-const SPEEDS = [95, -115, 135, -150];
+// workshop; tap to throw the freshly sharpened cleaver up into it. Stick 8 cleavers (2026-10-17, was
+// 4); a throw into a cleaver that is already stuck bounces off with a CLANG (3 bounces end the round
+// as "nice try"). Ramp 85 → 140 °/s over the eight throws, direction flips after every hit; the gap
+// rule is 16° (8 cleavers on one log need a tighter rule than 4 — still wider than a blade looks).
+const NEED = 8;
+const LIVES = 3;
+const GAP_DEG = 16;
+const SPEEDS = [85, -95, 105, -112, 120, -126, 132, -140];
 
 export class CleaverThrowGame {
   constructor(shell) {
@@ -22,8 +23,7 @@ export class CleaverThrowGame {
     this.logFlash = shell.add.image(0, 0, 'mg-log').setTintFill(0xffffff).setAlpha(0);
     this.log.add([this.logImg, this.logFlash]);
     this.shadow = shell.add.ellipse(0, 0, 10, 10, 0x000000, 0.25);
-    this.lifeG = shell.add.graphics();
-    shell.world.add([this.shadow, this.log, this.lifeG]);
+    shell.world.add([this.shadow, this.log]);
     this.trail = shell.add.particles(0, 0, 'fx-dot', { lifespan: 200, speed: 0, scale: { start: 1.4, end: 0 }, alpha: { start: 0.55, end: 0 }, tint: 0xdfe8f2, frequency: 12, emitting: false });
     shell.world.add(this.trail);
   }
@@ -56,18 +56,9 @@ export class CleaverThrowGame {
     this.drawLives();
   }
 
-  // remaining tries: red dots in the bottom-left corner (clear of the throw path)
+  // progress = stuck cleavers (gold dots in the header); lives = hearts right under them
   drawLives() {
-    const l = this.s.layout;
-    const g = this.lifeG.clear();
-    const y = l.H - l.margin - 28 * l.u;
-    for (let i = 0; i < LIVES; i++) {
-      const x = l.margin + 26 * l.u + i * 30 * l.u;
-      const ok = i >= this.misses;
-      g.fillStyle(0x000000, 0.25).fillCircle(x, y + 2 * l.u, 11 * l.u);
-      g.fillStyle(ok ? 0xff5a6e : 0x8c8f99, 1).fillCircle(x, y, 11 * l.u);
-      g.lineStyle(2.5 * l.u, 0xffffff, 1).strokeCircle(x, y, 11 * l.u);
-    }
+    this.s.setLives(LIVES - this.misses, LIVES);
   }
 
   start() {

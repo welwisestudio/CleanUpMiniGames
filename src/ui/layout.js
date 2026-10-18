@@ -27,8 +27,12 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 export function computeLayout(W, H, dpr = 1) {
   const cssW = W / dpr;
   const cssH = H / dpr;
-  const u = clamp(Math.min(cssW / 390, cssH / 700), 0.85, 1.6) * dpr;
   const portrait = H >= W;
+  // Short landscape (16:9 phones held sideways, embedded players — under 560 CSS px tall, 2026-10-18):
+  // the UI unit may go lower than on portrait phones so the HUD / menu follow the real height
+  // instead of keeping their portrait size on a screen half as tall.
+  const shortLandscape = !portrait && cssH < 560;
+  const u = clamp(Math.min(cssW / 390, cssH / 700), shortLandscape ? 0.66 : 0.85, 1.6) * dpr;
   const m = UI.margin * u;
   // Wide: currency pills (stacked) | tool strip centred | pause — one row, as in the reference.
   // Compact (narrow phones): pills side by side + pause on row 1, tool strip on row 2.
@@ -37,7 +41,7 @@ export function computeLayout(W, H, dpr = 1) {
   const stripY = compact ? m + (UI.pillH + 14 + UI.tile / 2) * u : m + (UI.tile / 2) * u;
   const progressY = stripY + (UI.tile / 2 + 10 + UI.progressH / 2) * u;
   const hudBottom = progressY + (UI.progressH / 2 + 12) * u;
-  return { W, H, dpr, cssW, cssH, u, portrait, compact, margin: m, stripY, progressY, hudBottom };
+  return { W, H, dpr, cssW, cssH, u, portrait, shortLandscape, compact, margin: m, stripY, progressY, hudBottom };
 }
 
 // Fits an object into the play area below the HUD.
@@ -64,11 +68,18 @@ export function fitObject(layout, target, { reach = 540, jetReach = 0, jetPx = 0
   const bottom = layout.H - layout.margin - 24 * layout.u - bottomReserve; // clear of the status badges (and tool cards)
   const playH = Math.max(1, bottom - top);
   const playW = layout.W - 2 * layout.margin;
-  const hShare = share ?? (layout.portrait ? 0.58 : 0.61);
+  // short landscape (2026-10-18): the height is the scarce side — the object may take more of it and the
+  // finger may use the bottom margin too (the finger / jet room below the object itself is unchanged,
+  // so every edge of the object stays reachable); with the smaller UI unit the HUD frees height too
+  const short = Boolean(layout.shortLandscape);
+  if (short) {
+    fingerExtra += layout.margin; // the finger may use the bottom margin (stays 24 units above the edge)
+  }
+  const hShare = short ? Math.max(share ?? 0, 0.86) : (share ?? (layout.portrait ? 0.58 : 0.61));
   const minScale = (80 * layout.dpr) / Math.max(objW, objH);
   // Step 6 UI pass: objects may use up to 96 % of the play width (was 84 %) and are centred
   // vertically in the space left after the finger room they need below them (was top-aligned).
-  const jp = Math.min(jetPx, playH * 0.3);
+  const jp = Math.min(jetPx, playH * (short ? 0.2 : 0.3));
   const fingerH = playH + fingerExtra; // where the finger may still work (object stays within playH)
   const jetLimit = jp > 0 ? (fingerH * 0.97 - jp) / (objH + jetReach) : Infinity;
   const longLimit = maxLong ? (Math.min(playW, playH) * maxLong) / Math.max(objW, objH) : Infinity;
@@ -84,7 +95,7 @@ export function fitObject(layout, target, { reach = 540, jetReach = 0, jetPx = 0
   const cy = boundsTop - (b[1] - canvasSize / 2) * scale;
   const boundsBottom = boundsTop + objH * scale;
   const R = (Math.min(objW, objH) / 2) * scale;
-  return { cx, cy, scale, R, boundsTop, boundsBottom, jetCap: playH * 0.3, restX: layout.W / 2, restY: Math.min(bottom - objH * scale * 0.1, boundsBottom + (bottom - boundsBottom) * 0.45) };
+  return { cx, cy, scale, R, boundsTop, boundsBottom, jetCap: playH * (short ? 0.2 : 0.3), restX: layout.W / 2, restY: Math.min(bottom - objH * scale * 0.1, boundsBottom + (bottom - boundsBottom) * 0.45) };
 }
 
 // Background "cover" fit: scale uniformly so the image fills the screen; centred.

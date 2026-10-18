@@ -6,22 +6,17 @@
 // purchases: coins and diamonds come from play, chests, the Wheel and rewarded ads only.
 
 // Completion reward per level (base; the post-level boost multiplies it with a rewarded ad).
-// Early levels pay 40–50, mid levels 60–75, late levels 90. Replays pay the same base reward.
-const COMPLETION_REWARDS = {
-  'soccer-ball': 40,
-  rug: 40,
-  'golden-trophy': 50,
-  chair: 50,
-  sneaker: 50,
-};
-for (const id of ['rain-boots', 'frying-pan', 'wooden-crate', 'bathroom-sink']) COMPLETION_REWARDS[id] = 50;
-for (const id of ['toolbox', 'desk-fan', 'garden-bench', 'keyboard', 'watering-can', 'porcelain-vase']) COMPLETION_REWARDS[id] = 60;
-for (const id of ['swimming-pool', 'leather-jacket', 'rusty-cleaver', 'toaster', 'coir-doormat', 'garden-grill', 'bathtub', 'retro-radio', 'stone-lion', 'wooden-dresser']) COMPLETION_REWARDS[id] = 60;
-for (const id of [
-  'aquarium', 'backpack', 'kitchen-stove', 'lawn-mower', 'street-sign', 'table-lamp', 'rowboat', 'game-controller', 'iron-gate', 'sofa',
-  'stone-fountain', 'vintage-motorcycle', 'pocket-watch', 'upright-piano', 'knight-armor',
-]) COMPLETION_REWARDS[id] = 75;
-for (const id of ['cannon', 'shower-cabin', 'bicycle', 'rider-statue', 'chandelier', 'royal-throne', 'stone-patio', 'carousel-horse', 'vintage-tractor', 'vintage-car']) COMPLETION_REWARDS[id] = 90;
+// Rebalance 2026-10-17 (tiers by campaign position): #1–5 pay 50, #6–15 60, #16–25 70, #26–36 80,
+// #37–50 90. Replays pay the same base reward.
+const REWARD_TIERS = [
+  [50, ['soccer-ball', 'rug', 'golden-trophy', 'chair', 'sneaker']],
+  [60, ['rain-boots', 'frying-pan', 'wooden-crate', 'toolbox', 'bathroom-sink', 'desk-fan', 'garden-bench', 'keyboard', 'watering-can', 'porcelain-vase']],
+  [70, ['swimming-pool', 'leather-jacket', 'rusty-cleaver', 'toaster', 'coir-doormat', 'garden-grill', 'bathtub', 'retro-radio', 'stone-lion', 'wooden-dresser']],
+  [80, ['aquarium', 'backpack', 'kitchen-stove', 'lawn-mower', 'street-sign', 'table-lamp', 'rowboat', 'game-controller', 'iron-gate', 'sofa', 'stone-fountain']],
+  [90, ['vintage-motorcycle', 'pocket-watch', 'upright-piano', 'knight-armor', 'cannon', 'shower-cabin', 'bicycle', 'rider-statue', 'chandelier', 'royal-throne', 'stone-patio', 'carousel-horse', 'vintage-tractor', 'vintage-car']],
+];
+const COMPLETION_REWARDS = {};
+for (const [coins, ids] of REWARD_TIERS) for (const id of ids) COMPLETION_REWARDS[id] = coins;
 
 export const REWARDS = {
   // Post-level boost (rewarded ad), reference multiplier bar: zones x2 | x3 | x5 | x3 | x2 (equal
@@ -37,20 +32,25 @@ export const REWARDS = {
   progressChest: { steps: 5, coins: 300, diamonds: 15, placement: 'chest-progress' },
 };
 
-// Level access (systems pass 2026-10-12):
+// Level access (systems pass 2026-10-12; rebalance 2026-10-17):
 // - normal levels: the first `freeLevels` are open; every other normal level is bought with COINS
 //   (price by campaign number, curve below) or, when the player cannot afford it, unlocked with a
 //   rewarded ad. Nothing unlocks automatically; completed / unlocked levels stay replayable;
-// - exactly three VIP levels spread through the list, unlocked ONLY with a rewarded ad (no coins,
-//   no diamonds).
+// - four VIP levels spread through the list, unlocked ONLY with a rewarded ad (no coins, no gems);
+// - the last two levels are bought with GEMS (the existing diamond currency) only (`gems`).
+// Pacing target (2026-10-17): playing every level once and buying the next one with the coins earned
+// (completion reward + the timed chest, no ads) carries the player to about the Motorcycle (#37);
+// from there on the rewarded unlock is the usual way for many levels (model: project/DECISIONS.md).
 export const LEVEL_ACCESS = {
   adPlacement: 'level-unlock',
   vipPlacement: 'vip-unlock',
   freeLevels: 1,
   // price(n) = first + (last − first) · t^power, t = (n − 2) / (count − 2); rounded to 10 (< 200)
-  // or 25 → level 2: 40 · 10: 90 · 20: 200 · 30: 350 · 40: 550 · 50: 750
-  priceCurve: { first: 40, last: 750, power: 1.5 },
-  vip: ['porcelain-vase', 'vintage-motorcycle', 'carousel-horse'], // #15 · #37 · #48
+  // or 25 → level 2: 40 · 10: 40 · 20: 70 · 25: 110 · 30: 170 · 35: 250 · 40: 375 · 47: 575
+  priceCurve: { first: 40, last: 700, power: 3 },
+  vip: ['porcelain-vase', 'aquarium', 'vintage-motorcycle', 'carousel-horse'], // #15 · #26 · #37 · #48
+  // gem levels (price in the existing diamond / gem currency; 1 gem ≈ 5 coins → about the coin price of a level there)
+  gems: { 'vintage-tractor': 125, 'vintage-car': 150 }, // #49 · #50
 };
 
 // Coin price of the level with campaign number n (1-based) out of `count` levels.

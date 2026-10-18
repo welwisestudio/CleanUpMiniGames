@@ -123,7 +123,7 @@ test('mock-test build: old save migrates; host pause freezes everything and flus
   await gameReady(page);
   let s = await waitFor(page, (x) => x.scene === 'Menu' && x.buttons?.['menu-wheel']);
   expect([s.coins, s.rewards.diamonds]).toEqual([321, 17]);
-  expect(s.progression).toMatchObject({ model: 2, vip: [] });
+  expect(s.progression).toMatchObject({ model: 3, vip: [] });
   expect(s.progression.unlocked).toContain('vintage-car'); // bought VIP in v3 → stays open
   await drv.tap(s.layout.W / 2, s.layout.H * 0.95); // first gesture: web audio unlocked
   s = await waitFor(page, (x) => x.audio.musicPlaying === 1, { label: 'music' });

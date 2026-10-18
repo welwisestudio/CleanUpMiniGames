@@ -28,7 +28,7 @@ export function registerQaScene(scene) {
 // World = device px; tests work in CSS px (what mouse / touch events use).
 function rectToScreen(layout, r) {
   const c = worldToScreen(layout, r.x, r.y);
-  return { x: c.x, y: c.y, w: r.w / layout.dpr, h: r.h / layout.dpr, visible: r.visible ?? true };
+  return { x: c.x, y: c.y, w: r.w / layout.dpr, h: r.h / layout.dpr, ...(r.tapW ? { tapW: r.tapW / layout.dpr, tapH: r.tapH / layout.dpr } : {}), visible: r.visible ?? true };
 }
 
 // Work targets of the current stage in object-local units (read-only).
@@ -79,8 +79,14 @@ function snapshot() {
     store: scene?.store ? { open: true } : null,
     wheel: scene?.wheel ? { state: scene.wheel.state, chosen: scene.wheel.result?.index ?? null, landed: scene.wheel.landedIndex(), free: s.wheel.freeAvailable() } : null,
     toolsOwned: s.save.loaded ? [...s.save.get('tools.owned')] : null,
+    toolsEquipped: s.save.loaded ? { ...s.save.get('tools.equipped') } : null,
+    firstHint: Boolean(scene?.firstHint),
+    menuLayout: scene?.listRect && scene?.scene?.key === 'Menu' ? { listW: scene.listRect.w / (scene.layout?.dpr ?? 1), listX: scene.listRect.x / (scene.layout?.dpr ?? 1), headerH: scene.headerH / (scene.layout?.dpr ?? 1), phoneRow: Boolean(scene.phoneRow) } : null,
+    tutorialFlags: s.save.loaded ? { ...s.save.get('tutorial') } : null,
     pause: s.pause.snapshot(),
     build: s.build,
+    // interstitial pacing (read-only): last completed request, last placement, the dev adapter's log
+    interstitial: { last: s.interstitial.lastInterstitialRequestCompleted, placement: s.interstitial.lastPlacement ?? null, busy: s.interstitial.busy, log: s.platform.interstitialLog ? s.platform.interstitialLog.map((x) => x.result) : null },
     // audio (read-only): counts, plays per event, the music instance and the tool loop now playing
     audio: { requested: s.audio.requested, played: s.audio.played, log: { ...s.audio.log }, music: s.audio.music ? { playing: s.audio.music.isPlaying, paused: s.audio.music.isPaused, instances: s.audio.sound?.getAll?.('music-main')?.length ?? null } : null, tool: s.audio.toolPlaying, toolVolume: s.audio.tool?.sound?.volume ?? 0, playingLoops: (s.audio.sound?.getAllPlaying?.() ?? []).filter((x) => x.key.startsWith('loop-')).map((x) => x.key), musicPlaying: (s.audio.sound?.getAllPlaying?.() ?? []).filter((x) => x.key === 'music-main').length, canPlay: s.audio.canPlay, locked: Boolean(s.audio.sound?.locked) },
     // reward state (read-only): balances, boost receipt, timed chest, level-progress chest
@@ -104,7 +110,7 @@ function snapshot() {
   const layout = scene.layout;
   const buttons = {};
   for (const [id, b] of scene.qaButtons ?? []) buttons[id] = rectToScreen(layout, b.worldRect());
-  for (const [id, r] of scene.qaTargets ?? []) buttons[id] = { ...rectToScreen(layout, r), ...(r.thumb ? { thumb: r.thumb, check: r.check / layout.dpr } : {}), ...(r.state ? { state: r.state } : {}), ...(r.vip ? { vip: true } : {}) };
+  for (const [id, r] of scene.qaTargets ?? []) buttons[id] = { ...rectToScreen(layout, r), ...(r.thumb ? { thumb: r.thumb, check: r.check / layout.dpr } : {}), ...(r.state ? { state: r.state } : {}), ...(r.vip ? { vip: true } : {}), ...(r.currency ? { currency: r.currency, price: r.price } : {}) };
   base.layout = { W: layout.cssW, H: layout.cssH, dpr: layout.dpr, u: layout.u / layout.dpr, compact: layout.compact, hudBottom: layout.hudBottom / layout.dpr };
   base.buttons = buttons;
   if (scene.scene.key === 'Level' && scene.stack) {

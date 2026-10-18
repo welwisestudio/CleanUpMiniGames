@@ -10,6 +10,7 @@ import { TimedChestWidget, ProgressChestMini, ChestOfferModal, TIMED_CHEST_SIZE,
 import { registerQaScene } from '../app/qa.js';
 import { StoreModal } from '../ui/storeModal.js';
 import { WheelModal } from '../ui/wheelModal.js';
+import { LEVEL_META } from '../content/generated/levelMeta.js';
 
 // Object selection (reference Menu_screen.PNG, video 00:00 / 08:04–08:16): a vertical list of
 // shelves that scrolls downward, 2 objects per shelf row. Header: currency counters and settings.
@@ -119,8 +120,19 @@ export class MenuScene extends Phaser.Scene {
     this.shelves = Array.from({ length: this.rows }, () => this.add.image(0, 0, 'ui-shelf'));
     this.list.add(this.shelves);
     this.entries.forEach((e) => this.list.add(e.objects));
-    this.footer = makeText(this, 0, 0, 'More objects coming soon', { size: 16, color: '#A1948E', weight: '800' });
+    this.footer = makeText(this, 0, 0, 'Mini games coming soon', { size: 16, color: '#A1948E', weight: '800' });
     this.list.add(this.footer);
+    // First launch (2026-10-17): the glove hand taps the Soccer Ball card until the player taps it
+    // once (saved in tutorial.menuFirstLevel, never shown again; not shown after it was completed).
+    const firstId = DISPLAY_ORDER[0];
+    if (!save.get('tutorial')?.menuFirstLevel && !this.services.progression.isCompleted(firstId)) {
+      const tip = LEVEL_META.ui?.['ui-hint-hand']?.tip ?? [0.42, 0.04];
+      const hand = this.add.image(0, 0, 'ui-hint-hand').setOrigin(tip[0], tip[1]);
+      const ring = this.add.graphics();
+      this.list.add([ring, hand]);
+      this.firstHint = { id: firstId, hand, ring, k: 0 };
+      this.firstHint.tw = this.tweens.add({ targets: this.firstHint, k: 1, duration: 520, yoyo: true, repeat: -1, repeatDelay: 380, ease: 'Sine.easeInOut', onUpdate: () => this._placeFirstHint() });
+    }
 
     this.badges = addStatusBadges(this, { build: this.services.build, testMode: this.services.platform.testMode });
 
@@ -150,12 +162,17 @@ export class MenuScene extends Phaser.Scene {
     registerQaScene(this);
     // the menu is interactive now → gameReady (sent once per session; the adapter ignores repeats)
     this.services.platform.gameReady();
-    // dev / QA only: `?minigame=<level id>` opens that post-cleaning minigame directly (once)
+    // dev / QA only: `?minigame=<level id>[,<level id>…]` opens post-cleaning minigame(s) directly (once)
     const mg = new URLSearchParams(window.location.search).get('minigame');
     if (__QA__ && this.services.platform.dev && mg && !this.registry.get('qaMinigameOpened')) {
       this.registry.set('qaMinigameOpened', true);
       const game = this.game;
-      this.scene.start('MiniGame', { levelId: mg, onDone: () => game.scene.start('Menu', {}) });
+      // `?minigame=a,b,c` plays them one after another in the same scene object (QA of per-game state reset)
+      // (the first one REPLACES the menu — this.scene.start — so the menu never stays active underneath;
+      // the next ones start a frame after the previous one stopped)
+      const list = mg.split(',');
+      const done = (i) => () => (i + 1 < list.length ? setTimeout(() => game.scene.start('MiniGame', { levelId: list[i + 1], onDone: done(i + 1) }), 30) : game.scene.start('Menu', {}));
+      this.scene.start('MiniGame', { levelId: list[0], onDone: done(0) });
     }
     if (this.pendingOffer) {
       const id = this.pendingOffer;
@@ -207,9 +224,32 @@ export class MenuScene extends Phaser.Scene {
     const chestH = TIMED_CHEST_SIZE.h * CHEST_SCALE * u;
     const colX = this.pills.x + 10 * u + chestW / 2;
     const y1 = headerH + CHEST_GAP * u + chestH / 2;
-    this.timedChest.container.setPosition(colX, y1).setScale(CHEST_SCALE * u);
-    this.progressChest.container.setPosition(colX, y1 + chestH + CHEST_GAP * u).setScale(CHEST_SCALE * u);
-    const gutter = colX + chestW / 2 + CHEST_GAP * u; // shelves start right of the column
+    // Phones (2026-10-17): the two chests and the Wheel form a second header row (on the header
+    // background), so the shelves below get the FULL screen width and start under the whole header —
+    // nothing floats over the list any more. Wider screens keep the side column.
+    const phoneRow = l.portrait && l.cssW < 600;
+    this.phoneRow = phoneRow;
+    let gutter;
+    let listTopY = headerH;
+    if (phoneRow) {
+      // compact (2026-10-17): the row starts right under the counter row (no extra header margin /
+      // gap in between) and the header ends a small gap below the chest labels
+      const rowTop = m + UI.pause * u + 2 * u;
+      const yRow = rowTop + chestH / 2;
+      this.timedChest.container.setPosition(colX, yRow).setScale(CHEST_SCALE * u);
+      this.progressChest.container.setPosition(colX + chestW + CHEST_GAP * 2 * u, yRow).setScale(CHEST_SCALE * u);
+      this.wheelBtn.setPosition(W - m - ((WHEEL_ICON + 4) / 2) * ws, yRow - 4 * u);
+      this.wheelRect = { x: this.wheelBtn.x, y: this.wheelBtn.y + 6 * ws, w: (WHEEL_ICON + 16) * ws, h: (WHEEL_ICON + 30) * ws };
+      listTopY = yRow + chestH / 2 + CHEST_GAP * 0.75 * u;
+      this.headerBg.setSize(W, listTopY);
+      this.headerShade.setPosition(0, listTopY).setSize(W, 3 * u);
+      this.headerH = listTopY;
+      gutter = m + 4 * u;
+    } else {
+      this.timedChest.container.setPosition(colX, y1).setScale(CHEST_SCALE * u);
+      this.progressChest.container.setPosition(colX, y1 + chestH + CHEST_GAP * u).setScale(CHEST_SCALE * u);
+      gutter = colX + chestW / 2 + CHEST_GAP * u; // shelves start right of the column
+    }
 
     // list: one shelf per row with 2 objects; row height follows the width (the list scrolls).
     // The list is centred on the SCREEN (not on the strip right of the chest column): its width is
@@ -218,12 +258,14 @@ export class MenuScene extends Phaser.Scene {
     // screen centre (reads as centred); it never touches the column or the right margin.
     // 2026-10-11: exactly centred on the screen — the width is symmetric around W / 2 and stops at
     // the chest column on the left (the same clearance on the right)
-    const shelfW = Math.min(560 * u, 2 * (W / 2 - gutter));
+    // short landscape (2026-10-18): the shelf width also follows the HEIGHT (about 1.7 shelf rows on
+    // screen), so the menu objects are not oversized on a wide, short screen
+    const shelfW = Math.min(560 * u, 2 * (W / 2 - gutter), l.shortLandscape ? (H - this.headerH) * 1.0 : Infinity);
     const shelfCx = W / 2;
     this.listRect = { x: shelfCx, y: H / 2, w: shelfW, h: H, gutter }; // QA: horizontal extent of the list
     const thumb = shelfW * 0.34;
     const rowH = thumb * 1.62 + 14 * u; // object + shelf (+ its unlock pill), then the next row (no name labels)
-    const top = headerH + 18 * u;
+    const top = listTopY + (phoneRow ? 22 : 18) * u;
     this.shelves.forEach((s, r) => {
       const y = top + rowH * r + thumb * 1.02;
       s.setScale(shelfW / s.width).setPosition(shelfCx, y);
@@ -238,6 +280,7 @@ export class MenuScene extends Phaser.Scene {
       e.layout(x, shelf.y - shelf.displayHeight * 0.12, thumb, u, shelf.y + shelf.displayHeight * 0.5 + 14 * u, rowBottom);
     });
     this.footer.setPosition(shelfCx, top + rowH * this.rows + 4 * u).setScale(u);
+    this._placeFirstHint();
     this.contentH = top + rowH * this.rows + 40 * u;
     this.viewH = H - 30 * u;
     this.maxScroll = Math.max(0, this.contentH - this.viewH);
@@ -360,7 +403,8 @@ export class MenuScene extends Phaser.Scene {
       const H = 30;
       const R = H / 2;
       const afford = !isVip && prog.canAfford(level.id);
-      const cap = !isVip && !afford && !entry.busy ? 34 : 0; // ad cap width
+      const gems = prog.currency(level.id) === 'gems'; // gem level (2026-10-17): diamonds / gems only, no ad cap
+      const cap = !isVip && !gems && !afford && !entry.busy ? 34 : 0; // ad cap width
       const main = 96; // price part width (same for every price)
       const items = [];
       let fill;
@@ -373,6 +417,11 @@ export class MenuScene extends Phaser.Scene {
         items.push(fitImageMenu(this, 'icon-ad-clapper', 20), makeText(this, 0, 0, 'Unlock', { size: 16, color: '#FFFFFF', weight: '900', stroke: '#4B1D7A', strokeThickness: 3 }));
         fill = 0x8a4fe0;
         rim = 0x5b2a9a;
+      } else if (gems) {
+        // the same price pill as a coin level, with the existing diamond (gem) icon
+        items.push(fitImageMenu(this, 'icon-diamond', 22), makeText(this, 0, 0, `${prog.price(level.id)}`, { size: 17, color: '#FFFFFF', weight: '900', stroke: afford ? '#1F7A2A' : '#4F5763', strokeThickness: 3 }));
+        fill = afford ? 0x4fc84b : 0x98a1ab;
+        rim = afford ? 0x1f7a2a : 0x5e6670;
       } else {
         items.push(fitImageMenu(this, 'icon-coin', 21), makeText(this, 0, 0, `${prog.price(level.id)}`, { size: 17, color: '#FFFFFF', weight: '900', stroke: afford ? '#1F7A2A' : '#4F5763', strokeThickness: 3 }));
         fill = afford ? 0x4fc84b : 0x98a1ab;
@@ -461,7 +510,7 @@ export class MenuScene extends Phaser.Scene {
     entry.qa = () => {
       if (!geo) return;
       const y = geo.y - this.scrollY;
-      this.qaTargets.set(`menu-level-${level.id}`, { x: geo.x, y, w: geo.w, h: geo.h, visible: y - geo.h / 2 > this.headerH && y + geo.h / 2 < this.viewH, thumb: img.texture.key, check: badge ? badge.displayWidth : 0, state, vip: isVip, contentY: geo.y });
+      this.qaTargets.set(`menu-level-${level.id}`, { x: geo.x, y, w: geo.w, h: geo.h, visible: y - geo.h / 2 > this.headerH && y + geo.h / 2 < this.viewH, thumb: img.texture.key, check: badge ? badge.displayWidth : 0, state, vip: isVip, currency: prog.currency(level.id), price: prog.price(level.id), contentY: geo.y });
     };
     return entry;
   }
@@ -639,6 +688,7 @@ export class MenuScene extends Phaser.Scene {
   // refreshes the menu in place (same scroll) — the level is then open; nothing starts by itself.
   async _tapLevel(level, entry, redraw) {
     if (this.leaving || this.settings || this.chestOffer || this.store || this.wheel) return;
+    if (this.firstHint && level.id === this.firstHint.id) this._doneFirstHint();
     const prog = this.services.progression;
     if (prog.isPlayable(level.id)) return this._openLevel(level.id);
     if (!entry || entry.busy || this.adBusy) return;
@@ -646,6 +696,13 @@ export class MenuScene extends Phaser.Scene {
     if (!prog.isVip(level.id) && prog.canAfford(level.id)) {
       const r = prog.purchase(level.id);
       if (r.status === 'purchased') this._unlocked(r.savePromise);
+      return;
+    }
+    // gem level without enough gems: the existing "Not enough diamonds" message, then the Store opens
+    // at the diamond (gem) section — no ad fallback for these levels
+    if (prog.currency(level.id) === 'gems') {
+      this._toast('Not enough diamonds', entry.geo());
+      this.time.delayedCall(650, () => !this.leaving && !this.store && this.openStore('gems'));
       return;
     }
     entry.busy = true;
@@ -658,6 +715,33 @@ export class MenuScene extends Phaser.Scene {
     if (r.status === 'unlocked' || r.status === 'open') return this._unlocked();
     redraw();
     this._toast(r.status === 'not-earned' ? 'Ad closed early - still locked' : 'Ad not available - try again', entry.geo());
+  }
+
+  // the first-level hand: the fingertip taps just below the card's centre (it scrolls with the list)
+  _placeFirstHint() {
+    const fh = this.firstHint;
+    const l = this.layout;
+    if (!fh || !l) return;
+    const e = this.entries.find((x) => x.levelId === fh.id);
+    const geo = e?.geo();
+    if (!geo) return;
+    const u = l.u;
+    const base = Math.min(geo.w * 0.62, 112 * u) / Math.max(fh.hand.width, fh.hand.height);
+    const x = geo.x + geo.w * 0.08;
+    const y = geo.y + geo.h * 0.12 + (1 - fh.k) * 18 * u;
+    fh.hand.setPosition(x, y).setScale(base * (1 - 0.1 * fh.k));
+    fh.ring.clear().lineStyle(4 * u, 0xffffff, 0.8 * fh.k).strokeCircle(x, geo.y + geo.h * 0.12, (16 + 22 * fh.k) * u);
+  }
+
+  _doneFirstHint() {
+    const fh = this.firstHint;
+    this.firstHint = null;
+    fh.tw.stop();
+    fh.hand.destroy();
+    fh.ring.destroy();
+    this.services.save.update((s) => {
+      s.tutorial.menuFirstLevel = true;
+    });
   }
 
   _unlocked(savePromise) {
@@ -681,7 +765,9 @@ export class MenuScene extends Phaser.Scene {
     this.leaving = true;
     this.services.audio.play('ui-tap');
     this.services.pause.set('navigationBusy', true);
-    this.scene.start('Level', { levelId });
+    // approved interstitial placement: entering a level from the menu (pacing in InterstitialService)
+    const go = () => this.scene.start('Level', { levelId });
+    this.services.interstitial.maybeShow('level-start').then(go, go);
   }
 }
 

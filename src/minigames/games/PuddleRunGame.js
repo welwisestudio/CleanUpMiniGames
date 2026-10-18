@@ -28,6 +28,7 @@ export class PuddleRunGame extends BaseGame {
   }
 
   layout(l) {
+    this.s.setLives(LIVES - this.splashes, LIVES);
     const f = this.field();
     const portrait = l.W < l.H;
     const bandH = Math.min((f.y1 - f.y0) * (portrait ? 0.42 : 0.55), 420 * l.u);
@@ -104,6 +105,7 @@ export class PuddleRunGame extends BaseGame {
   splash(p) {
     const s = this.s;
     this.splashes += 1;
+    s.setLives(LIVES - this.splashes, LIVES);
     s.services.audio.noise({ dur: 0.5, freq: 1300, to: 350, q: 0.6, gain: 0.55 });
     s.burst(p.x, this.groundY, [0x7a5a3a, 0xa3825a, 0x9fc7e6, 0xffffff], 18, 0.95);
     s.puffs(p.x, this.groundY, { n: 4, size: 40, speed: 140, life: 600, rise: 120, alpha: 0.7, tint: 0x9a7a5a });

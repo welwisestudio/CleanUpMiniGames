@@ -11,7 +11,7 @@ import { Emitter } from '../core/Emitter.js';
 // - the winning segment is chosen (weighted) and its reward is saved at the same moment, BEFORE the
 //   wheel animation — closing the wheel mid-spin can neither lose nor duplicate the reward; the UI
 //   then turns the wheel to land exactly on that segment;
-// - a tool segment unlocks the tool variant permanently (ToolService ownership, not equipped); if it
+// - a tool segment unlocks the tool variant permanently and equips it in its family; if it
 //   is already owned the segment's fallback (diamonds) is granted instead.
 export class WheelService extends Emitter {
   constructor({ save, rewards, toolShop, config, clock = () => Date.now(), random = Math.random }) {
@@ -78,7 +78,11 @@ export class WheelService extends Emitter {
         Object.assign(r, { status: 'granted', free, index, reward, coinsBefore: s.coins, diamondsBefore: s.diamonds });
         if (reward.kind === 'coins') s.coins += reward.amount;
         if (reward.kind === 'gems') s.diamonds += reward.amount;
-        if (reward.kind === 'tool' && !s.tools.owned.includes(reward.tool)) s.tools.owned.push(reward.tool);
+        if (reward.kind === 'tool' && !s.tools.owned.includes(reward.tool)) {
+          s.tools.owned.push(reward.tool);
+          // 2026-10-17: a won tool is equipped right away in its family (no extra tap needed)
+          if (reward.family) s.tools.equipped[reward.family] = reward.tool;
+        }
         r.coinsAfter = s.coins;
         r.diamondsAfter = s.diamonds;
       });

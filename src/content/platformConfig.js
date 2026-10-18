@@ -5,12 +5,18 @@
 // not raise it; it is derived from the cloud save, so the best score sent always matches the save.
 export const SCORE = { enabled: false, metric: 'levels-completed' };
 
-// Interstitial ads (requestInterstitialAd). The SDK only reports that the REQUEST completed — there
-// is no impression signal — so the interval runs from the last completed request (a rejected
-// request does not reset it). Not placed anywhere yet: placements need the designer's approval.
+// Interstitial ads (requestInterstitialAd). Rules (designer, 2026-10-18 — the two extra rules are back):
+// on an approved trigger an interstitial is requested only if
+//   · at least 30 s have passed since the LAST SUCCESSFUL interstitial (the SDK's request completed —
+//     it gives no impression signal); a failed / unavailable / rejected request does NOT reset it;
+//   · at least 30 s have passed since the session started;
+//   · at least 30 s have passed since the last rewarded ad the player watched (earned).
+// Approved triggers: "Skip chest"; Pause → Resume / Restart / Menu; Completed → Next / Restart / Menu;
+// entering a level from the menu.
 export const INTERSTITIAL = {
-  enabled: false,
-  firstAfterMs: 120_000, // never in the first 2 minutes of a session
-  minIntervalMs: 120_000, // ≥ 2 minutes after the last completed request
-  afterRewardedMs: 60_000, // never within 1 minute after a rewarded ad
+  enabled: true,
+  minIntervalMs: 30_000, // ≥ 30 s since the last successful interstitial
+  firstAfterMs: 30_000, // not in the first 30 s of a session
+  afterRewardedMs: 30_000, // not within 30 s after a rewarded ad
+  placements: ['chest-skip', 'pause-resume', 'pause-restart', 'pause-menu', 'result-next', 'result-restart', 'result-menu', 'level-start'],
 };

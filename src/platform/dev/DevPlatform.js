@@ -1,4 +1,4 @@
-// Development platform adapter. Explicitly selected by the entrypoint; shows TEST MODE.
+// Development platform adapter. Explicitly selected by the entrypoint (no player-facing label since 2026-10-17).
 // Storage: in-memory by default. `storage: 'local'` keeps a dev-only copy in localStorage
 // so reloads can be tested; this is never used for a real platform profile.
 // Rewarded ads (simulated, never a real ad): `rewardedOutcome` = 'ask' shows a TEST AD dialog
@@ -39,7 +39,10 @@ function askAdDialog(placementId) {
   });
 }
 
-export function createDevPlatform({ storage = 'memory', rewardedOutcome = 'ask', rewardedDelayMs = 600 } = {}) {
+export function createDevPlatform({ storage = 'memory', rewardedOutcome = 'ask', rewardedDelayMs = 600, interstitialOutcome = 'request-completed' } = {}) {
+  // dev interstitial: a short simulated ad; `?devInterstitial=unavailable|error` fixes a failure
+  let interstitialMode = ['request-completed', 'unavailable', 'error'].includes(interstitialOutcome) ? interstitialOutcome : 'request-completed';
+  const interstitialLog = [];
   let adMode = AD_OUTCOMES.includes(rewardedOutcome) ? rewardedOutcome : 'ask';
   let adInFlight = false;
   const adLog = [];
@@ -53,6 +56,8 @@ export function createDevPlatform({ storage = 'memory', rewardedOutcome = 'ask',
   return {
     id: 'dev',
     testMode: true,
+    // the same capability flags as init() reports (services read them from the adapter, as on YouTube)
+    capabilities: { cloudSave: true, rewarded: true, interstitial: true, score: true, hostLifecycle: true },
 
     async init() {
       return {
@@ -114,7 +119,12 @@ export function createDevPlatform({ storage = 'memory', rewardedOutcome = 'ask',
       }
     },
     async requestInterstitial() {
-      return { result: 'request-completed' };
+      await new Promise((r) => setTimeout(r, 250));
+      interstitialLog.push({ t: Date.now(), result: interstitialMode });
+      return { result: interstitialMode };
+    },
+    get interstitialLog() {
+      return interstitialLog;
     },
     async sendScore(value) {
       if (!Number.isInteger(value)) throw new TypeError('score must be an integer');
@@ -141,6 +151,10 @@ export function createDevPlatform({ storage = 'memory', rewardedOutcome = 'ask',
 
     // Dev-only controls for tests (host pause / mute / failures).
     dev: {
+      // interstitial simulation: 'request-completed' | 'unavailable' | 'error'
+      setInterstitialOutcome(m) {
+        interstitialMode = m;
+      },
       setPaused(paused) {
         snapshot = { ...snapshot, paused };
         emit();

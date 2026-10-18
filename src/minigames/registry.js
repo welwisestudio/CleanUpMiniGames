@@ -28,15 +28,15 @@ import { MowDashGame, HighwayRideGame, SundayDriveGame } from './games/DriveGame
 // `total` = number of progress pips; `theme.dimAlpha` = how much the level backdrop is dimmed.
 // A level without an entry goes straight to the normal completion flow.
 export const MINIGAMES = {
-  'soccer-ball': { title: 'Penalty Kick!', hint: 'Pull back from the ball and let go - 2 goals win', total: 3, winText: 'CHAMPION!', Game: PenaltyGame, theme: { dimAlpha: 0.05 } },
-  'rusty-cleaver': { title: 'Cleaver Throw!', hint: 'Tap to throw - don’t hit a stuck cleaver', total: 4, winText: 'PERFECT!', Game: CleaverThrowGame, theme: { dimAlpha: 0.3 } },
+  'soccer-ball': { title: 'Penalty Kick!', hint: 'Pull back from the ball and let go - score 3 goals', total: 5, winText: 'CHAMPION!', Game: PenaltyGame, theme: { dimAlpha: 0.05 } },
+  'rusty-cleaver': { title: 'Cleaver Throw!', hint: 'Tap to throw - don’t hit a stuck cleaver', total: 8, winText: 'PERFECT!', Game: CleaverThrowGame, theme: { dimAlpha: 0.3 } },
   cannon: { title: 'Cannon Blast!', hint: 'Tap when the crosshair is on a barrel', total: 3, winText: 'BULLSEYE!', Game: CannonGame, theme: { dimAlpha: 0.04 } },
   'upright-piano': { title: 'Piano Notes!', hint: 'Tap a key when its note reaches the ring', total: 6, winText: 'BRAVO!', Game: PianoGame, theme: { dimAlpha: 0.42, dim: 0x1a0f3a } },
   // ---- expansion 2026-10-16 (shared systems, src/minigames/systems/kit.js) ----
   // `sprites` = the minigame art this game loads; `assets` = reused game art (boot set)
   'frying-pan': { title: 'Pancake Flip!', hint: 'Tap when the marker is in the green', total: 5, winText: 'CHEF!', Game: PancakeFlipGame, sprites: ['mg-pancake'], theme: { dimAlpha: 0.12 } },
   toolbox: { title: 'Tool Memory!', hint: 'Find the matching tool pairs', total: 3, winText: 'SHARP MIND!', Game: ToolMemoryGame, assets: ['tool-hammer', 'tool-screwdriver', 'tool-paint-brush'], theme: { dimAlpha: 0.25 } },
-  keyboard: { title: 'Key Rush!', hint: 'Tap the keys as they pop up', total: 8, winText: 'SPEEDY!', Game: KeyRushGame, theme: { dimAlpha: 0.2 } },
+  keyboard: { title: 'Key Rush!', hint: 'Tap the glowing keys on the screen', total: 8, winText: 'SPEEDY!', Game: KeyRushGame, theme: { dimAlpha: 0.2 } },
   'garden-grill': { title: 'Grill Master!', hint: 'Tap each sausage when its bar is green', total: 6, winText: 'GRILL MASTER!', Game: GrillMasterGame, sprites: ['mg-sausage'], theme: { dimAlpha: 0.1 } },
   bathtub: { title: 'Bubble Pop!', hint: 'Pop the bubbles - ducks are worth 3', total: 5, winText: 'SQUEAKY CLEAN!', Game: BubblePopGame, sprites: ['mg-bubble', 'mg-duck'], theme: { dimAlpha: 0.22 } },
   'game-controller': { title: 'Simon Buttons!', hint: 'Watch the lights, then repeat them', total: 3, winText: 'GENIUS!', Game: SimonButtonsGame, theme: { dimAlpha: 0.35, dim: 0x1a0f3a } },

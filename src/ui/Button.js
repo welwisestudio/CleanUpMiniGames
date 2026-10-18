@@ -1,3 +1,4 @@
+import { UI } from './layout.js';
 import { FONT_DISPLAY, TEXT } from './theme.js';
 import { makeText } from './text.js';
 import { nineSlice } from './kit.js';
@@ -56,6 +57,8 @@ export class Button {
       this._fitContent();
     }
     this.zone = scene.add.zone(0, 0, w, h).setInteractive({ useHandCursor: true });
+    this.hitW = w;
+    this.hitH = h;
     this.container.add(this.zone);
     this.zone.on('pointerdown', () => {
       if (!this.enabled) return;
@@ -113,6 +116,11 @@ export class Button {
   setPlacement(x, y, scale = 1) {
     this.baseScale = scale;
     this.container.setPosition(x, y).setScale(scale);
+    // the tap area never gets smaller than UI.minTouch CSS px, even where the button is drawn smaller
+    // (short landscape screens, 2026-10-18)
+    const dpr = this.scene?.layout?.dpr ?? 1;
+    const min = (UI.minTouch * dpr) / Math.max(scale, 0.0001);
+    this.zone.setSize(Math.max(this.hitW, min), Math.max(this.hitH, min));
     return this;
   }
 
@@ -132,7 +140,7 @@ export class Button {
     const m = this.zone.getWorldTransformMatrix();
     const sx = Math.hypot(m.a, m.b);
     const sy = Math.hypot(m.c, m.d);
-    return { x: m.tx, y: m.ty, w: this.w * sx, h: this.h * sy, visible: this._visibleChain() };
+    return { x: m.tx, y: m.ty, w: this.w * sx, h: this.h * sy, tapW: this.zone.width * sx, tapH: this.zone.height * sy, visible: this._visibleChain() };
   }
 
   _visibleChain() {

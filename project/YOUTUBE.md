@@ -1,6 +1,6 @@
 # YouTube Playables integration (Step 11, 2026-10-15)
 
-Release build: **#168** (2026-10-16 23:02 UTC), `dist-youtube/` (profile `youtube-playables`), built from the #164 game state with the approved adapter unchanged. ZIP for the YouTube test: `CleanUpMiniGames_release/CleanUpMiniGames_youtube_build168.zip` (1059 files, 19,157,649 bytes unpacked, 18,134,534 bytes zipped). Previous: #139.
+Release build: **#186** (2026-10-17 20:43 UTC), `dist-youtube/` (profile `youtube-playables`), the approved adapter unchanged. ZIP for the YouTube test: `CleanUpMiniGames_release/CleanUpMiniGames_youtube_build186.zip` (1059 files, 19,163,960 bytes unpacked, 18,136,480 bytes zipped). Previous: #181, #178, #174, #168, #139.
 Sources: `platform/YOUTUBE-PLAYABLES.md` and `platform/SDK-CONTRACT.md`. The official SDK reference, integration requirements and the SDK Test Suite guide CSP were re-checked on 2026-10-15.
 
 ## Architecture
@@ -74,12 +74,8 @@ A failing optional font is not an error.
 ## Interstitials
 
 - **Signal:** `requestInterstitialAd()` only resolves when the REQUEST completes. There is no impression signal, so the result is named `request-completed` and never treated as "ad shown".
-- **Interval rule (`InterstitialService`, `INTERSTITIAL` in `src/content/platformConfig.js`):**
-  - never in the first 2 minutes of a session;
-  - at least 2 minutes after the last completed request; a rejected request does not reset the timer;
-  - never within 1 minute after a rewarded ad;
-  - never while paused.
-- **Status:** not placed anywhere and disabled; placements (for example Result → Home) need the designer's approval.
+- **Rules (`InterstitialService`, `INTERSTITIAL` in `src/content/platformConfig.js`; 2026-10-18):** on an approved trigger an interstitial is requested only if (1) ≥ 30 s since the LAST SUCCESSFUL interstitial (request completed; failed / unavailable / rejected requests do not reset the timer), (2) ≥ 30 s since the session started, (3) ≥ 30 s since the last rewarded ad watched. Never while the host has the game paused; two requests never overlap.
+- **Placements (enabled 2026-10-17):** Skip chest · Pause → Resume / Restart / Menu · Completed → Next / Restart / Menu · entering a level from the menu. Only these ids are accepted (`placements`); every call goes through `services.interstitial.maybeShow(placement)`, which calls the adapter's `requestInterstitial()` (the SDK `ads.requestInterstitialAd()` on YouTube). The navigation always continues after the request, whatever its result.
 
 ## Score — needs approval
 

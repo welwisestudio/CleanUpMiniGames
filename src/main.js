@@ -13,6 +13,7 @@ const params = new URLSearchParams(window.location.search);
 const platform = createDevPlatform({
   storage: params.get('devStorage') === 'memory' ? 'memory' : 'local',
   rewardedOutcome: params.get('devAd') ?? 'ask',
+  interstitialOutcome: params.get('devInterstitial') ?? 'request-completed',
 });
 
 try {

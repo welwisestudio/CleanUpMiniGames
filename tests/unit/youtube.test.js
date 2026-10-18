@@ -4,6 +4,7 @@ import { assertPlatform } from '../../src/platform/contract.js';
 import { SaveService } from '../../src/services/SaveService.js';
 import { ScoreService } from '../../src/services/ScoreService.js';
 import { InterstitialService } from '../../src/services/InterstitialService.js';
+import { INTERSTITIAL } from '../../src/content/platformConfig.js';
 import { PauseState } from '../../src/core/PauseState.js';
 
 // Contract tests for the YouTube Playables adapter with a controllable fake SDK (same API surface
@@ -189,25 +190,38 @@ describe('Score and interstitial pacing', () => {
     expect(log.filter((e) => e[0] === 'score')).toEqual([['score', { value: 2 }]]);
   });
 
-  it('interstitial: never early, interval from the last COMPLETED request, a reject does not reset it, not right after a rewarded ad', async () => {
+  it('interstitial rules (2026-10-18): approved triggers only; ≥ 30 s since the last SUCCESSFUL one (failures do not reset it); not in the first 30 s of the session; not within 30 s after a rewarded ad; never during host pause', async () => {
     const now = { t: 0 };
-    let fail = false;
-    const { sdk } = fakeSdk({ interstitial: () => (fail ? Promise.reject(sdkError('UNKNOWN')) : Promise.resolve()) });
+    let mode = 'ok';
+    const { sdk } = fakeSdk({ interstitial: () => (mode === 'ok' ? Promise.resolve() : Promise.reject(sdkError(mode === 'na' ? 'API_UNAVAILABLE' : 'UNKNOWN'))) });
     const platform = createYouTubePlatform({ sdk });
-    const it2 = new InterstitialService({ platform, pause: new PauseState(), config: { enabled: true, firstAfterMs: 1000, minIntervalMs: 5000, afterRewardedMs: 2000 }, clock: () => now.t });
-    expect((await it2.maybeShow()).result).toBe('skipped');
-    now.t = 1500;
-    expect((await it2.maybeShow()).result).toBe('request-completed');
-    now.t = 3000;
-    expect((await it2.maybeShow()).result).toBe('skipped');
-    now.t = 7000;
-    fail = true;
-    expect((await it2.maybeShow()).result).toBe('error');
-    expect(it2.lastInterstitialRequestCompleted).toBe(1500);
-    fail = false;
-    it2.noteRewarded();
-    expect((await it2.maybeShow()).result).toBe('skipped');
-    now.t = 9500;
-    expect((await it2.maybeShow()).result).toBe('request-completed');
+    const pause = new PauseState();
+    const it3 = new InterstitialService({ platform, pause, config: INTERSTITIAL, clock: () => now.t });
+    expect(INTERSTITIAL).toEqual(expect.objectContaining({ enabled: true, minIntervalMs: 30_000, firstAfterMs: 30_000, afterRewardedMs: 30_000 }));
+    expect((await it3.maybeShow('level-start')).result).toBe('skipped'); // first 30 s of the session
+    now.t = 30_000;
+    expect((await it3.maybeShow('somewhere-else')).result).toBe('skipped'); // not an approved trigger
+    expect((await it3.maybeShow('level-start')).result).toBe('request-completed');
+    now.t = 59_999;
+    expect((await it3.maybeShow('result-next')).result).toBe('skipped'); // < 30 s since the last success
+    now.t = 60_000;
+    mode = 'na';
+    expect((await it3.maybeShow('result-next')).result).toBe('unavailable');
+    now.t = 61_000;
+    mode = 'err';
+    expect((await it3.maybeShow('chest-skip')).result).toBe('error');
+    expect(it3.lastInterstitialRequestCompleted).toBe(30_000); // failures never reset the timer
+    mode = 'ok';
+    it3.noteRewarded(); // a rewarded ad at 61 s
+    now.t = 90_999;
+    expect((await it3.maybeShow('pause-menu')).result).toBe('skipped'); // < 30 s after the rewarded ad
+    now.t = 91_000;
+    pause.set('host', true);
+    expect((await it3.maybeShow('pause-menu')).result).toBe('skipped'); // host pause
+    pause.set('host', false);
+    pause.set('user', true); // the player's own pause (Pause → Menu) does not block it
+    expect((await it3.maybeShow('pause-menu')).result).toBe('request-completed');
+    expect(it3.lastInterstitialRequestCompleted).toBe(91_000);
+    for (const p2 of ['chest-skip', 'pause-resume', 'pause-restart', 'pause-menu', 'result-next', 'result-restart', 'result-menu', 'level-start']) expect(INTERSTITIAL.placements).toContain(p2);
   });
 });

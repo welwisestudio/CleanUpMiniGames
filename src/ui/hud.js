@@ -204,22 +204,12 @@ export class ProgressBar {
   }
 }
 
-// Small dark labels that mark non-final context: TEST MODE (dev adapter) and the build number.
-export function addStatusBadges(scene, { build, testMode }) {
-  const items = [];
-  if (testMode) items.push('TEST MODE · dev adapter');
-  items.push(`build #${build.number}`);
-  const c = scene.add.container(0, 0).setDepth(900);
-  let x = 0;
-  for (const label of items) {
-    const t = makeText(scene, 0, 0, label, { size: 12, color: TEXT.white, weight: '800', originX: 0 });
-    const w = t.width + 12;
-    const g = scene.add.graphics();
-    g.fillStyle(0x000000, 0.45).fillRoundedRect(x, -10, w, 20, 7);
-    t.setPosition(x + 6, 0);
-    c.add([g, t]);
-    x += w + 6;
-  }
-  c.layoutTo = (l) => c.setPosition(l.margin, l.H - l.margin - 6 * l.u).setScale(l.u);
+// Status badges: none any more (2026-10-17). The build number and the "TEST MODE · dev adapter" label
+// are no longer shown in the game UI (dev and YouTube builds alike); the build number stays in
+// build-info.json and the QA snapshot, and the dev adapter itself is unchanged. Kept as an empty
+// container so the scenes' layout calls stay the same.
+export function addStatusBadges(scene) {
+  const c = scene.add.container(0, 0);
+  c.layoutTo = () => c;
   return c;
 }

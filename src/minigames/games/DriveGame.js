@@ -30,6 +30,7 @@ class DriveGame extends BaseGame {
   }
 
   layout(l) {
+    this.s.setLives(this.lives, this.cfg.lives);
     const f = this.field();
     const portrait = l.W < l.H;
     // the road band: three lanes, centred in the play field
@@ -164,6 +165,7 @@ class DriveGame extends BaseGame {
     const s = this.s;
     it.done = true;
     this.lives -= 1;
+    this.s.setLives(this.lives, this.cfg.lives);
     this.safe = 1.1;
     s.shake(0.012, 220);
     s.services.audio.play('hit');

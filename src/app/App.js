@@ -44,7 +44,10 @@ export function createApp({ platform, parent }) {
   const wheel = new WheelService({ save, rewards, toolShop, config: economy.wheel, ...(forcedRandom ? { random: forcedRandom } : {}) });
   const audio = new AudioService({ save, pause });
   const score = new ScoreService({ save, platform, config: SCORE, rewards });
-  const interstitial = new InterstitialService({ platform, pause, config: INTERSTITIAL });
+  // dev / test only: `?interstitialMs=N` shortens every interstitial interval (trigger-point QA)
+  const adMs = __QA__ && platform.dev && q.get('interstitialMs') != null ? Number(q.get('interstitialMs')) : null;
+  const interstitialConfig = adMs != null ? { ...INTERSTITIAL, minIntervalMs: adMs, firstAfterMs: adMs, afterRewardedMs: adMs } : INTERSTITIAL;
+  const interstitial = new InterstitialService({ platform, pause, config: interstitialConfig });
   rewards.afterRewarded = () => interstitial.noteRewarded();
   // the full level chest is a big reward → the win jingle (CELEBRATION); other grants stay quiet
   rewards.on('granted', (r) => r?.kind === 'progressChest' && audio.play('reward-big'));

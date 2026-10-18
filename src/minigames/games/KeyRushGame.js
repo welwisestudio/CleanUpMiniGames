@@ -54,6 +54,8 @@ export class KeyRushGame extends BaseGame {
     this.s.tweens.add({ targets: c, scale: 1, duration: 160, ease: 'Back.easeOut' });
     this.targets.add({ x: p.x, y: p.y, r: this.cap * 0.55, life: LIFE, cell, c, g, letter, idx: this.spawned });
     this.spawned += 1;
+    // tutorial hand: tap the key ON SCREEN (moves to each new key until the player touches)
+    if (!this.s.handDismissed) this.s.showHand({ type: 'tap', x: p.x + this.cap * 0.05, y: p.y + this.cap * 0.1 });
   }
 
   drawCap(t) {

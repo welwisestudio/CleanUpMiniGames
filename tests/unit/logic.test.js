@@ -378,14 +378,15 @@ describe('Level access (coins, ad unlock, ad-only VIP — systems pass 2026-10-1
   }
   const L = (n) => DISPLAY_ORDER[n - 1];
 
-  it('fresh save: only level 1 is playable; exactly three VIP levels spread through the list; a rising coin price curve', async () => {
+  it('fresh save: only level 1 is playable; four VIP levels spread through the list; a rising coin price curve; gem levels at the end', async () => {
     const { prog } = await setup();
     expect(DISPLAY_ORDER.filter((id) => prog.isPlayable(id))).toEqual([L(1)]);
-    expect(DISPLAY_ORDER.filter((id) => prog.isVip(id))).toEqual([15, 37, 48].map(L));
+    expect(DISPLAY_ORDER.filter((id) => prog.isVip(id))).toEqual([15, 26, 37, 48].map(L));
+    expect(DISPLAY_ORDER.filter((id) => prog.currency(id) === 'gems')).toEqual([49, 50].map(L));
     expect(prog.price(L(1))).toBe(0);
     expect(prog.price(L(2))).toBe(levelPrice(2, 50));
     expect(prog.price(L(15))).toBe(null); // VIP: no coin price
-    const prices = DISPLAY_ORDER.map((id) => prog.price(id)).filter((p) => p != null);
+    const prices = DISPLAY_ORDER.filter((id) => prog.currency(id) === 'coins').map((id) => prog.price(id));
     for (let i = 1; i < prices.length; i++) expect(prices[i]).toBeGreaterThanOrEqual(prices[i - 1]);
     expect(prices[1]).toBeLessThanOrEqual(economy.store.free.coins.coins); // one coin ad buys an early level
     expect(prices[prices.length - 1]).toBeGreaterThan(prices[10] * 3); // late levels stay a coin sink
@@ -461,7 +462,7 @@ describe('Level access (coins, ad unlock, ad-only VIP — systems pass 2026-10-1
   it('migration of a v2 save: history kept + replayable, each completed level opens its next; currency / tools untouched', async () => {
     const { prog, save } = await setup({ levels: { [L(1)]: { completed: true, completions: 3 }, [L(30)]: { completed: true, completions: 1 }, [L(47)]: { completed: true, completions: 1 } }, diamonds: 2 });
     await prog.migrate();
-    expect(save.get('progression')).toMatchObject({ migrated: true, model: 2, vip: [] });
+    expect(save.get('progression')).toMatchObject({ migrated: true, model: 3, vip: [] });
     expect([1, 2, 30, 31, 47].map((n) => prog.isPlayable(L(n)))).toEqual([true, true, true, true, true]);
     expect([3, 29, 32, 46, 48].map((n) => prog.isPlayable(L(n)))).toEqual([false, false, false, false, false]); // 48 = VIP
     expect(save.get('coins')).toBe(7);
@@ -488,7 +489,7 @@ describe('Level access (coins, ad unlock, ad-only VIP — systems pass 2026-10-1
     await prog.migrate();
     const p = save.get('progression');
     expect(p.vip).toEqual([]);
-    expect(p.model).toBe(2);
+    expect(p.model).toBe(3);
     expect(p.unlocked).toEqual([L(2), L(37), L(47)]); // ex-VIP 47 (bought with diamonds) → a normal open level
     expect(p.vipAds.sort()).toEqual([L(15), L(37), L(48)].sort()); // still / now VIP and already open
     for (const n of [2, 15, 25, 37, 46, 47, 48]) expect(prog.isPlayable(L(n))).toBe(true);
@@ -499,10 +500,56 @@ describe('Level access (coins, ad unlock, ad-only VIP — systems pass 2026-10-1
     expect(prog.migrate()).toBe(null);
   });
 
+  it('gem levels (2026-10-17): bought with diamonds only, charged once, saved; no rewarded unlock', async () => {
+    const id = L(50);
+    const price = economy.levelAccess.gems[id];
+    const poor = await setup({ diamonds: price - 1, coins: 99999 });
+    expect(poor.prog.canAfford(id)).toBe(false);
+    expect(poor.prog.purchase(id)).toMatchObject({ status: 'insufficient', currency: 'gems', price });
+    expect(poor.save.get('coins')).toBe(99999); // coins are never used for a gem level
+    expect((await poor.prog.unlockWithAd(id)).status).toBe('invalid');
+    const { prog, save, platform } = await setup({ diamonds: price + 3 });
+    const r = prog.purchase(id);
+    expect(r).toMatchObject({ status: 'purchased', currency: 'gems', before: price + 3, after: 3 });
+    await r.savePromise;
+    expect(save.get('diamonds')).toBe(3);
+    expect(prog.isPlayable(id)).toBe(true);
+    expect(prog.purchase(id).status).toBe('open'); // never charged twice
+    expect(JSON.parse(platform.dev.peekStoredData()).progression.purchased).toContain(id);
+  });
+
+  it('model 3 migration: Aquarium (now VIP) stays open for a player who had bought it as a normal level', async () => {
+    const { prog, save } = await setup({ raw: { version: 4, coins: 0, diamonds: 0, levels: {}, progression: { unlocked: [], purchased: [L(26)], adUnlocked: [], vipAds: [], vip: [], migrated: true, model: 2 } } });
+    expect(prog.isVip(L(26))).toBe(true);
+    await prog.migrate();
+    expect(save.get('progression').vipAds).toContain(L(26));
+    expect(save.get('progression').model).toBe(3);
+    expect(prog.isPlayable(L(26))).toBe(true);
+  });
+
+  it('economy pacing (2026-10-17): buying each next level with earned coins (reward + timed chest, no ads) lasts until about the Motorcycle (#37)', () => {
+    const acc = economy.levelAccess;
+    const perLevelChest = economy.rewards.timedChest.coins / 2; // ~one timed chest every two levels
+    let coins = 0;
+    const short = [];
+    DISPLAY_ORDER.forEach((id, i) => {
+      const n = i + 1;
+      const vip = acc.vip.includes(id);
+      const gems = acc.gems?.[id] != null;
+      const price = n === 1 || vip || gems ? 0 : levelPrice(n, DISPLAY_ORDER.length);
+      if (coins >= price) coins -= price;
+      else short.push(n);
+      coins += economy.completionReward(id) + perLevelChest;
+    });
+    expect(short[0]).toBeGreaterThanOrEqual(33); // never early (was #14 before the rebalance)
+    expect(short[0]).toBeLessThanOrEqual(39); // around the Motorcycle (#37)
+    expect(short.filter((n) => n > 37).length).toBeGreaterThanOrEqual(4); // later, ads are the usual way
+  });
+
   it('dev unlock-all makes every level playable without writing the save', async () => {
     const { prog, save } = await setup({ devUnlockAll: true });
     expect(DISPLAY_ORDER.every((id) => prog.isPlayable(id))).toBe(true);
-    expect(save.get('progression')).toEqual({ unlocked: [], purchased: [], adUnlocked: [], vipAds: [], vip: [], migrated: true, model: 2 });
+    expect(save.get('progression')).toEqual({ unlocked: [], purchased: [], adUnlocked: [], vipAds: [], vip: [], migrated: true, model: 3 });
   });
 });
 
@@ -744,7 +791,10 @@ describe('Responsive layout', () => {
     expect((UI.tile * phone.u) / phone.dpr).toBeGreaterThanOrEqual(78);
     for (const [w, h, d] of sizes) {
       const l = computeLayout(w * Math.min(d, 2), h * Math.min(d, 2), Math.min(d, 2));
-      expect((UI.pause * l.u) / l.dpr).toBeGreaterThanOrEqual(48);
+      // drawn size: ≥ 48 CSS px except on short landscape screens (≥ 38 there, 2026-10-18); the TAP area
+      // is never below UI.minTouch (Button.setPlacement grows the zone — checked in e2e step23)
+      expect((UI.pause * l.u) / l.dpr).toBeGreaterThanOrEqual(l.shortLandscape ? 38 : 48);
+      expect(Math.max(UI.pause * l.u, UI.minTouch * l.dpr) / l.dpr).toBeGreaterThanOrEqual(48);
     }
   });
 

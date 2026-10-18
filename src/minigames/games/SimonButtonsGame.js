@@ -34,6 +34,7 @@ export class SimonButtonsGame extends BaseGame {
   }
 
   layout(l) {
+    this.s.setLives(this.lives, LIVES);
     this.placeHero();
     const portrait = l.W < l.H;
     const f = this.field();
@@ -107,6 +108,7 @@ export class SimonButtonsGame extends BaseGame {
     const s = this.s;
     this.phase = 'wait';
     this.lives -= 1;
+    s.setLives(this.lives, LIVES);
     s.services.audio.play('error');
     s.shake(0.006, 160);
     s.flash('OOPS!', this.cx, this.cy - this.D * 1.9, '#FFFFFF', '#B32F2F');

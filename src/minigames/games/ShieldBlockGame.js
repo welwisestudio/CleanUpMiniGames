@@ -35,6 +35,7 @@ export class ShieldBlockGame extends BaseGame {
   }
 
   layout(l) {
+    this.s.setLives(LIVES - this.hits, LIVES);
     const b = this.heroBox();
     this.cx = b.x;
     this.chestY = b.y0 + b.h * 0.36;
@@ -127,6 +128,7 @@ export class ShieldBlockGame extends BaseGame {
     const s = this.s;
     a.done = true;
     this.hits += 1;
+    s.setLives(LIVES - this.hits, LIVES);
     s.services.audio.play('hit');
     s.shake(0.01, 180);
     s.flash('OUCH!', this.cx, this.chestY - this.shieldR * 1.2, '#FFFFFF', '#B32F2F');
