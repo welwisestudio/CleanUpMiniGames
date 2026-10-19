@@ -6,6 +6,7 @@ import { Button } from './Button.js';
 import { fitImage } from './kit.js';
 import { refreshTextResolution, UI } from './layout.js';
 import { CurrencyPill } from './hud.js';
+import { bake, bakedShape } from './bake.js';
 
 // Store screen (2026-10-10, reference input/Store_screen.PNG; systems pass 2026-10-12 — no
 // real-money offers): a full-screen page over the menu / level — striped awning header with
@@ -38,7 +39,7 @@ export class StoreModal {
     this.content = scene.add.container(0, 0);
     this.maskG = scene.make.graphics({ add: false });
     this.content.setMask(this.maskG.createGeometryMask());
-    this.awning = scene.add.graphics();
+    this.awning = scene.add.image(0, 0, '__WHITE').setOrigin(0);
     this.header = scene.add.container(0, 0);
     this.title = makeText(scene, 0, 0, 'Store', { size: 40, color: TEXT.white, family: FONT_DISPLAY, weight: '900', stroke: '#2F4E8C', strokeThickness: 9 });
     const save = services.save;
@@ -108,8 +109,21 @@ export class StoreModal {
   }
 
   // ---- content ------------------------------------------------------------------------------
+  // static card plates are baked into textures (performance pass 2026-10-19): as live Graphics the
+  // ~30 rounded panels / tiles / pips were re-tessellated every frame while the Store was open.
+  // Their texture resolution follows the content scale (rebuilt if the screen grows).
+  _bakeScale(l = this.scene.layout) {
+    const k = Math.min(l.u * 1.05, (l.W - 2 * l.margin) / (PW + 8));
+    return Math.max(1, Math.ceil(k * 2) / 2);
+  }
+
+  _plate(key, x0, y0, w, h, draw) {
+    return bakedShape(this.scene, `store-${key}`, x0, y0, w, h, this.bakeS, draw);
+  }
+
   _build() {
     const s = this.scene;
+    this.bakeS = this._bakeScale();
     const store = this.services.store;
     const cfg = store.config;
     this.buttons.forEach((b) => b.destroy());
@@ -151,11 +165,12 @@ export class StoreModal {
 
   _panel(y, h, theme, title) {
     const s = this.scene;
-    const g = s.add.graphics();
-    g.fillStyle(0x6b4a33, 0.12).fillRoundedRect(-PW / 2, y + 5, PW, h, 26);
-    g.fillStyle(theme.band, 1).fillRoundedRect(-PW / 2, y, PW, h, 26);
-    g.fillStyle(0xffffff, 1).fillRoundedRect(-PW / 2 + 5, y + 5, PW - 10, 50, { tl: 22, tr: 22, bl: 0, br: 0 });
-    g.lineStyle(5, theme.border, 1).strokeRoundedRect(-PW / 2, y, PW, h, 26);
+    const g = this._plate(`panel-${theme.band}-${theme.border}-${h}`, -PW / 2 - 4, y - 4, PW + 8, h + 13, (g) => {
+      g.fillStyle(0x6b4a33, 0.12).fillRoundedRect(-PW / 2, y + 5, PW, h, 26);
+      g.fillStyle(theme.band, 1).fillRoundedRect(-PW / 2, y, PW, h, 26);
+      g.fillStyle(0xffffff, 1).fillRoundedRect(-PW / 2 + 5, y + 5, PW - 10, 50, { tl: 22, tr: 22, bl: 0, br: 0 });
+      g.lineStyle(5, theme.border, 1).strokeRoundedRect(-PW / 2, y, PW, h, 26);
+    });
     const t = makeText(s, 0, y + 31, title, { size: 25, color: theme.title, weight: '900', family: FONT_UI });
     this.content.add([g, t]);
   }
@@ -166,10 +181,11 @@ export class StoreModal {
     const h = 64 + 112 + 16;
     this._panel(y, h, theme, title);
     const ty = y + 64 + 56;
-    const g = s.add.graphics();
-    g.fillStyle(0xffffff, 1).fillRoundedRect(-PW / 2 + 12, ty - 56, PW - 24, 112, 16);
-    g.fillStyle(0xfff8ef, 1).fillRoundedRect(-PW / 2 + 18, ty - 50, 96, 100, 12);
-    g.lineStyle(2, 0xf0dccb, 1).strokeRoundedRect(-PW / 2 + 12, ty - 56, PW - 24, 112, 16);
+    const g = this._plate('wide', -PW / 2 + 10, ty - 58, PW - 20, 116, (g) => {
+      g.fillStyle(0xffffff, 1).fillRoundedRect(-PW / 2 + 12, ty - 56, PW - 24, 112, 16);
+      g.fillStyle(0xfff8ef, 1).fillRoundedRect(-PW / 2 + 18, ty - 50, 96, 100, 12);
+      g.lineStyle(2, 0xf0dccb, 1).strokeRoundedRect(-PW / 2 + 12, ty - 56, PW - 24, 112, 16);
+    });
     // Store polish 2026-10-12: left = art box (icon pile centred, amount below); right column centred:
     // title · subtitle · button, each in its own band (no overlaps)
     const cx = -PW / 2 + 66;
@@ -197,10 +213,11 @@ export class StoreModal {
     tiles.forEach((tile, i) => {
       const x = (i - 1) * (TW + 8);
       const ty = y + 64 + TH / 2;
-      const g = s.add.graphics();
-      g.fillStyle(0xffffff, 1).fillRoundedRect(x - TW / 2, ty - TH / 2, TW, TH, 16);
-      g.fillStyle(0xfff8ef, 1).fillRoundedRect(x - TW / 2 + 5, ty - TH / 2 + 5, TW - 10, TH - 58, 12);
-      g.lineStyle(2, 0xf0dccb, 1).strokeRoundedRect(x - TW / 2, ty - TH / 2, TW, TH, 16);
+      const g = this._plate('tile', x - TW / 2 - 2, ty - TH / 2 - 2, TW + 4, TH + 4, (g) => {
+        g.fillStyle(0xffffff, 1).fillRoundedRect(x - TW / 2, ty - TH / 2, TW, TH, 16);
+        g.fillStyle(0xfff8ef, 1).fillRoundedRect(x - TW / 2 + 5, ty - TH / 2 + 5, TW - 10, TH - 58, 12);
+        g.lineStyle(2, 0xf0dccb, 1).strokeRoundedRect(x - TW / 2, ty - TH / 2, TW, TH, 16);
+      });
       const items = [g];
       // icon pile: 1–3 icons (a bigger pack shows more)
       const n = tile.iconN ?? 1;
@@ -231,9 +248,10 @@ export class StoreModal {
       const st = store.bundleState(b.id);
       const ty = y + 64 + i * (RH + 10) + RH / 2;
       const x0 = -PW / 2 + 24;
-      const g = s.add.graphics();
-      g.fillStyle(0xffffff, 1).fillRoundedRect(-PW / 2 + 12, ty - RH / 2, PW - 24, RH, 16);
-      g.lineStyle(st.ready ? 4 : 2, st.ready ? 0x52cc4e : 0xf0dccb, 1).strokeRoundedRect(-PW / 2 + 12, ty - RH / 2, PW - 24, RH, 16);
+      const g = this._plate(`bundle-${st.ready ? 1 : 0}`, -PW / 2 + 9, ty - RH / 2 - 3, PW - 18, RH + 6, (g) => {
+        g.fillStyle(0xffffff, 1).fillRoundedRect(-PW / 2 + 12, ty - RH / 2, PW - 24, RH, 16);
+        g.lineStyle(st.ready ? 4 : 2, st.ready ? 0x52cc4e : 0xf0dccb, 1).strokeRoundedRect(-PW / 2 + 12, ty - RH / 2, PW - 24, RH, 16);
+      });
       const items = [g];
       const title = fitText(makeText(s, x0, ty - 30, b.title, { size: 16, color: TEXT.navy, weight: '900', family: FONT_UI, originX: 0 }), 190);
       items.push(title);
@@ -257,9 +275,11 @@ export class StoreModal {
       const pipY = ty + 30;
       for (let k = 0; k < b.ads; k++) {
         const px = x0 + 7 + k * 18;
-        const pg = s.add.graphics();
-        if (k < st.progress) pg.fillStyle(0x8a4fe0, 1).fillCircle(px, pipY, 7);
-        else pg.fillStyle(0xece4f6, 1).fillCircle(px, pipY, 7).lineStyle(2, 0xc7b3e6, 1).strokeCircle(px, pipY, 7);
+        const on = k < st.progress;
+        const pg = this._plate(`pip-${on ? 1 : 0}`, px - 9, pipY - 9, 18, 18, (pg) => {
+          if (on) pg.fillStyle(0x8a4fe0, 1).fillCircle(px, pipY, 7);
+          else pg.fillStyle(0xece4f6, 1).fillCircle(px, pipY, 7).lineStyle(2, 0xc7b3e6, 1).strokeCircle(px, pipY, 7);
+        });
         items.push(pg);
       }
       items.push(makeText(s, x0 + b.ads * 18 + 6, pipY, st.ready ? 'Ready!' : `${st.progress}/${b.ads} ads`, { size: 13, color: st.ready ? '#1E7A24' : '#7A6E8E', weight: '900', family: FONT_UI, originX: 0 }));
@@ -288,9 +308,10 @@ export class StoreModal {
     const h = 64 + 96 + 16;
     this._panel(y, h, THEMES.bonus, 'Bonus');
     const ty = y + 64 + 48;
-    const g = s.add.graphics();
-    g.fillStyle(0xffffff, 1).fillRoundedRect(-PW / 2 + 12, ty - 48, PW - 24, 96, 16);
-    g.lineStyle(2, 0xf0dccb, 1).strokeRoundedRect(-PW / 2 + 12, ty - 48, PW - 24, 96, 16);
+    const g = this._plate('bonus', -PW / 2 + 10, ty - 50, PW - 20, 100, (g) => {
+      g.fillStyle(0xffffff, 1).fillRoundedRect(-PW / 2 + 12, ty - 48, PW - 24, 96, 16);
+      g.lineStyle(2, 0xf0dccb, 1).strokeRoundedRect(-PW / 2 + 12, ty - 48, PW - 24, 96, 16);
+    });
     const chest = fitImage(s, 'ui-chest-timed', 72, -PW / 2 + 58, ty);
     const t1 = makeText(s, -PW / 2 + 102, ty - 16, 'Open the chest now', { size: 16, color: TEXT.navy, weight: '900', family: FONT_UI, originX: 0 });
     const ready = !store.chestSkippable();
@@ -384,14 +405,16 @@ export class StoreModal {
     // awning header: blue / white stripes with a scalloped lower edge (code-drawn, reference look)
     const hh = 96 * u;
     const sw = 34 * u;
-    const g = this.awning.clear();
-    g.fillStyle(0xffffff, 1).fillRect(0, 0, W, hh);
-    for (let x = 0, i = 0; x < W + sw; x += sw, i++) {
-      const col = i % 2 ? 0xffffff : 0x3d8be8;
-      g.fillStyle(col, 1).fillRect(x, 0, sw, hh - sw * 0.5);
-      g.fillCircle(x + sw / 2, hh - sw * 0.5, sw / 2);
-    }
-    g.fillStyle(0x000000, 0.06).fillRect(0, hh - sw * 0.5, W, 3 * u);
+    // baked once per screen size (performance pass 2026-10-19)
+    this.awning.setTexture(bake(this.scene, `store-awning-${W}x${Math.round(u * 100)}`, W, hh + 1, (g) => {
+      g.fillStyle(0xffffff, 1).fillRect(0, 0, W, hh);
+      for (let x = 0, i = 0; x < W + sw; x += sw, i++) {
+        const col = i % 2 ? 0xffffff : 0x3d8be8;
+        g.fillStyle(col, 1).fillRect(x, 0, sw, hh - sw * 0.5);
+        g.fillCircle(x + sw / 2, hh - sw * 0.5, sw / 2);
+      }
+      g.fillStyle(0x000000, 0.06).fillRect(0, hh - sw * 0.5, W, 3 * u);
+    }));
     this.header.setPosition(0, 0).setScale(u);
     const cw = W / u;
     // responsive header (2026-10-13): the counters shrink if the row would reach the close button;
@@ -420,6 +443,7 @@ export class StoreModal {
     this.viewTop = hh + (compact ? 24 : 10) * u;
     this.viewH = H - this.viewTop;
     this.k = Math.min(u * 1.05, (W - 2 * m) / (PW + 8));
+    if (this._bakeScale(l) > this.bakeS) this._build(); // larger on screen → crisper plates
     this.content.setPosition(W / 2, this.viewTop - this.scroll * this.k).setScale(this.k);
     this.maskG.clear().fillStyle(0xffffff, 1).fillRect(0, this.viewTop - 6 * u, W, H);
     this._scrollTo(this.scroll);

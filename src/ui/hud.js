@@ -1,3 +1,4 @@
+import { bake } from './bake.js';
 import Phaser from 'phaser';
 import { COLORS, TEXT, FONT_UI } from './theme.js';
 import { makeText } from './text.js';
@@ -36,15 +37,21 @@ export class CurrencyPill {
     this._fitValue();
     if (onPlus) {
       const plus = scene.add.container(pcx, faceY + h * 0.02);
-      const g = scene.add.graphics();
-      g.fillStyle(0x1e7a2a, 1).fillCircle(0, pr * 0.14, pr); // lower lip
-      g.fillStyle(0x3fbf45, 1).fillCircle(0, 0, pr); // body
-      g.fillStyle(0x6fe06a, 1).fillCircle(0, -pr * 0.1, pr * 0.84); // lighter face
-      g.fillStyle(0xffffff, 0.35).fillEllipse(-pr * 0.18, -pr * 0.5, pr * 0.95, pr * 0.42); // gloss
-      const L = pr * 1.1;
-      const T = pr * 0.36;
-      g.fillStyle(0x1e7a2a, 0.5).fillRoundedRect(-L / 2, -T / 2 + pr * 0.08, L, T, T / 2).fillRoundedRect(-T / 2, -L / 2 + pr * 0.08, T, L, T / 2);
-      g.fillStyle(0xffffff, 1).fillRoundedRect(-L / 2, -T / 2, L, T, T / 2).fillRoundedRect(-T / 2, -L / 2, T, L, T / 2);
+      // the glossy "+" is baked once into a texture at 4× resolution (performance pass 2026-10-19:
+      // as live Graphics its circles were re-tessellated every frame in every scene)
+      const S = 4;
+      const key = bake(scene, `ui-plus-${Math.round(pr * 10)}`, pr * 2.4 * S, pr * 2.4 * S, (gg, cx, cy) => {
+        const q = pr * S;
+        gg.fillStyle(0x1e7a2a, 1).fillCircle(cx, cy + q * 0.14, q); // lower lip
+        gg.fillStyle(0x3fbf45, 1).fillCircle(cx, cy, q); // body
+        gg.fillStyle(0x6fe06a, 1).fillCircle(cx, cy - q * 0.1, q * 0.84); // lighter face
+        gg.fillStyle(0xffffff, 0.35).fillEllipse(cx - q * 0.18, cy - q * 0.5, q * 0.95, q * 0.42); // gloss
+        const L = q * 1.1;
+        const T = q * 0.36;
+        gg.fillStyle(0x1e7a2a, 0.5).fillRoundedRect(cx - L / 2, cy - T / 2 + q * 0.08, L, T, T / 2).fillRoundedRect(cx - T / 2, cy - L / 2 + q * 0.08, T, L, T / 2);
+        gg.fillStyle(0xffffff, 1).fillRoundedRect(cx - L / 2, cy - T / 2, L, T, T / 2).fillRoundedRect(cx - T / 2, cy - L / 2, T, L, T / 2);
+      });
+      const g = scene.add.image(0, 0, key).setScale(1 / S);
       // generous hit area (stays >= 44 px even when the menu scales the counters down)
       const hit = scene.add.zone(0, 0, 58, 62).setInteractive({ useHandCursor: true });
       hit.on('pointerdown', (p) => {
@@ -77,6 +84,7 @@ export class CurrencyPill {
   }
 
   setValue(v) {
+    if (v === this.value && this.text.text === String(v)) return; // no text re-render for an unchanged value
     this.value = v;
     this.text.setText(String(v));
     this._fitValue();

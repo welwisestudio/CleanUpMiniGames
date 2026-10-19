@@ -15,9 +15,103 @@ export function installQa(services) {
   servicesRef = services;
   window.__cleanupQA = Object.freeze({
     snapshot,
+    perf: perfProbe(),
     // Dev-adapter controls (host pause/mute, simulated failures). Only exist in the dev profile.
     platformDev: services.platform.dev ?? null,
   });
+}
+
+// Performance probe (QA only, 2026-10-19): times every Phaser game step (update + render), the
+// update and render parts separately, the frame-to-frame interval, and counts what the active scenes
+// hold (objects by type, visible, tweens, particles, masks, interactive). start() → stop() → stats.
+function perfProbe() {
+  let rec = null;
+  const count = () => {
+    const game = current?.game;
+    if (!game) return null;
+    const c = { scenes: [], objects: 0, visible: 0, containers: 0, images: 0, text: 0, graphics: 0, particles: 0, masks: 0, tweens: 0, interactive: 0, fx: 0 };
+    for (const sc of game.scene.getScenes(true)) {
+      c.scenes.push(sc.sys.settings.key);
+      const walk = (list) => {
+        for (const o of list) {
+          c.objects += 1;
+          if (o.visible) c.visible += 1;
+          const t = o.type;
+          if (t === 'Container') c.containers += 1;
+          else if (t === 'Image' || t === 'Sprite' || t === 'NineSlice') c.images += 1;
+          else if (t === 'Text') c.text += 1;
+          else if (t === 'Graphics') c.graphics += 1;
+          else if (t === 'ParticleEmitter') c.particles += o.getAliveParticleCount?.() ?? 0;
+          if (o.mask) c.masks += 1;
+          if (o.preFX?.list?.length || o.postFX?.list?.length) c.fx += 1;
+          if (o.list) walk(o.list);
+        }
+      };
+      walk(sc.children.list);
+      c.tweens += sc.tweens.getTweens?.().length ?? 0;
+      c.interactive += sc.input?._list?.length ?? 0;
+    }
+    return c;
+  };
+  return {
+    start() {
+      const game = current?.game;
+      if (!game || rec) return false;
+      rec = { steps: [], upd: [], rnd: [], gaps: [], last: performance.now(), counts: count(), peak: null };
+      const loop = game.loop;
+      const step = loop.callback; // Phaser binds game.step to the loop at boot
+      const sm = game.scene;
+      const update = sm.update;
+      const render = sm.render;
+      rec.restore = () => {
+        loop.callback = step;
+        sm.update = update;
+        sm.render = render;
+      };
+      sm.update = function (...a) {
+        const t = performance.now();
+        const r = update.apply(this, a);
+        rec?.upd.push(performance.now() - t);
+        return r;
+      };
+      sm.render = function (...a) {
+        const t = performance.now();
+        const r = render.apply(this, a);
+        rec?.rnd.push(performance.now() - t);
+        return r;
+      };
+      loop.callback = function (time, delta) {
+        const t0 = performance.now();
+        rec.gaps.push(t0 - rec.last);
+        rec.last = t0;
+        step(time, delta);
+        rec.steps.push(performance.now() - t0);
+        if (rec.steps.length % 30 === 0) {
+          const c = count();
+          if (c && (!rec.peak || c.objects > rec.peak.objects)) rec.peak = c;
+        }
+      };
+      return true;
+    },
+    stop() {
+      if (!rec) return null;
+      const r = rec;
+      r.restore();
+      rec = null;
+      const stats = (a) => {
+        if (!a.length) return null;
+        const s = [...a].sort((x, y) => x - y);
+        const avg = a.reduce((x, y) => x + y, 0) / a.length;
+        return { n: a.length, avg: +avg.toFixed(2), p95: +s[Math.floor(s.length * 0.95)].toFixed(2), max: +s[s.length - 1].toFixed(1) };
+      };
+      const gaps = r.gaps.slice(1);
+      const g = stats(gaps);
+      return { fps: g ? +(1000 / g.avg).toFixed(1) : 0, frameGap: g, step: stats(r.steps), update: stats(r.upd), render: stats(r.rnd), longFrames: gaps.filter((x) => x > 50).length, counts: r.peak ?? r.counts, countsEnd: count() };
+    },
+    count,
+    // perf experiments only (QA build): the active scene object
+    scene: () => current,
+  };
 }
 
 export function registerQaScene(scene) {

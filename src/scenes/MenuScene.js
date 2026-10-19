@@ -13,6 +13,7 @@ import { WheelModal } from '../ui/wheelModal.js';
 import { LEVEL_META } from '../content/generated/levelMeta.js';
 import { onInputCancel, deferUi } from '../app/inputGate.js';
 import { adBusyLabel, onAdPhase } from '../ui/adLabel.js';
+import { bake } from '../ui/bake.js';
 
 // Object selection (reference Menu_screen.PNG, video 00:00 / 08:04–08:16): a vertical list of
 // shelves that scrolls downward, 2 objects per shelf row. Header: currency counters and settings.
@@ -291,6 +292,15 @@ export class MenuScene extends Phaser.Scene {
       const rowBottom = Math.max(shelfBottomAt(this, shelf, cardX(0)), shelfBottomAt(this, shelf, cardX(1)));
       e.layout(x, shelf.y - shelf.displayHeight * 0.12, thumb, u, shelf.y + shelf.displayHeight * 0.5 + 14 * u, rowBottom);
     });
+    // off-screen culling (performance pass 2026-10-19): each shelf row with its cards is one band;
+    // bands outside the viewport (plus a margin) are hidden and their VIP tweens paused
+    this.rowBands = this.shelves.map((shelf, r) => ({
+      top: shelf.y - thumb * 1.75,
+      bottom: shelf.y + shelf.displayHeight * 0.6 + 30 * u,
+      objects: [shelf, ...this.entries.slice(r * 2, r * 2 + 2).flatMap((e) => e.objects)],
+      tweens: this.entries.slice(r * 2, r * 2 + 2).flatMap((e) => e.tweens ?? []),
+      shown: null,
+    }));
     this.footer.setPosition(shelfCx, top + rowH * this.rows + 4 * u).setScale(u);
     this._placeFirstHint();
     this.contentH = top + rowH * this.rows + 40 * u;
@@ -298,6 +308,7 @@ export class MenuScene extends Phaser.Scene {
     this.maxScroll = Math.max(0, this.contentH - this.viewH);
     this.scrollY = Phaser.Math.Clamp(this.scrollY, 0, this.maxScroll);
     this.list.y = -this.scrollY;
+    this._cull();
     this.badges.layoutTo(l);
     this.settings?.layout(l);
     this.chestOffer?.layout(l);
@@ -340,7 +351,29 @@ export class MenuScene extends Phaser.Scene {
   _scrollTo(y) {
     this.scrollY = Phaser.Math.Clamp(y, 0, this.maxScroll ?? 0);
     this.list.y = -this.scrollY;
+    this._cull();
     this._updateQa();
+  }
+
+  // shows only the shelf rows inside the viewport (± half a screen); the rest is neither drawn nor
+  // animated. An open overlay (Store / Wheel / chest / settings) also pauses the visible VIP tweens.
+  _cull() {
+    if (!this.rowBands) return;
+    const H = this.scale.height;
+    const margin = H * 0.5;
+    const overlay = Boolean(this.store || this.wheel || this.chestOffer || this.settings);
+    for (const b of this.rowBands) {
+      const shown = b.bottom - this.scrollY > -margin && b.top - this.scrollY < H + margin;
+      if (shown !== b.shown) {
+        b.shown = shown;
+        for (const o of b.objects) o.setVisible(shown);
+      }
+      const run = shown && !overlay;
+      if (run !== b.running) {
+        b.running = run;
+        for (const t of b.tweens) (run ? t.resume() : t.pause());
+      }
+    }
   }
 
   update(time, delta) {
@@ -348,6 +381,13 @@ export class MenuScene extends Phaser.Scene {
       this._scrollTo(this.scrollY + this.velocity * delta);
       this.velocity *= Math.pow(0.92, delta / 16);
     }
+    // the Store page is opaque and full-screen: the menu under it is not drawn while it is open
+    const covered = Boolean(this.store);
+    if (covered !== this.menuCovered) {
+      this.menuCovered = covered;
+      for (const o of [this.list, this.header, this.sideCol]) o?.setVisible(!covered);
+    }
+    this._cull();
   }
 
   _updateQa() {
@@ -359,6 +399,7 @@ export class MenuScene extends Phaser.Scene {
     }
     if (this.listRect) this.qaTargets.set('menu-list', { ...this.listRect, visible: true });
     if (this.wheelRect) this.qaTargets.set('menu-wheel', { ...this.wheelRect, visible: !this.store && !this.wheel });
+    { const tc = this.timedChest.container; this.qaTargets.set('menu-timed-chest', { x: tc.x, y: tc.y, w: 60 * (this.layout?.u ?? 1), h: 60 * (this.layout?.u ?? 1), visible: true }); }
     for (const [id, pill] of [['menu-plus-coins', this.coins], ['menu-plus-gems', this.diamonds]]) {
       const r = pill.plusRect();
       if (r) this.qaTargets.set(id, { ...r, visible: !this.store && !this.wheel });
@@ -477,6 +518,7 @@ export class MenuScene extends Phaser.Scene {
     });
     const objects = [...(vip ? [vip.root] : []), img, ...(lock ? [lock] : []), ...(pill ? [pill] : []), zone, ...(badge ? [badge] : []), ...(chip ? [chip] : [])];
     entry.objects = objects;
+    entry.tweens = vip?.tweens ?? [];
     entry.layout = (x, shelfY, size, u, labelY, shelfBottom = labelY - 14 * u) => {
       // optional per-level preview scale (level.menuPreview.scale, share of the slot)
       const mp = level.menuPreview ?? {};
@@ -534,21 +576,27 @@ export class MenuScene extends Phaser.Scene {
   // glow on the object itself (WebGL preFX) and a few small twinkles. The object stays the focus.
   // Returns { root, layout, decorate(img) }.
   _vipFx() {
+    // performance pass 2026-10-19: the bloom (16 soft circles), the beams (24 triangles), the halo and
+    // the twinkles are baked into textures once per card size and shown as Images — same look, same
+    // tweens (beam rotation, halo pulse, twinkles), one quad each per frame instead of re-tessellating
+    // hundreds of shapes every frame
     const root = this.add.container(0, 0);
-    const bloom = this.add.graphics();
-    const beams = this.add.graphics();
-    const halo = this.add.graphics();
-    const sparks = [0, 1, 2].map(() => this.add.graphics());
+    const bloom = this.add.image(0, 0, '__WHITE');
+    const beams = this.add.image(0, 0, '__WHITE');
+    const halo = this.add.image(0, 0, '__WHITE');
+    const sparks = [0, 1, 2].map(() => this.add.image(0, 0, '__WHITE'));
     root.add([bloom, beams, halo, ...sparks]);
-    this.tweens.add({ targets: beams, angle: 360, duration: 60000, repeat: -1 });
-    this.tweens.add({ targets: halo, alpha: { from: 0.65, to: 1 }, duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-    sparks.forEach((s, i) => {
-      s.setAlpha(0).setScale(0.4);
-      this.tweens.add({ targets: s, alpha: { from: 0, to: 0.95 }, scale: { from: 0.4, to: 1 }, angle: { from: 0, to: 45 }, duration: 650, yoyo: true, repeat: -1, delay: 300 + i * 900, repeatDelay: 1500 });
+    const tweens = [];
+    tweens.push(this.tweens.add({ targets: beams, angle: 360, duration: 60000, repeat: -1 }));
+    tweens.push(this.tweens.add({ targets: halo, alpha: { from: 0.65, to: 1 }, duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' }));
+    sparks.forEach((sp, i) => {
+      sp.setAlpha(0).setScale(0.4);
+      tweens.push(this.tweens.add({ targets: sp, alpha: { from: 0, to: 0.95 }, scale: { from: 0.4, to: 1 }, angle: { from: 0, to: 45 }, duration: 650, yoyo: true, repeat: -1, delay: 300 + i * 900, repeatDelay: 1500 }));
     });
     const spots = [[-0.34, -0.36], [0.36, -0.2], [0.26, 0.16]];
     return {
       root,
+      tweens,
       decorate: (img) => {
         img.preFX?.addGlow(0xc8a2ff, 3, 0, false, 0.1, 10);
         img.preFX?.addShine(0.45, 0.35, 3.5);
@@ -556,30 +604,40 @@ export class MenuScene extends Phaser.Scene {
       layout: (x, y, size, u) => {
         root.setPosition(x, y);
         const R = size * 0.56;
-        bloom.clear();
-        for (let i = 16; i >= 1; i--) {
-          const t = i / 16;
-          bloom.fillStyle(t > 0.6 ? 0xc9a7ff : 0xa874ff, 0.035 * (1.15 - t * 0.6)).fillCircle(0, 0, R * t);
-        }
-        beams.clear();
-        for (let i = 0; i < 8; i++) {
-          const a = (i / 8) * Math.PI * 2 + (i % 2 ? 0.18 : 0);
-          const len = R * (i % 2 ? 0.86 : 1);
-          [[0.075, 0.05], [0.045, 0.07], [0.02, 0.1]].forEach(([wd, al]) => {
-            beams.fillStyle(0xe9dcff, al);
-            beams.fillTriangle(0, 0, Math.cos(a - wd) * len, Math.sin(a - wd) * len, Math.cos(a + wd) * len, Math.sin(a + wd) * len);
-          });
-        }
-        halo.clear();
-        halo.lineStyle(7 * u, 0xb98bff, 0.14).strokeCircle(0, 0, R * 0.8);
-        halo.lineStyle(2 * u, 0xf1e6ff, 0.75).strokeCircle(0, 0, R * 0.8);
-        sparks.forEach((s, i) => {
+        const kR = Math.round(R);
+        const box = kR * 2 + 4;
+        bloom.setTexture(bake(this, `vip-bloom-${kR}`, box, box, (g, cx, cy) => {
+          for (let i = 16; i >= 1; i--) {
+            const t = i / 16;
+            g.fillStyle(t > 0.6 ? 0xc9a7ff : 0xa874ff, 0.035 * (1.15 - t * 0.6)).fillCircle(cx, cy, kR * t);
+          }
+        }));
+        beams.setTexture(bake(this, `vip-beams-${kR}`, box, box, (g, cx, cy) => {
+          for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2 + (i % 2 ? 0.18 : 0);
+            const len = kR * (i % 2 ? 0.86 : 1);
+            [[0.075, 0.05], [0.045, 0.07], [0.02, 0.1]].forEach(([wd, al]) => {
+              g.fillStyle(0xe9dcff, al);
+              g.fillTriangle(cx, cy, cx + Math.cos(a - wd) * len, cy + Math.sin(a - wd) * len, cx + Math.cos(a + wd) * len, cy + Math.sin(a + wd) * len);
+            });
+          }
+        }));
+        const ku = Math.round(u * 100);
+        const hb = Math.ceil(kR * 1.7 + 10 * u);
+        halo.setTexture(bake(this, `vip-halo-${kR}-${ku}`, hb, hb, (g, cx, cy) => {
+          g.lineStyle(7 * u, 0xb98bff, 0.14).strokeCircle(cx, cy, kR * 0.8);
+          g.lineStyle(2 * u, 0xf1e6ff, 0.75).strokeCircle(cx, cy, kR * 0.8);
+        }));
+        sparks.forEach((sp, i) => {
           const k = u * (i === 0 ? 1.1 : 0.8);
-          s.clear().fillStyle(0xffffff, 1);
-          s.fillTriangle(0, -9 * k, 2 * k, 0, -2 * k, 0).fillTriangle(0, 9 * k, 2 * k, 0, -2 * k, 0);
-          s.fillTriangle(-9 * k, 0, 0, 2 * k, 0, -2 * k).fillTriangle(9 * k, 0, 0, 2 * k, 0, -2 * k);
-          s.fillStyle(0xf3e6ff, 1).fillCircle(0, 0, 2 * k);
-          s.setPosition(spots[i][0] * size, spots[i][1] * size);
+          const sb = Math.ceil(20 * k);
+          sp.setTexture(bake(this, `vip-spark-${Math.round(k * 100)}`, sb, sb, (g, cx, cy) => {
+            g.fillStyle(0xffffff, 1);
+            g.fillTriangle(cx, cy - 9 * k, cx + 2 * k, cy, cx - 2 * k, cy).fillTriangle(cx, cy + 9 * k, cx + 2 * k, cy, cx - 2 * k, cy);
+            g.fillTriangle(cx - 9 * k, cy, cx, cy + 2 * k, cx, cy - 2 * k).fillTriangle(cx + 9 * k, cy, cx, cy + 2 * k, cx, cy - 2 * k);
+            g.fillStyle(0xf3e6ff, 1).fillCircle(cx, cy, 2 * k);
+          }));
+          sp.setPosition(spots[i][0] * size, spots[i][1] * size);
         });
       },
     };

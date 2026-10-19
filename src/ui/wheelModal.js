@@ -6,6 +6,7 @@ import { Button } from './Button.js';
 import { fitImage } from './kit.js';
 import { refreshTextResolution } from './layout.js';
 import { dimLayer } from './modals.js';
+import { bake } from './bake.js';
 import { getTool } from '../content/tools.js';
 
 // Wheel of Fortune (2026-10-10, reference input/Wheel_Of_Fortune.png): its own popup from the main
@@ -18,6 +19,11 @@ import { getTool } from '../content/tools.js';
 // on that segment, and a "You won" card shows the reward. Built in UI units, scaled by `u`.
 
 const R = 138; // wheel radius (UI units)
+// performance pass 2026-10-19: the code-drawn disc, rim, bulbs, hub, pointer and ribbon are baked
+// once into textures at BK× resolution (crisp up to a panel scale of 3) and shown as Images; the
+// spin only rotates the disc container (one quad + the labels) instead of re-tessellating ~1 000
+// shape vertices every frame
+const BK = 3;
 
 export class WheelModal {
   constructor(scene, { services, onClose, onChanged }) {
@@ -40,38 +46,51 @@ export class WheelModal {
     this.sub = makeText(scene, 0, -R - 118, '', { size: 16, color: '#E8DCFF', weight: '800', family: FONT_UI });
     // wheel (rotates)
     this.wheel = scene.add.container(0, 0);
-    const g = scene.add.graphics();
-    segs.forEach((s, i) => {
-      const a0 = Phaser.Math.DegToRad(-90 + i * this.seg);
-      const a1 = Phaser.Math.DegToRad(-90 + (i + 1) * this.seg);
-      g.fillStyle(i % 2 ? 0xf2eaff : 0x9a63dc, 1).slice(0, 0, R, a0, a1, false).fillPath();
-      g.lineStyle(3, 0xffffff, 0.9).beginPath().moveTo(0, 0).lineTo(Math.cos(a0) * R, Math.sin(a0) * R).strokePath();
+    const disc = bake(scene, `wheel-disc-${segs.length}`, 2 * R * BK + 8, 2 * R * BK + 8, (g, cx, cy) => {
+      segs.forEach((s, i) => {
+        const a0 = Phaser.Math.DegToRad(-90 + i * this.seg);
+        const a1 = Phaser.Math.DegToRad(-90 + (i + 1) * this.seg);
+        g.fillStyle(i % 2 ? 0xf2eaff : 0x9a63dc, 1).slice(cx, cy, R * BK, a0, a1, false).fillPath();
+        g.lineStyle(3 * BK, 0xffffff, 0.9).beginPath().moveTo(cx, cy).lineTo(cx + Math.cos(a0) * R * BK, cy + Math.sin(a0) * R * BK).strokePath();
+      });
     });
-    this.wheel.add(g);
+    this.wheel.add(scene.add.image(0, 0, disc).setScale(1 / BK));
     segs.forEach((s, i) => this.wheel.add(this._label(s, i)));
     // rim, bulbs, hub, pointer (static)
-    const rim = scene.add.graphics();
-    rim.lineStyle(16, 0x6a3bb0, 1).strokeCircle(0, 0, R + 8);
-    rim.lineStyle(6, 0xf5c542, 1).strokeCircle(0, 0, R + 15);
+    const rimR = R + 18;
+    const rim = scene.add.image(0, 0, bake(scene, 'wheel-rim', 2 * rimR * BK + 8, 2 * rimR * BK + 8, (g, cx, cy) => {
+      g.lineStyle(16 * BK, 0x6a3bb0, 1).strokeCircle(cx, cy, (R + 8) * BK);
+      g.lineStyle(6 * BK, 0xf5c542, 1).strokeCircle(cx, cy, (R + 15) * BK);
+    })).setScale(1 / BK);
+    const bulb = (fill) => (g, cx, cy) => g.fillStyle(fill, 1).fillCircle(cx, cy, 6 * BK).lineStyle(2 * BK, 0xd99a1e, 1).strokeCircle(cx, cy, 6 * BK);
+    this.bulbKeys = [bake(scene, 'wheel-bulb-on', 16 * BK, 16 * BK, bulb(0xfff3b0)), bake(scene, 'wheel-bulb-off', 16 * BK, 16 * BK, bulb(0xffc94a))];
     this.bulbs = [];
     for (let i = 0; i < 16; i++) {
       const a = (i / 16) * Math.PI * 2;
-      const b = scene.add.circle(Math.cos(a) * (R + 8), Math.sin(a) * (R + 8), 6, 0xfff3b0).setStrokeStyle(2, 0xd99a1e);
+      const b = scene.add.image(Math.cos(a) * (R + 8), Math.sin(a) * (R + 8), this.bulbKeys[0]).setScale(1 / BK);
       this.bulbs.push(b);
     }
-    const hub = scene.add.graphics();
-    hub.fillStyle(0xf5c542, 1).fillCircle(0, 0, 22).lineStyle(4, 0xd99a1e, 1).strokeCircle(0, 0, 22);
-    hub.fillStyle(0xffffff, 0.8).fillCircle(-6, -7, 6);
+    const hub = scene.add.image(0, 0, bake(scene, 'wheel-hub', 52 * BK, 52 * BK, (g, cx, cy) => {
+      g.fillStyle(0xf5c542, 1).fillCircle(cx, cy, 22 * BK).lineStyle(4 * BK, 0xd99a1e, 1).strokeCircle(cx, cy, 22 * BK);
+      g.fillStyle(0xffffff, 0.8).fillCircle(cx - 6 * BK, cy - 7 * BK, 6 * BK);
+    })).setScale(1 / BK);
     // pointer: a gold arrow on the rim whose tip reaches into the top segment (the winning one)
-    const ptr = scene.add.graphics();
-    ptr.fillStyle(0x000000, 0.2).fillTriangle(-17, -R - 32, 17, -R - 32, 0, -R + 14);
-    ptr.fillStyle(0xf5c542, 1).fillTriangle(-16, -R - 36, 16, -R - 36, 0, -R + 10);
-    ptr.lineStyle(3, 0xd99a1e, 1).strokeTriangle(-16, -R - 36, 16, -R - 36, 0, -R + 10);
-    ptr.fillStyle(0xfff3b0, 1).fillCircle(0, -R - 28, 5);
-    // ribbon: its own band above the pointer (gap of ~20 units)
-    const rb = scene.add.graphics();
-    rb.fillStyle(0xd94a86, 1).fillRoundedRect(-104, -R - 98, 208, 36, 14);
-    rb.fillStyle(0xb2306a, 1).fillTriangle(-104, -R - 88, -122, -R - 74, -104, -R - 66).fillTriangle(104, -R - 88, 122, -R - 74, 104, -R - 66);
+    // (baked in a box spanning y = -R - 40 … -R + 18, x = ±20)
+    const pY = -R - 11; // box centre
+    const ptr = scene.add.image(0, pY, bake(scene, 'wheel-pointer', 40 * BK, 58 * BK, (g, cx, cy) => {
+      const P = (x, y) => [cx + x * BK, cy + (y - pY) * BK];
+      g.fillStyle(0x000000, 0.2).fillTriangle(...P(-17, -R - 32), ...P(17, -R - 32), ...P(0, -R + 14));
+      g.fillStyle(0xf5c542, 1).fillTriangle(...P(-16, -R - 36), ...P(16, -R - 36), ...P(0, -R + 10));
+      g.lineStyle(3 * BK, 0xd99a1e, 1).strokeTriangle(...P(-16, -R - 36), ...P(16, -R - 36), ...P(0, -R + 10));
+      g.fillStyle(0xfff3b0, 1).fillCircle(...P(0, -R - 28), 5 * BK);
+    })).setScale(1 / BK);
+    // ribbon: its own band above the pointer (gap of ~20 units); box x = ±124, y = -R - 100 … -R - 60
+    const rY = -R - 80;
+    const rb = scene.add.image(0, rY, bake(scene, 'wheel-ribbon', 248 * BK, 40 * BK, (g, cx, cy) => {
+      const P = (x, y) => [cx + x * BK, cy + (y - rY) * BK];
+      g.fillStyle(0xd94a86, 1).fillRoundedRect(...P(-104, -R - 98), 208 * BK, 36 * BK, 14 * BK);
+      g.fillStyle(0xb2306a, 1).fillTriangle(...P(-104, -R - 88), ...P(-122, -R - 74), ...P(-104, -R - 66)).fillTriangle(...P(104, -R - 88), ...P(122, -R - 74), ...P(104, -R - 66));
+    })).setScale(1 / BK);
     const rbt = makeText(scene, 0, -R - 80, 'LUCKY SPIN!', { size: 21, color: TEXT.white, family: FONT_DISPLAY, weight: '900', stroke: '#8A1F4F', strokeThickness: 5 });
     // controls
     this.msg = makeText(scene, 0, R + 42, '', { size: 18, color: '#FFD3D3', weight: '900', family: FONT_UI, stroke: '#3B1F66', strokeThickness: 5 });
@@ -107,7 +126,7 @@ export class WheelModal {
   _blink() {
     this.blinkOn = !this.blinkOn;
     const fast = this.state === 'spinning';
-    this.bulbs.forEach((b, i) => b.setFillStyle((i + (this.blinkOn ? 0 : 1)) % 2 || fast ? 0xfff3b0 : 0xffc94a));
+    this.bulbs.forEach((b, i) => b.setTexture(this.bulbKeys[(i + (this.blinkOn ? 0 : 1)) % 2 || fast ? 0 : 1]));
   }
 
   // FREE SPIN (no ad) while today's free spin is unused; afterwards [ad] SPIN, unlimited

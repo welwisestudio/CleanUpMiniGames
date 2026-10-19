@@ -16,7 +16,12 @@ import { ASSET_META } from '../content/generated/assetMeta.js';
 export function flyIcons(scene, { icon, from, to, fromSize, toSize, n = 5, depth = 800, delay = 0, onEach, onDone }) {
   const start = Math.min(fromSize, toSize * 1.1);
   for (let i = 0; i < n; i++) {
-    const img = scene.add.image(from.x, from.y, icon).setDepth(depth).setAlpha(0);
+    // pooled per scene (performance pass 2026-10-19): flights reuse their icons instead of
+    // creating / destroying Images on every claim
+    const pool = (scene.__flyPool ??= []);
+    let reuse = pool.pop();
+    while (reuse && !reuse.scene) reuse = pool.pop(); // destroyed by a scene restart
+    const img = (reuse ?? scene.add.image(0, 0, icon)).setTexture(icon).setPosition(from.x, from.y).setDepth(depth).setAlpha(0).setVisible(true).setActive(true);
     const base = 1 / Math.max(img.width, img.height);
     img.setScale(start * base);
     const side = i % 2 === 0 ? 1 : -1;
@@ -36,7 +41,8 @@ export function flyIcons(scene, { icon, from, to, fromSize, toSize, n = 5, depth
         img.setPosition(pos.x, pos.y).setScale((start + (toSize * 0.9 - start) * k) * base);
       },
       onComplete: () => {
-        img.destroy();
+        img.setVisible(false).setActive(false);
+        pool.push(img);
         onEach?.(i);
         if (i === n - 1) onDone?.();
       },
