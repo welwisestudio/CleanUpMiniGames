@@ -1,6 +1,6 @@
 # Audio (Step 9, 2026-10-13)
 
-Sources (kept as records, never shipped): `reference/input/BackgroundMusic.ogg`, `reference/input/Sounds.zip` (22 mono clips; a makeover / cleaning ASMR pack).
+Sources (kept as records, never shipped): `reference/input/music-main.ogg` (music since 2026-10-19; before: `BackgroundMusic.ogg`), `reference/input/Sounds.zip` (22 mono clips; a makeover / cleaning ASMR pack).
 Runtime files: `public/assets/audio/` (19 files, 755,493 bytes), produced by `scripts/audio/encode_audio.py` (trim to the active part, 25 ms loop fades / 4–40 ms shot fades, peak −1 dBFS, mono Vorbis 22.05 kHz q1; music mono 32 kHz q0). Mapping and mix: `src/content/audio.js`; playback rules: `src/services/AudioService.js`.
 
 Sound identification was done from the file names and a signal analysis (duration, loudness, brightness, continuous vs. separate hits). Nobody listened to the files, so the mapping still needs a listening check.
@@ -9,7 +9,7 @@ Sound identification was done from the file names and a signal analysis (duratio
 
 | Runtime file | Source | Used for |
 |---|---|---|
-| music-main | BackgroundMusic.ogg (111 s) | one looping track for menu, levels, Store, Wheel |
+| music-main | music-main.ogg (90 s, new track 2026-10-19; Opus stereo 48 kHz → Vorbis mono 24 kHz q0, +5.5 dB to the previous level, 325 KB) | one looping track for menu, levels, Store, Wheel |
 | sfx-tap | put.ogg | button taps; pitched down: error / insufficient, hammer / beater hits, chisel hits; pitched up: Wheel ticks |
 | sfx-success | Right.ogg | stage complete, level complete, coins, unlocks, Wheel / chest rewards (different pitch per event) |
 | sfx-pop | Bubble.ogg | popup open (Wheel), level chest offer, part placed / item dropped |

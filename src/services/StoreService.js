@@ -64,7 +64,7 @@ export class StoreService extends Emitter {
       const day = this.today();
       const now = this.clock();
       const r = { status: 'limit', offerId };
-      await this.save.update((s) => {
+      r.savePromise = this.save.update((s) => { // applied now; the cloud write runs in the background (2026-10-19)
         if (s.store.day !== day) Object.assign(s.store, { day, claims: {} });
         if (o.dailyLimit != null && (s.store.claims[offerId] ?? 0) >= o.dailyLimit) return; // re-checked
         s.store.claims[offerId] = (s.store.claims[offerId] ?? 0) + 1;
@@ -143,7 +143,7 @@ export class StoreService extends Emitter {
       const ad = await this.rewards.rewardedAd(`${this.config.adPlacement}-${id}`); // store-reward-bundle-coins | -mixed | -mega
       if (ad !== 'earned') return { status: ad };
       const r = { status: 'ready', id };
-      await this.save.update((s) => {
+      r.savePromise = this.save.update((s) => { // applied now; the cloud write runs in the background (2026-10-19)
         const e = (s.store.bundles[id] ??= { progress: 0, claims: 0, day: '', dayClaims: 0, lastClaimAt: 0 });
         if (e.progress >= b.ads) return; // already complete: a duplicate result adds nothing
         e.progress += 1;

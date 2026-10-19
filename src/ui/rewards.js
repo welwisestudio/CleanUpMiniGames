@@ -1,3 +1,4 @@
+import { adBusyLabel, onAdPhase } from './adLabel.js';
 import Phaser from 'phaser';
 import { COLORS, FONT_DISPLAY, FONT_UI, TEXT } from './theme.js';
 import { makeText, fitText, centerRow } from './text.js';
@@ -346,7 +347,9 @@ export class ChestOfferModal {
     this.busy = true;
     this.setEnabled(false);
     this.open.setLabel('Loading ad…');
+    const offAd = this.rewards.on('adPhase', () => !this.destroyed && this.busy && this.open.setLabel(adBusyLabel({ rewards: this.rewards }, 'Loading ad…')));
     const r = await this.rewards.claimProgressChest();
+    offAd();
     if (this.destroyed) return;
     if (r.status !== 'granted') {
       // cancelled / failed: nothing granted, the chest stays — try again

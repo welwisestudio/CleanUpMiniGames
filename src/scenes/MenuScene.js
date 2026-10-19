@@ -11,6 +11,8 @@ import { registerQaScene } from '../app/qa.js';
 import { StoreModal } from '../ui/storeModal.js';
 import { WheelModal } from '../ui/wheelModal.js';
 import { LEVEL_META } from '../content/generated/levelMeta.js';
+import { onInputCancel, deferUi } from '../app/inputGate.js';
+import { adBusyLabel, onAdPhase } from '../ui/adLabel.js';
 
 // Object selection (reference Menu_screen.PNG, video 00:00 / 08:04–08:16): a vertical list of
 // shelves that scrolls downward, 2 objects per shelf row. Header: currency counters and settings.
@@ -136,6 +138,16 @@ export class MenuScene extends Phaser.Scene {
 
     this.badges = addStatusBadges(this, { build: this.services.build, testMode: this.services.platform.testMode });
 
+    // input gate: a host pause / ad drops the drag, the scroll fling and any pressed card
+    const offAd = onAdPhase(this.services, () => this.busyRedraw?.());
+    this.events.once('shutdown', offAd);
+    onInputCancel(this, () => {
+      this.drag = null;
+      this.velocity = 0;
+      this.lastDragMoved = 0;
+      if (this.store) this.store.drag = null;
+      for (const e of this.entries) e.resetPress?.();
+    });
     this.input.on('pointerdown', this.onDown, this);
     this.input.on('pointermove', this.onMove, this);
     this.input.on('pointerup', this.onUp, this);
@@ -410,7 +422,7 @@ export class MenuScene extends Phaser.Scene {
       let fill;
       let rim;
       if (entry.busy) {
-        items.push(makeText(this, 0, 0, 'Loading…', { size: 15, color: '#FFFFFF', weight: '900', stroke: '#4B1D7A', strokeThickness: 3 }));
+        items.push(makeText(this, 0, 0, adBusyLabel(this.services), { size: 15, color: '#FFFFFF', weight: '900', stroke: '#4B1D7A', strokeThickness: 3 }));
         fill = 0x8a4fe0;
         rim = 0x5b2a9a;
       } else if (isVip) {
@@ -454,6 +466,7 @@ export class MenuScene extends Phaser.Scene {
     };
     drawPill();
     zone.on('pointerdown', () => img.setScale(base * 0.95));
+    entry.resetPress = () => img.active && img.setScale(base);
     zone.on('pointerout', () => img.setScale(base));
     zone.on('pointerup', (pointer) => {
       img.setScale(base);
@@ -691,7 +704,7 @@ export class MenuScene extends Phaser.Scene {
     if (this.firstHint && level.id === this.firstHint.id) this._doneFirstHint();
     const prog = this.services.progression;
     if (prog.isPlayable(level.id)) return this._openLevel(level.id);
-    if (!entry || entry.busy || this.adBusy) return;
+    if (!entry || entry.busy) return;
     this.services.audio.play('ui-tap');
     if (!prog.isVip(level.id) && prog.canAfford(level.id)) {
       const r = prog.purchase(level.id);
@@ -702,14 +715,17 @@ export class MenuScene extends Phaser.Scene {
     // at the diamond (gem) section — no ad fallback for these levels
     if (prog.currency(level.id) === 'gems') {
       this._toast('Not enough diamonds', entry.geo());
-      this.time.delayedCall(650, () => !this.leaving && !this.store && this.openStore('gems'));
+      deferUi(this, 650, () => !this.leaving && !this.store && this.openStore('gems'));
       return;
     }
+    if (this.adBusy) return; // one rewarded ad at a time (other cards / buttons stay usable)
     entry.busy = true;
     this.adBusy = true;
+    this.busyRedraw = redraw; // its label follows the ad phase ("Loading…" → "Finishing…")
     redraw();
     const r = await prog.unlockWithAd(level.id);
     this.adBusy = false;
+    this.busyRedraw = null;
     if (this.leaving || !this.sys.isActive()) return;
     entry.busy = false;
     if (r.status === 'unlocked' || r.status === 'open') return this._unlocked();
@@ -744,10 +760,10 @@ export class MenuScene extends Phaser.Scene {
     });
   }
 
-  _unlocked(savePromise) {
+  // the unlock is already in the state: refresh right away (the cloud write runs in the background)
+  _unlocked() {
     this.services.audio.play('unlock');
-    const go = () => !this.leaving && this.scene.restart({ scrollY: this.scrollY });
-    (savePromise ?? Promise.resolve()).then(go, go);
+    if (!this.leaving) this.scene.restart({ scrollY: this.scrollY });
   }
 
   // short message floating above a card (in the scrolling list)

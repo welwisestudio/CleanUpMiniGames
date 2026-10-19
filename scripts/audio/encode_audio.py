@@ -8,7 +8,7 @@
 #   loop  – the most CONTINUOUS window of `maxlen` s (highest minimum loudness), 25 ms fades both ends
 # All: mono; shots peak-normalised to -1 dBFS, loops loudness-normalised (RMS 0.12, soft limiter);
 # the mix is done in code (src/content/audio.js MIX). Vorbis 22.05 kHz q1;
-# music: mono 32 kHz q0.
+# music: mono 24 kHz q0 (source since 2026-10-19: reference/input/music-main.ogg, Opus stereo 48 kHz, +5.5 dB to the old level).
 import sys, os, subprocess, numpy as np, soundfile as sf, imageio_ffmpeg
 
 PACK, INPUT, OUT = sys.argv[1], sys.argv[2], sys.argv[3]
@@ -95,8 +95,9 @@ for key, (src, mode, maxlen) in PLAN.items():
     os.remove(wav)
     report.append((key, os.path.basename(src), round(len(seg) / sr, 2), os.path.getsize(dst)))
 dst = os.path.join(OUT, 'music-main.ogg')
-subprocess.run([FF, '-y', '-loglevel', 'error', '-i', I('BackgroundMusic.ogg'), '-ac', '1', '-ar', '24000', '-c:a', 'libvorbis', '-q:a', '0', dst], check=True)  # 24 kHz (size pass 2026-10-16)
-report.append(('music-main', 'BackgroundMusic.ogg', 111.36, os.path.getsize(dst)))
+# 2026-10-19: new track (designer) — stereo Opus → mono Vorbis 24 kHz, +5.5 dB = the previous music's RMS (≈ -16 dBFS)
+subprocess.run([FF, '-y', '-loglevel', 'error', '-i', I('music-main.ogg'), '-af', 'pan=mono|c0=0.5*c0+0.5*c1,volume=5.5dB,aresample=24000', '-c:a', 'libvorbis', '-q:a', '0', dst], check=True)
+report.append(('music-main', 'music-main.ogg', 90.0, os.path.getsize(dst)))
 tot = 0
 for r in report:
     tot += r[3]

@@ -1,3 +1,4 @@
+import { adBusyLabel, onAdPhase } from './adLabel.js';
 import Phaser from 'phaser';
 import { COLORS, FONT_DISPLAY, FONT_UI, TEXT } from './theme.js';
 import { makeText } from './text.js';
@@ -61,6 +62,7 @@ export function titleText(scene, cw, ch, str) {
 export class ResultCard {
   constructor(scene, { reward, picture, boost, chest, onBoost, onOpenChest, onHome, onReplay, onNext }) {
     this.scene = scene;
+    this.offAd = onAdPhase(scene.registry.get('services'), () => this.boostState === 'busy' && this.setBoostState('busy'));
     this.root = scene.add.container(0, 0).setDepth(500);
     this.dim = dimLayer(scene);
     this.root.add(this.dim);
@@ -290,7 +292,7 @@ export class ResultCard {
       show(null);
       this._startCycle();
     } else if (state === 'locked') show(`x${this.boostValue} locked!`);
-    else if (state === 'busy') show('Loading ad…');
+    else if (state === 'busy') show(adBusyLabel(this.scene.registry.get('services'), 'Loading ad…'));
     else if (state === 'granted') {
       // marker on the claimed zone (kept where it stopped; after a reload: the zone of that value
       // closest to the centre)
@@ -375,6 +377,7 @@ export class ResultCard {
   }
 
   destroy() {
+    this.offAd?.();
     this._stopCycle();
     ['result-card', 'result-pill', 'result-chestbar', 'result-meter', 'result-marker'].forEach((k) => this.scene.qaTargets?.delete(k));
     this.boostPulse?.stop();

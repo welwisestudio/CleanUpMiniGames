@@ -1,3 +1,4 @@
+import { adBusyLabel, onAdPhase } from './adLabel.js';
 import Phaser from 'phaser';
 import { TEXT, FONT_UI, FONT_DISPLAY } from './theme.js';
 import { makeText, fitText } from './text.js';
@@ -31,6 +32,7 @@ export class StoreModal {
     this.onClose = onClose;
     this.onChanged = onChanged;
     this.focus = focus;
+    this.offAd = onAdPhase(services, () => !this.destroyed && this._refresh?.());
     this.root = scene.add.container(0, 0).setDepth(900);
     this.bg = scene.add.rectangle(0, 0, 10, 10, 0xfdeff2, 1).setOrigin(0).setInteractive(); // blocks the scene below
     this.content = scene.add.container(0, 0);
@@ -116,7 +118,7 @@ export class StoreModal {
     this.anchors = {};
     let y = 0;
     const left = (offer) => store.adRemaining(offer);
-    const adButton = (offer) => (store.isBusy(offer) ? { label: 'Loading…', disabled: true } : left(offer) > 0 ? { label: 'FREE', icon: 'icon-ad-clapper' } : { label: 'Tomorrow', disabled: true });
+    const adButton = (offer) => (store.isBusy(offer) ? { label: adBusyLabel(this.services), disabled: true } : left(offer) > 0 ? { label: 'FREE', icon: 'icon-ad-clapper' } : { label: 'Tomorrow', disabled: true });
     const capSub = (offer, text) => (Number.isFinite(left(offer)) ? `${left(offer)} left today` : text);
     // Diamonds: one rewarded-ad offer
     this.anchors.gems = y;
@@ -264,7 +266,7 @@ export class StoreModal {
       this.content.add(items);
       let btn;
       if (st.ready) btn = { label: 'CLAIM', style: 'green', onTap: () => this._claimBundle(b.id) };
-      else if (st.busy) btn = { label: 'Loading…', style: 'purple', disabled: true };
+      else if (st.busy) btn = { label: adBusyLabel(this.services), style: 'purple', disabled: true };
       else if (st.blocked === 'limit') btn = { label: 'Tomorrow', style: 'purple', disabled: true };
       else if (st.blocked === 'cooldown') btn = { label: `${Math.ceil(st.cooldownLeftMs / 60000)} min`, style: 'purple', disabled: true };
       else btn = { label: 'Watch', icon: 'icon-ad-clapper', style: 'purple', onTap: () => this._watchBundle(b.id) };
@@ -298,7 +300,7 @@ export class StoreModal {
     this.content.add([g, chest, t1, t2]);
     const busy = store.isBusy('chest');
     const can = !ready && store.adRemaining('chest') > 0;
-    const b = new Button(s, { id: 'store-free-chest', x: PW / 2 - 64, y: ty, w: 92, h: 40, label: busy ? 'Loading…' : can ? 'FREE' : ready ? 'Ready' : 'Tomorrow', icon: can && !busy ? 'icon-ad-clapper' : null, iconSize: 0.6, style: 'green', fontSize: 17, onClick: this._act(() => this._claim('chest')) });
+    const b = new Button(s, { id: 'store-free-chest', x: PW / 2 - 64, y: ty, w: 92, h: 40, label: busy ? adBusyLabel(this.services) : can ? 'FREE' : ready ? 'Ready' : 'Tomorrow', icon: can && !busy ? 'icon-ad-clapper' : null, iconSize: 0.6, style: 'green', fontSize: 17, onClick: this._act(() => this._claim('chest')) });
     if (!can || busy) b.setEnabled(false);
     this.content.add(b.container);
     this.buttons.push(b);
@@ -436,6 +438,7 @@ export class StoreModal {
 
   destroy() {
     this.destroyed = true;
+    this.offAd?.();
     this._input(false);
     const qa = this.scene.qaTargets;
     ['gems', 'coins', 'bundles', 'bonus'].forEach((id) => qa?.delete(`store-section-${id}`));

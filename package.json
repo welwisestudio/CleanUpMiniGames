@@ -16,6 +16,7 @@
     "check": "npm run test && npm run build && npm run test:e2e",
     "build:youtube": "node scripts/build.mjs --youtube",
     "build:youtube-qa": "node scripts/build.mjs --youtube --qa",
+    "package:youtube": "node scripts/package-youtube.mjs",
     "preview:youtube": "node scripts/preview-youtube.mjs",
     "preview:youtube-qa": "node scripts/preview-youtube.mjs --qa"
   },

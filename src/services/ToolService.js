@@ -115,7 +115,7 @@ export class ToolService extends Emitter {
       const ad = await this.rewards.rewardedAd(this.placement);
       if (ad !== 'earned') return { status: ad };
       const r = { status: 'owned' };
-      await this.save.update((s) => {
+      r.savePromise = this.save.update((s) => { // applied now; the cloud write runs in the background (2026-10-19)
         if (s.tools.owned.includes(toolId)) return; // a duplicate result grants nothing more
         s.tools.owned.push(toolId);
         s.tools.equipped[familyId] = toolId;

@@ -3,6 +3,7 @@
 //        npm run build:youtube      → dist-youtube/     (YouTube Playables release profile)
 //        npm run build:youtube-qa   → dist-youtube-qa/  (same + read-only QA snapshot; mock tests only)
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { checkSdkFirst, describeOrder } from './youtube-html.mjs';
 import { execSync } from 'node:child_process';
 import { build } from 'vite';
 
@@ -33,3 +34,16 @@ await build({ mode: 'production' });
 writeFileSync(counterFile, JSON.stringify({ last: number }, null, 2) + '\n');
 writeFileSync(new URL(`../${outDir}/build-info.json`, import.meta.url), JSON.stringify({ build: number, time, commit, profile }, null, 2) + '\n');
 console.log(`\nBuild #${number} at ${time} (base commit ${commit}, platform profile: ${profile}, ${outDir}/)`);
+
+// YouTube certification "SDK loaded first" (2026-10-19): the generated index.html must load the SDK
+// statically as its FIRST executable script — a youtube build that breaks it fails right here.
+if (youtube) {
+  const r = checkSdkFirst(readFileSync(new URL(`../${outDir}/index.html`, import.meta.url), 'utf8'));
+  if (!r.ok) {
+    console.error(`\nYouTube index.html check FAILED: ${r.errors.join('; ')}\n${describeOrder(r.order)}`);
+    process.exit(1);
+  }
+  console.log('YouTube index.html: SDK is the first executable script (checked)');
+} else {
+  console.log('NOTE: dist/ is the dev-adapter build (no YouTube SDK) - never upload it to YouTube; use `npm run package:youtube`.');
+}

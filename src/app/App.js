@@ -18,6 +18,7 @@ import { MiniGameScene } from '../minigames/MiniGameScene.js';
 import { installQa } from './qa.js';
 import { ScoreService } from '../services/ScoreService.js';
 import { InterstitialService } from '../services/InterstitialService.js';
+import { installInputGate } from './inputGate.js';
 import { SCORE, INTERSTITIAL } from '../content/platformConfig.js';
 
 // Composition root: builds services around the injected platform adapter and starts Phaser.
@@ -87,6 +88,18 @@ export function createApp({ platform, parent }) {
     scene: [BootScene, MenuScene, LevelScene, MiniGameScene],
   });
   game.registry.set('services', services);
+  // diagnosis trace (rewarded flow): host pause / resume and cloud saves, next to the ad events
+  let hostInTrace = false;
+  pause.on('change', (snap) => {
+    const h = (snap?.reasons ?? []).includes('host');
+    if (h !== hostInTrace) rewards.trace(h ? 'host-pause' : 'host-resume');
+    hostInTrace = h;
+  });
+  save.on('saving', () => rewards.trace('save-start'));
+  save.on('saved', () => rewards.trace('save-done'));
+  save.on('save-error', () => rewards.trace('save-error'));
+  // host pause / ads: one central gate drops ALL input and clears in-progress gestures (inputGate.js)
+  services.inputGate = installInputGate(game, pause, services);
 
   let pending = false;
   const applySize = () => {

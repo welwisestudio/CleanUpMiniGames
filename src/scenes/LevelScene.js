@@ -12,6 +12,7 @@ import { attachResponsiveLayout, coverImage, fitObject, refreshTextResolution, U
 import { CurrencyPill, ToolStrip, ProgressBar, addStatusBadges } from '../ui/hud.js';
 import { Button } from '../ui/Button.js';
 import { ResultCard, PauseModal, SettingsModal } from '../ui/modals.js';
+import { onInputCancel } from '../app/inputGate.js';
 import { ChestOfferModal, TimedChestWidget, ProgressChestMini, TIMED_CHEST_SIZE, flyIcons, worldOf } from '../ui/rewards.js';
 import { ToolSelector } from '../ui/toolSelector.js';
 import { StoreModal } from '../ui/storeModal.js';
@@ -109,6 +110,12 @@ export class LevelScene extends Phaser.Scene {
     this.selector = this.hasFamilies ? new ToolSelector(this, { onTap: (id) => this.onToolCard(id) }) : null;
     this.selector?.container.setVisible(false);
     this.progressBar = new ProgressBar(this);
+    // input gate: a host pause / ad ends the stroke and drops the Store drag (the pause state itself
+    // is applied by applyPause; the player's own pause modal stays as it is)
+    onInputCancel(this, () => {
+      this.endStroke?.();
+      if (this.store) this.store.drag = null;
+    });
     this.pauseButton = new Button(this, { id: 'hud-pause', x: 0, y: 0, w: UI.pause, h: UI.pause, style: 'square', icon: 'icon-pause', iconSize: 0.5, onClick: () => this.openPause() });
     // Chests stay visible during play (display only: a touch here never claims mid-stroke;
     // claiming happens in the hub and on the completed screen).

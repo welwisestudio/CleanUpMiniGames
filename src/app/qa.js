@@ -84,6 +84,11 @@ function snapshot() {
     menuLayout: scene?.listRect && scene?.scene?.key === 'Menu' ? { listW: scene.listRect.w / (scene.layout?.dpr ?? 1), listX: scene.listRect.x / (scene.layout?.dpr ?? 1), headerH: scene.headerH / (scene.layout?.dpr ?? 1), phoneRow: Boolean(scene.phoneRow) } : null,
     tutorialFlags: s.save.loaded ? { ...s.save.get('tutorial') } : null,
     pause: s.pause.snapshot(),
+    inputEnabled: Boolean(scene?.game?.input?.enabled),
+    adPhase: s.rewards.adPhase ?? null,
+    adTrace: s.rewards.adTrace ? [...s.rewards.adTrace] : [],
+    settingsOpen: Boolean(scene?.settings || scene?.settingsModal),
+    pauseModal: Boolean(scene?.pauseModal),
     build: s.build,
     // interstitial pacing (read-only): last completed request, last placement, the dev adapter's log
     interstitial: { last: s.interstitial.lastInterstitialRequestCompleted, placement: s.interstitial.lastPlacement ?? null, busy: s.interstitial.busy, log: s.platform.interstitialLog ? s.platform.interstitialLog.map((x) => x.result) : null },

@@ -1,3 +1,4 @@
+import { adBusyLabel, onAdPhase } from './adLabel.js';
 import Phaser from 'phaser';
 import { TEXT, FONT_UI, FONT_DISPLAY } from './theme.js';
 import { makeText, fitText } from './text.js';
@@ -23,6 +24,7 @@ export class WheelModal {
     this.scene = scene;
     this.services = services;
     this.wheelSvc = services.wheel;
+    this.offAd = onAdPhase(services, () => !this.destroyed && this.state === 'ad' && this._update());
     this.onClose = onClose;
     this.onChanged = onChanged;
     this.root = scene.add.container(0, 0).setDepth(900);
@@ -114,7 +116,7 @@ export class WheelModal {
     this.sub.setText(free ? 'Your first spin today is free!' : 'Watch an ad for another spin');
     this.left.setText(free ? '' : 'Free spin again tomorrow');
     this.spinBtn.setEnabled(this.state === 'idle');
-    this.spinBtn.setLabel(this.state === 'ad' ? (free ? 'Spinning…' : 'Loading…') : free ? 'FREE SPIN' : 'SPIN');
+    this.spinBtn.setLabel(this.state === 'ad' ? (free ? 'Spinning…' : adBusyLabel(this.services)) : free ? 'FREE SPIN' : 'SPIN');
     this.spinBtn.setIcon(!free);
     refreshTextResolution(this.scene);
   }
@@ -274,6 +276,7 @@ export class WheelModal {
 
   destroy() {
     this.destroyed = true;
+    this.offAd?.();
     for (const id of ['title', 'sub', 'ribbon', 'pointer', 'wheel', 'button', 'status']) this.scene.qaTargets?.delete(`wheel-band-${id}`);
     this.blink?.remove();
     this.spinTween?.stop();

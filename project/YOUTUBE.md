@@ -1,6 +1,8 @@
 # YouTube Playables integration (Step 11, 2026-10-15)
 
-Release build: **#186** (2026-10-17 20:43 UTC), `dist-youtube/` (profile `youtube-playables`), the approved adapter unchanged. ZIP for the YouTube test: `CleanUpMiniGames_release/CleanUpMiniGames_youtube_build186.zip` (1059 files, 19,163,960 bytes unpacked, 18,136,480 bytes zipped). Previous: #181, #178, #174, #168, #139.
+Release build: **#199** (2026-10-18 21:11 UTC, post-rewarded-ad flow), `dist-youtube/` (profile `youtube-playables`), made with `npm run package:youtube`. ZIP for the YouTube test: `CleanUpMiniGames_release/CleanUpMiniGames_youtube_build199.zip` (1059 files, 19,094,517 bytes unpacked, 18,071,050 bytes zipped). Previous: #196, #191, #188, #186, #181, #178, #174, #168, #139.
+
+**Upload package — the only correct way (2026-10-19):** `npm run package:youtube`. It builds the youtube profile, refuses any other profile, zips `dist-youtube/` (index.html at the root), then reads the ZIP back and checks the PACKAGED index.html: the SDK `<script src="https://www.youtube.com/game_api/v1">` must be the first executable script, statically, before the game bundle. `npm run build:youtube` itself also fails if that rule is broken (`scripts/youtube-html.mjs`). **Never upload `dist/` or `CleanUpMiniGames_build_FINAL.zip`:** that is the standard dev-adapter build (no YouTube SDK, test ads, browser storage). Uploading it caused the certification failure "SDK loaded first" on 2026-10-19.
 Sources: `platform/YOUTUBE-PLAYABLES.md` and `platform/SDK-CONTRACT.md`. The official SDK reference, integration requirements and the SDK Test Suite guide CSP were re-checked on 2026-10-15.
 
 ## Architecture
@@ -70,6 +72,46 @@ A failing optional font is not an error.
 - One request at a time; a second request returns unavailable.
 - A result that arrives during a host pause is applied only after resume.
 - Stable rewardIds, one per reward type, with no user data: `reward-boost`, `chest-progress`, `level-unlock`, `vip-unlock`, `tool-unlock`, `wheel-spin`, `store-reward-gems`, `store-reward-coins`, `store-reward-chest`, `store-reward-bundle-coins`, `store-reward-bundle-mixed`, `store-reward-bundle-mega`.
+
+## Input during host pause / ads (fixed 2026-10-19)
+
+- **Root cause:** a host pause put the Phaser loop to sleep (`game.loop.sleep()`), but the canvas keeps its DOM mouse / touch / wheel listeners and Phaser's InputManager passes every event straight to the scenes. Taps, drags and scrolls made during the pause still reached buttons, menu cards and tools: state changed at once, and what they scheduled played out after `wake()`.
+- **Fix — one central gate (`src/app/inputGate.js`):**
+  - **Blocking:** while the pause state has `host` (YouTube onPause) or `adBusy` (a rewarded / interstitial ad request), `game.input.enabled = false` and the keyboard is off. Phaser's DOM handlers then drop every event; nothing is queued.
+  - **Reset:** on entering and leaving that state every pointer is reset and `input-cancel` is emitted. Buttons forget a press, the menu drops its drag / scroll fling / pressed card, the level ends its stroke, minigames drop aim / swipe / hold, and the Store list drops its drag. UI actions a tap had scheduled (`deferUi`) are void after a pause.
+  - **Resume:** input comes back from a neutral state, so only a NEW input acts.
+  - **Player pause:** the player's own pause (`user`) is a separate reason and stays exactly as it was.
+- **Tests:** `tests/e2e-youtube/youtube-input.spec.js` (mock SDK, desktop mouse + phone touch) covers:
+  - spam during the pause;
+  - a press held across the pause;
+  - a pause during a drag;
+  - a pause while the player pause menu is open;
+  - input during a held rewarded ad.
+
+  With the gate switched off all of them fail.
+
+## Post-rewarded-ad flow (fixed 2026-10-19)
+
+**Root cause of the "frozen after the ad" delay:**
+- The game-wide `adBusy` pause (input gate + frozen level animation) lasted until YouTube's rewarded promise settled, not until YouTube handed the game back. The promise can resolve seconds after the host resume.
+- The rewarded flows then also awaited the cloud write before updating their button or screen.
+
+**Measured** (mock SDK; host resume 1.5 s into the ad, SDK result 2 s after the resume, 1.5 s cloud save):
+
+| | Before (#195) | After |
+|---|---|---|
+| Game usable after host resume | 2.28 s | ≈ 0.2 s (immediate, test polling granularity) |
+| Reward shown after host resume | 3.95 s | 2.28 s (= the SDK's own 2 s + ~0.25 s; no save wait) |
+
+**Fix:**
+- **`RewardService`:**
+  - watches host pause / resume during a request;
+  - at host resume `adBusy` is released at once, and the request enters a `finishing` phase shown only on the CTA that started it ("Finishing…" instead of "Loading…");
+  - if no result comes within 8 s after the resume (60 s overall), the request ends as `error`: no reward, and a late result is ignored;
+  - the reward is granted only for `earned` (SDK `true`).
+- **Background saves:** every rewarded grant (level / VIP unlock, tools, Store, bundles, Wheel, chest, boost) applies the reward to the state immediately and starts the cloud write in the background (`SaveService.update` never raises an unhandled rejection; a failed write is retried). Saves remain disabled before the cloud load.
+- **Trace:** each step is timestamped in `rewards.adTrace` (QA snapshot): request, host pause / resume, result / timeout, save start / done / error.
+- **Tests:** `tests/e2e-youtube/youtube-rewarded-flow.spec.js`.
 
 ## Interstitials
 

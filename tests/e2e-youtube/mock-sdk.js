@@ -16,7 +16,20 @@ const ytgame = (() => {
       this.errorType = errorType;
     }
   }
+  // held ads (cfg.adHold): the test ends them — finishAd(value?) resolves (default: the configured
+  // result), rejectAd() rejects like the SDK does on a failure
+  let finishAd = null;
+  let rejectAd = null;
+  const held = (value) =>
+    cfg.adHold
+      ? new Promise((res, rej) => {
+          finishAd = (v) => res(v === undefined ? value : v);
+          rejectAd = () => rej(new SdkError('UNKNOWN'));
+        })
+      : Promise.resolve(value);
   window.__ytMockCtl = {
+    finishAd: (v) => finishAd?.(v),
+    rejectAd: () => rejectAd?.(),
     pause: () => cb.pause.forEach((f) => f()),
     resume: () => cb.resume.forEach((f) => f()),
     setAudio: (v) => {
@@ -48,7 +61,9 @@ const ytgame = (() => {
       },
       saveData: (data) => {
         log.push({ e: 'saveData', t: t(), data });
-        return cfg.saveFail ? Promise.reject(new SdkError('UNKNOWN')) : Promise.resolve();
+        if (cfg.saveFail) return Promise.reject(new SdkError('UNKNOWN'));
+        // cfg.saveDelayMs: a slow cloud save (the UI must not wait for it)
+        return cfg.saveDelayMs ? new Promise((res) => setTimeout(() => (log.push({ e: 'saveDataDone', t: t() }), res()), cfg.saveDelayMs)) : Promise.resolve();
       },
     },
     system: {
@@ -62,11 +77,11 @@ const ytgame = (() => {
       requestRewardedAd: (id) => {
         log.push({ e: 'requestRewardedAd', t: t(), id });
         const r = cfg.rewarded !== undefined ? cfg.rewarded : true;
-        return r === '__reject__' ? Promise.reject(new SdkError('API_UNAVAILABLE')) : Promise.resolve(r);
+        return r === '__reject__' ? Promise.reject(new SdkError('API_UNAVAILABLE')) : held(r);
       },
       requestInterstitialAd: () => {
         log.push({ e: 'requestInterstitialAd', t: t() });
-        return Promise.resolve();
+        return held(undefined);
       },
     },
     engagement: {

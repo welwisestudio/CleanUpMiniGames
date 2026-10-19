@@ -60,6 +60,7 @@ export class WheelService extends Emitter {
     if (this.busy) return { status: 'busy' };
     this.busy = true;
     try {
+      await null; // the spin is "in flight" from here on: a same-tick duplicate call gets 'busy'
       const free = this.freeAvailable();
       if (!free) {
         const ad = await this.rewards.rewardedAd(this.config.adPlacement);
@@ -68,7 +69,7 @@ export class WheelService extends Emitter {
       const day = this.today();
       const index = this.pick();
       const r = { status: 'busy' };
-      await this.save.update((s) => {
+      r.savePromise = this.save.update((s) => { // applied now; the cloud write runs in the background (2026-10-19)
         if (free && s.wheel.freeDay === day) return; // the free spin was used meanwhile: never twice
         if (free) s.wheel.freeDay = day;
         if (s.wheel.day !== day) Object.assign(s.wheel, { day, spins: 0 });

@@ -154,7 +154,12 @@ export class SaveService extends Emitter {
     this._assertLoaded();
     mutator(this.state);
     this.emit('changed', this.state);
-    return this._enqueueSave();
+    // the state change is immediate; the cloud write runs in the background. Callers may await the
+    // returned promise, but a write nobody awaits never becomes an unhandled rejection (a failed
+    // write keeps the state dirty and is retried with the next save).
+    const p = this._enqueueSave();
+    p.catch(() => {});
+    return p;
   }
 
   _enqueueSave() {
@@ -163,6 +168,7 @@ export class SaveService extends Emitter {
       if (!this._dirty) return;
       this._dirty = false;
       this.status = 'saving';
+      this.emit('saving');
       try {
         await this.platform.saveData(JSON.stringify(this.state));
         this.status = 'ready';

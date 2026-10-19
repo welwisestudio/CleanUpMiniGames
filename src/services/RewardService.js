@@ -74,7 +74,7 @@ export class RewardService extends Emitter {
       const ad = await this._rewardedAd(this.config.boost.placement);
       if (ad !== 'earned') return { status: ad };
       const r = { status: 'unavailable' };
-      await this.save.update((s) => {
+      r.savePromise = this.save.update((s) => { // applied now; the cloud write runs in the background (2026-10-19)
         const lc = s.lastCompletion;
         if (!lc || lc.id !== completionId || lc.boost) return; // re-check inside the mutation
         const bonus = lc.amount * (multiplier - 1);
@@ -141,7 +141,7 @@ export class RewardService extends Emitter {
       const ad = await this._rewardedAd(c.placement);
       if (ad !== 'earned') return { status: ad }; // progress stays at 100 %: never silently reset
       const r = { status: 'unavailable' };
-      await this.save.update((s) => {
+      r.savePromise = this.save.update((s) => { // applied now; the cloud write runs in the background (2026-10-19)
         if (s.progressChest.steps < c.steps) return; // re-check
         Object.assign(r, { status: 'granted', coins: c.coins, diamonds: c.diamonds, coinsBefore: s.coins, diamondsBefore: s.diamonds });
         s.coins += c.coins;
@@ -177,17 +177,64 @@ export class RewardService extends Emitter {
   }
 
   // ---- rewarded ad -------------------------------------------------------------------------
+  // Post-ad flow (2026-10-19): the whole game is paused / input-gated ('adBusy') only until YouTube
+  // hands the game back. The SDK's promise can resolve a few seconds AFTER the host resume; from the
+  // resume on the game runs normally and only the CTA that asked shows a short "Finishing…"
+  // (`adPhase`). If the result does not come within RESUME_TIMEOUT_MS of the resume (or OVERALL_MS in
+  // total) the request ends as 'error' — no reward; a late result is ignored. The reward is still
+  // granted by the caller only for 'earned'. Every step is timestamped in `adTrace` (diagnosis / QA).
   async _rewardedAd(placement) {
     if (!this.platform) return 'unavailable';
+    const RESUME_TIMEOUT_MS = 8000;
+    const OVERALL_MS = 60000;
+    this.trace('rewarded-request', placement);
     this.pause?.set('adBusy', true);
+    this._setPhase({ placement, state: 'requesting' });
+    let hostSeen = false;
+    let released = false;
+    let timer = null;
+    let settle;
+    const timeout = new Promise((res) => (settle = res));
+    const overall = setTimeout(() => settle({ result: 'error', timedOut: 'overall' }), OVERALL_MS);
+    const offPause = this.pause?.on?.('change', (snap) => {
+      const host = (snap?.reasons ?? []).includes('host');
+      if (host) hostSeen = true;
+      else if (hostSeen && !released) {
+        // YouTube handed the game back: un-freeze NOW, finish the request in the background
+        released = true;
+        this.pause.set('adBusy', false);
+        this._setPhase({ placement, state: 'finishing' });
+        timer = setTimeout(() => settle({ result: 'error', timedOut: 'after-resume' }), RESUME_TIMEOUT_MS);
+      }
+    });
     try {
-      const res = await this.platform.requestRewarded(placement);
+      const res = await Promise.race([
+        Promise.resolve()
+          .then(() => this.platform.requestRewarded(placement))
+          .then((r) => r, () => ({ result: 'error' })),
+        timeout,
+      ]);
+      this.trace(res?.timedOut ? `rewarded-timeout-${res.timedOut}` : 'rewarded-result', res?.result ?? 'error');
       if (res?.result === 'earned') this.afterRewarded?.();
       return res?.result ?? 'error';
-    } catch {
-      return 'error';
     } finally {
-      this.pause?.set('adBusy', false);
+      clearTimeout(overall);
+      clearTimeout(timer);
+      offPause?.();
+      if (!released) this.pause?.set('adBusy', false);
+      this._setPhase(null);
     }
+  }
+
+  _setPhase(phase) {
+    this.adPhase = phase;
+    this.emit('adPhase', phase);
+  }
+
+  // timestamped diagnosis trace of the rewarded / save flow (last 60 entries, QA snapshot)
+  trace(e, detail = null) {
+    this.adTrace = this.adTrace ?? [];
+    this.adTrace.push({ e, t: Math.round(typeof performance !== 'undefined' ? performance.now() : Date.now()), ...(detail != null ? { d: detail } : {}) });
+    if (this.adTrace.length > 60) this.adTrace.shift();
   }
 }

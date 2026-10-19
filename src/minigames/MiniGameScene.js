@@ -8,6 +8,7 @@ import { Button } from '../ui/Button.js';
 import { registerQaScene } from '../app/qa.js';
 import { MINIGAMES } from './registry.js';
 import { LEVEL_META } from '../content/generated/levelMeta.js';
+import { onInputCancel } from '../app/inputGate.js';
 
 // the minigame sprites (Nano Banana 2 + Higgsfield Background Remover, 2026-10-15; project/MINIGAMES.md)
 const MG = 'assets/minigames/';
@@ -100,6 +101,18 @@ export class MiniGameScene extends Phaser.Scene {
     this.handDismissed = false;
     this.result = null;
     this.game_ = new this.def.Game(this);
+    // input gate: a host pause / ad drops the game's in-progress gesture (aim, swipe, hold, drag)
+    onInputCancel(this, () => {
+      const g = this.game_;
+      if (!g) return;
+      g.onCancel?.();
+      if (g.swipe) g.swipe.active = null;
+      if ('aim' in g) g.aim = null;
+      if ('pouring' in g) g.pouring = false;
+      if ('blowing' in g) g.blowing = false;
+      g.arrow?.clear?.();
+      g.guide?.clear?.();
+    });
     this.input.on('pointerdown', (p) => {
       this.hideHand(); // the tutorial hand goes as soon as the player touches the screen
       this.handDismissed = true;

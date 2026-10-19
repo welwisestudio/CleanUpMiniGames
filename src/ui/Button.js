@@ -80,6 +80,13 @@ export class Button {
     });
     this.baseScale = 1;
     scene.qaButtons?.set(id, this);
+    // input gate (host pause / ad): a press that started before the pause can never click afterwards
+    const cancel = () => {
+      this.pressed = false;
+      if (this.container.active) this.container.setScale(this.baseScale);
+    };
+    scene.game.events.on('input-cancel', cancel);
+    this.container.once('destroy', () => scene.game.events.off('input-cancel', cancel));
   }
 
   // Icon + label are one group centred on the button; long labels shrink to the free width

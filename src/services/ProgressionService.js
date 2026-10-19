@@ -176,7 +176,7 @@ export class ProgressionService extends Emitter {
       const ad = await this.rewards.rewardedAd(vip ? this.config.vipPlacement ?? this.config.adPlacement : this.config.adPlacement);
       if (ad !== 'earned') return { status: ad };
       const r = { status: 'open' };
-      await this.save.update((s) => {
+      r.savePromise = this.save.update((s) => { // applied now; the cloud write runs in the background (2026-10-19)
         const list = vip ? s.progression.vipAds : s.progression.adUnlocked;
         if (list.includes(id)) return; // a duplicate result grants nothing more
         list.push(id);
